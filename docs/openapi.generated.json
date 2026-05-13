@@ -1,0 +1,1433 @@
+{
+  "components": {
+    "examples": {
+      "CreateServerRequest": {
+        "summary": "创建服务器请求示例",
+        "value": {
+          "description": "欢迎来到千服原版生存",
+          "host": "mc.example.com",
+          "name": "QianFu Vanilla",
+          "port": 25565,
+          "version": "1.20.1"
+        }
+      },
+      "CreateServerResponse": {
+        "summary": "创建服务器成功响应示例",
+        "value": {
+          "data": {
+            "host": "mc.example.com",
+            "id": 3001,
+            "name": "QianFu Vanilla",
+            "port": 25565
+          },
+          "message": "Server created successfully",
+          "requestId": "req_01JABCXYZ",
+          "success": true,
+          "timestamp": "2026-04-27T09:30:00.000Z"
+        }
+      },
+      "ValidationErrorResponse": {
+        "summary": "参数校验失败示例",
+        "value": {
+          "error": {
+            "code": "VALIDATION_ERROR",
+            "details": [
+              {
+                "code": "invalid_string",
+                "message": "Invalid host format",
+                "path": "host",
+                "source": "body"
+              }
+            ],
+            "message": "Validation failed",
+            "requestId": "req_01JABCERR",
+            "statusCode": 400
+          },
+          "success": false,
+          "timestamp": "2026-04-27T09:31:00.000Z"
+        }
+      }
+    },
+    "headers": {
+      "Deprecation": {
+        "description": "Present when the API version is deprecated",
+        "schema": {
+          "example": "true",
+          "type": "string"
+        }
+      },
+      "Sunset": {
+        "description": "Date when the deprecated version will be removed (RFC 8594)",
+        "schema": {
+          "example": "2027-01-01",
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "XApiVersion": {
+        "description": "The API version used for this request",
+        "schema": {
+          "example": "v1",
+          "type": "string"
+        }
+      }
+    },
+    "parameters": {
+      "ApiVersionHeader": {
+        "description": "API version to use (overrides URL prefix)",
+        "in": "header",
+        "name": "X-API-Version",
+        "required": false,
+        "schema": {
+          "default": "v1",
+          "enum": [
+            "v1"
+          ],
+          "type": "string"
+        }
+      },
+      "ApiVersionQuery": {
+        "description": "API version to use (lowest priority)",
+        "in": "query",
+        "name": "api-version",
+        "required": false,
+        "schema": {
+          "default": "v1",
+          "enum": [
+            "v1"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "NOT_FOUND",
+                "message": "Resource not found",
+                "statusCode": 404
+              },
+              "success": false,
+              "timestamp": "2026-04-27T09:32:00.000Z"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorEnvelope"
+            }
+          }
+        },
+        "description": "Resource not found"
+      },
+      "Unauthorized": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "UNAUTHORIZED",
+                "message": "Authentication required",
+                "statusCode": 401
+              },
+              "success": false,
+              "timestamp": "2026-04-27T09:32:00.000Z"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ApiErrorEnvelope"
+            }
+          }
+        },
+        "description": "Authentication required"
+      },
+      "ValidationFailed": {
+        "content": {
+          "application/json": {
+            "example": {
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "details": [
+                  {
+                    "code": "invalid_type",
+                    "message": "Expected number",
+                    "path": "page",
+                    "source": "query"
+                  }
+                ],
+                "message": "Validation failed",
+                "statusCode": 400
+              },
+              "success": false,
+              "timestamp": "2026-04-27T09:33:00.000Z"
+            },
+            "schema": {
+              "$ref": "#/components/schemas/ValidationErrorEnvelope"
+            }
+          }
+        },
+        "description": "Validation error"
+      }
+    },
+    "schemas": {
+      "ApiError": {
+        "$ref": "#/components/schemas/ApiErrorEnvelope"
+      },
+      "ApiErrorEnvelope": {
+        "description": "统一错误响应包络",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ApiErrorPayload"
+          },
+          "success": {
+            "description": "固定为 false",
+            "example": false,
+            "type": "boolean"
+          },
+          "timestamp": {
+            "description": "响应时间（ISO8601）",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "error",
+          "timestamp"
+        ],
+        "type": "object"
+      },
+      "ApiErrorPayload": {
+        "description": "统一错误体",
+        "properties": {
+          "code": {
+            "description": "业务错误码（稳定，可用于程序判断）",
+            "example": "VALIDATION_ERROR",
+            "type": "string"
+          },
+          "details": {
+            "description": "结构化错误细节（参数错误、业务错误详情）",
+            "nullable": true
+          },
+          "message": {
+            "description": "可展示的错误文案",
+            "type": "string"
+          },
+          "requestId": {
+            "description": "请求追踪 ID",
+            "type": "string"
+          },
+          "statusCode": {
+            "description": "HTTP 状态码镜像",
+            "example": 400,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "message",
+          "code",
+          "statusCode"
+        ],
+        "type": "object"
+      },
+      "ApiSuccessEnvelope": {
+        "description": "统一成功响应包络",
+        "properties": {
+          "data": {
+            "description": "业务数据载荷"
+          },
+          "message": {
+            "description": "业务提示文案",
+            "example": "Ticket created successfully",
+            "type": "string"
+          },
+          "meta": {
+            "additionalProperties": true,
+            "description": "附加元数据（分页、批量统计等）",
+            "type": "object"
+          },
+          "requestId": {
+            "description": "请求追踪 ID（用于日志排障）",
+            "example": "req_01JABCXYZ",
+            "type": "string"
+          },
+          "success": {
+            "description": "固定为 true",
+            "example": true,
+            "type": "boolean"
+          },
+          "timestamp": {
+            "description": "响应时间（ISO8601）",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "message",
+          "data",
+          "timestamp"
+        ],
+        "type": "object"
+      },
+      "PaginatedResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiSuccessEnvelope"
+          },
+          {
+            "properties": {
+              "data": {
+                "description": "分页列表数据",
+                "items": {},
+                "type": "array"
+              },
+              "meta": {
+                "$ref": "#/components/schemas/PaginationMeta"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "PaginationMeta": {
+        "description": "分页元信息",
+        "properties": {
+          "limit": {
+            "description": "每页条数",
+            "example": 20,
+            "type": "integer"
+          },
+          "page": {
+            "description": "当前页",
+            "example": 1,
+            "type": "integer"
+          },
+          "total": {
+            "description": "总条目数",
+            "example": 128,
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "总页数",
+            "example": 7,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "totalPages"
+        ],
+        "type": "object"
+      },
+      "Server": {
+        "description": "服务器基础信息",
+        "properties": {
+          "created_at": {
+            "description": "创建时间",
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "服务器描述",
+            "type": "string"
+          },
+          "host": {
+            "description": "服务器地址或域名",
+            "example": "mc.example.com",
+            "type": "string"
+          },
+          "id": {
+            "description": "服务器 ID",
+            "example": 3001,
+            "type": "integer"
+          },
+          "likes": {
+            "description": "点赞数",
+            "example": 88,
+            "type": "integer"
+          },
+          "max_players": {
+            "description": "最大人数",
+            "example": 100,
+            "type": "integer"
+          },
+          "name": {
+            "description": "服务器名称",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "owner_id": {
+            "description": "所有者用户 ID",
+            "type": "integer"
+          },
+          "players": {
+            "description": "在线人数",
+            "example": 23,
+            "type": "integer"
+          },
+          "port": {
+            "default": 25565,
+            "description": "端口",
+            "type": "integer"
+          },
+          "status": {
+            "description": "探测状态",
+            "enum": [
+              "online",
+              "offline",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "更新时间",
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "description": "游戏版本",
+            "example": "1.20.1",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserProfile": {
+        "description": "用户公开档案",
+        "properties": {
+          "avatar_url": {
+            "description": "头像 URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "bio_html": {
+            "description": "个人简介（HTML）",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "创建时间",
+            "format": "date-time",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "显示昵称",
+            "example": "千服玩家",
+            "type": "string"
+          },
+          "email": {
+            "description": "脱敏邮箱（非管理员）",
+            "format": "email",
+            "type": "string"
+          },
+          "id": {
+            "description": "用户 ID",
+            "example": 1024,
+            "type": "integer"
+          },
+          "last_login_at": {
+            "description": "最近登录时间",
+            "format": "date-time",
+            "type": "string"
+          },
+          "level": {
+            "description": "用户等级",
+            "example": 12,
+            "type": "integer"
+          },
+          "permissions": {
+            "description": "权限列表",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "points": {
+            "description": "积分（兼容字段）",
+            "example": 1800,
+            "type": "integer"
+          },
+          "username": {
+            "description": "用户名",
+            "example": "qianfu_user",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ValidationError": {
+        "$ref": "#/components/schemas/ValidationErrorEnvelope"
+      },
+      "ValidationErrorEnvelope": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiErrorEnvelope"
+          },
+          {
+            "properties": {
+              "error": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApiErrorPayload"
+                  },
+                  {
+                    "properties": {
+                      "details": {
+                        "items": {
+                          "$ref": "#/components/schemas/ValidationIssue"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "ValidationIssue": {
+        "description": "字段级校验错误细项",
+        "properties": {
+          "code": {
+            "description": "校验错误类型",
+            "example": "invalid_string",
+            "type": "string"
+          },
+          "message": {
+            "description": "错误描述",
+            "type": "string"
+          },
+          "path": {
+            "description": "字段路径",
+            "example": "email",
+            "type": "string"
+          },
+          "source": {
+            "description": "错误来源",
+            "enum": [
+              "body",
+              "query",
+              "params"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "path",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from authentication endpoint",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "csrfAuth": {
+        "description": "CSRF token for state-changing operations",
+        "in": "header",
+        "name": "x-csrf-token",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@qianfu.example",
+      "name": "千服 Team"
+    },
+    "description": "API documentation for 千服 (QianFu) - Minecraft server management platform\n\n## API Versioning\n\nCurrent default version: **v1**\n\nSupported versions: `v1`\n\n- All API endpoints are prefixed with `/api/{version}/` (e.g. `/api/v1/servers`)\n- Specify version via: URL prefix, `X-API-Version` header, or `?api-version=v1` query param\n- Deprecated versions will include `Deprecation` and `Sunset` response headers\n- See [API Versioning Guide](../docs/API-VERSIONING.md) for migration details",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "title": "QianFu API (generated)",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "User server stats"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user's server management info",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/profile": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/UserProfile"
+                    },
+                    "success": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "User profile data"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "avatar_url": {
+                    "format": "uri",
+                    "type": "string"
+                  },
+                  "bio_html": {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  "display_name": {
+                    "maxLength": 50,
+                    "type": "string"
+                  },
+                  "preferences": {
+                    "type": "object"
+                  },
+                  "username": {
+                    "maxLength": 30,
+                    "minLength": 3,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully"
+          },
+          "400": {
+            "description": "Validation error or username taken"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update current user profile",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/api/v1/profile/versions": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Page number",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Items per page",
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 10,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bio version history"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List bio version history",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/api/v1/public/servers": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "enum": [
+                "likes",
+                "players",
+                "createdAt"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated server list"
+          }
+        },
+        "summary": "List all public servers (paginated)",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/public/servers/{id}/comments": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server comments"
+          }
+        },
+        "summary": "List server comments",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/public/servers/{id}/like-state": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Like state"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user's like state for a server",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/public/servers/{id}/player-history": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player history data"
+          }
+        },
+        "summary": "Get server player history",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/public/servers/status": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Comma-separated server hosts",
+            "in": "query",
+            "name": "hosts",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server status results"
+          }
+        },
+        "summary": "Check multiple servers status (batch)",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 10,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user's servers"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List user's own servers",
+        "tags": [
+          "Servers"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "host": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "port": {
+                    "default": 25565,
+                    "type": "integer"
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "host"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Server created"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a new server",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server deleted"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete server",
+        "tags": [
+          "Servers"
+        ]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server details"
+          },
+          "404": {
+            "description": "Server not found"
+          }
+        },
+        "summary": "Get server details",
+        "tags": [
+          "Servers"
+        ]
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Server updated"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Server not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update server",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/comments": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "content": {
+                    "maxLength": 1000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "content"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Comment posted"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Post a comment on server",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/comments/{commentId}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "commentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comment deleted"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a comment",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/like": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Like toggled"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Toggle server like",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/rollback": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "versionId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "versionId"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Rollback successful"
+          },
+          "403": {
+            "description": "Not authorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rollback server to previous version",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/versions": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version history"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List server version history",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/versions/compare": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "v1",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "v2",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version comparison"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Compare two saved versions",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/user/checkin": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "points": {
+                          "type": "integer"
+                        },
+                        "streak": {
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Check-in successful"
+          },
+          "400": {
+            "description": "Already checked in today"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check-in to earn points",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/api/v1/user/checkin/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "checkedIn": {
+                          "type": "boolean"
+                        },
+                        "lastCheckIn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "streak": {
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Check-in status"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user check-in status",
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Development server (v1)",
+      "url": "http://localhost:3000/api/v1"
+    },
+    {
+      "description": "Production server (v1)",
+      "url": "https://api.qianfu.example/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "description": "User management endpoints",
+      "name": "User"
+    },
+    {
+      "description": "Server CRUD and management",
+      "name": "Servers"
+    },
+    {
+      "description": "Health check and monitoring",
+      "name": "Health"
+    }
+  ]
+}

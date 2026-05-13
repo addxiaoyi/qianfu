@@ -1,0 +1,31 @@
+import { Router } from 'express';
+import { authenticate, hasPermission } from '../middleware/auth';
+import { adminLimiter } from '../middleware/rateLimiter';
+import { 
+  getModerationSettings, 
+  updateModerationSetting, 
+  getModerationLogs,
+  reviewModerationLog
+} from '../controllers/moderationAdminController';
+import { csrfProtection } from '../middleware/csrf';
+import { verifySignature } from '../middleware/signature';
+
+const router = Router();
+
+// All routes require admin permission
+router.use(authenticate);
+router.use(hasPermission(['admin']));
+router.use(adminLimiter);
+router.use(verifySignature);
+
+// Get config and stats
+router.get('/settings', getModerationSettings as any);
+
+// Update config (CSRF protected)
+router.post('/settings', csrfProtection, updateModerationSetting as any);
+
+// Get moderation logs
+router.get('/logs', getModerationLogs as any);
+router.post('/logs/:id/review', csrfProtection, reviewModerationLog as any);
+
+export default router;

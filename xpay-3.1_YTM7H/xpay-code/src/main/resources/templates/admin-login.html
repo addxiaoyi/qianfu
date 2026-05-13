@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录 - StarMC支付网关</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-waiting { background: #f59e0b; animation: blink 1s infinite; }
+        .status-scanned { background: #3b82f6; }
+        .status-success { background: #10b981; }
+        .status-pending { background: #8b5cf6; animation: blink 1.5s infinite; }
+        .status-rejected { background: #ef4444; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .wechat-icon {
+            background: linear-gradient(135deg, #07c160 0%, #05a050 100%);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="glass-panel rounded-3xl p-8 shadow-2xl">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl wechat-icon mb-4">
+                    <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-2">微信扫码登录</h1>
+                <p class="text-white/60 text-sm">安全便捷的管理后台登录方式</p>
+            </div>
+
+            <div id="loginContainer" class="relative">
+                <div id="qrContainer" class="bg-white rounded-2xl p-6 mb-6 relative overflow-hidden">
+                    <div id="qrcode" class="flex justify-center">
+                        <img id="wxQrCode" src="" alt="微信二维码" class="w-48 h-48">
+                    </div>
+                    <div id="scanLine" class="scan-line"></div>
+                </div>
+
+                <div id="statusContainer" class="flex items-center justify-center gap-2 mb-6">
+                    <span id="statusDot" class="status-dot status-waiting"></span>
+                    <span id="statusText" class="text-white/80 text-sm">等待扫码关注...</span>
+                </div>
+
+                <div class="mt-6 p-4 bg-white/5 rounded-xl">
+                    <h3 class="text-white font-medium mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        登录步骤
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 text-white/60 text-sm">
+                            <span class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-medium">1</span>
+                            <span>打开微信，点击右上角"+"</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-white/60 text-sm">
+                            <span class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-medium">2</span>
+                            <span>选择"扫一扫"功能</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-white/60 text-sm">
+                            <span class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-medium">3</span>
+                            <span>扫描上方二维码关注公众号</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-white/60 text-sm">
+                            <span class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-medium">4</span>
+                            <span>等待超级管理员审核通过</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button onclick="refreshQrCode()" class="text-white/40 hover:text-white/60 text-sm transition-colors flex items-center gap-1 mx-auto">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        刷新二维码
+                    </button>
+                </div>
+            </div>
+
+            <div id="pendingContainer" class="hidden text-center py-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-violet-500/20 mb-4">
+                    <svg class="w-10 h-10 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">等待审核</h2>
+                <p class="text-white/60 mb-4">您的登录申请已提交，请等待超级管理员审核</p>
+                <div class="flex items-center justify-center gap-2 text-violet-400 text-sm">
+                    <span class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></span>
+                    <span>审核中...</span>
+                </div>
+                <div class="mt-6 p-4 bg-white/5 rounded-xl text-left">
+                    <p class="text-white/60 text-sm mb-2">💡 提示：</p>
+                    <p class="text-white/40 text-xs">超级管理员会通过公众号收到审核通知，审核通过后您将自动登录。</p>
+                </div>
+            </div>
+
+            <div id="successContainer" class="hidden text-center py-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/20 mb-4">
+                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">登录成功</h2>
+                <p class="text-white/60">正在跳转管理后台...</p>
+            </div>
+
+            <div id="errorContainer" class="hidden text-center py-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 mb-4">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">登录失败</h2>
+                <p id="errorText" class="text-white/60 mb-4">二维码已过期</p>
+                <button onclick="refreshQrCode()" class="px-6 py-2 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white rounded-lg transition-all">
+                    重新获取
+                </button>
+            </div>
+        </div>
+
+        <div class="text-center mt-6">
+            <a href="/" class="text-white/40 hover:text-white/60 text-sm transition-colors">返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        let qrToken = null;
+        let checkInterval = null;
+        let checkCount = 0;
+        const MAX_CHECK_COUNT = 150;
+
+        // 微信公众号二维码URL
+        const WECHAT_MP_QRCODE = '/images/wechat-qr.jpg';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            generateQrCode();
+        });
+
+        function generateQrCode() {
+            hideAllContainers();
+            document.getElementById('loginContainer').classList.remove('hidden');
+
+            fetch('/admin/auth/qr/generate')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        qrToken = data.data.qrToken;
+                        checkCount = 0;
+
+                        // 显示微信公众号二维码
+                        const qrImg = document.getElementById('wxQrCode');
+                        qrImg.src = WECHAT_MP_QRCODE;
+                        qrImg.onerror = function() {
+                            // 如果本地图片加载失败，显示提示
+                            this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect width="200" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af"%3E请放置二维码图片%3C/text%3E%3C/svg%3E';
+                        };
+
+                        updateStatus('waiting', '等待扫码关注公众号...');
+                        startStatusCheck();
+                    } else {
+                        showError('生成二维码失败：' + (data.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showError('网络错误，请检查网络连接');
+                });
+        }
+
+        function startStatusCheck() {
+            if (checkInterval) {
+                clearInterval(checkInterval);
+            }
+
+            checkInterval = setInterval(() => {
+                if (!qrToken) return;
+
+                checkCount++;
+                if (checkCount > MAX_CHECK_COUNT) {
+                    clearInterval(checkInterval);
+                    showError('二维码已过期，请重新获取');
+                    return;
+                }
+
+                fetch('/admin/auth/qr/status?qrToken=' + qrToken)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const status = data.data.status;
+
+                            if (status === 0) {
+                                updateStatus('waiting', '等待扫码关注公众号...');
+                            } else if (status === 1) {
+                                // 已扫码，等待审核
+                                hideAllContainers();
+                                document.getElementById('pendingContainer').classList.remove('hidden');
+                                updateStatus('pending', '等待超级管理员审核...');
+                            } else if (status === 2) {
+                                clearInterval(checkInterval);
+                                updateStatus('success', '审核通过，登录成功');
+                                handleLoginSuccess(data.data.token);
+                            } else if (status === 3) {
+                                clearInterval(checkInterval);
+                                updateStatus('rejected', '审核被拒绝');
+                                showError('您的登录申请已被拒绝，请联系超级管理员');
+                            } else if (status === -1) {
+                                clearInterval(checkInterval);
+                                showError('二维码不存在，请重新获取');
+                            } else if (status === -2) {
+                                clearInterval(checkInterval);
+                                showError('二维码已过期，请重新获取');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }, 2000);
+        }
+
+        function updateStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const textEl = document.getElementById('statusText');
+
+            dot.className = 'status-dot';
+
+            switch(status) {
+                case 'waiting':
+                    dot.classList.add('status-waiting');
+                    break;
+                case 'scanned':
+                    dot.classList.add('status-scanned');
+                    break;
+                case 'pending':
+                    dot.classList.add('status-pending');
+                    break;
+                case 'success':
+                    dot.classList.add('status-success');
+                    break;
+                case 'rejected':
+                    dot.classList.add('status-rejected');
+                    break;
+            }
+
+            textEl.textContent = text;
+        }
+
+        function handleLoginSuccess(token) {
+            localStorage.setItem('adminToken', token);
+
+            hideAllContainers();
+            document.getElementById('successContainer').classList.remove('hidden');
+
+            setTimeout(() => {
+                window.location.href = '/admin/dashboard';
+            }, 1500);
+        }
+
+        function showError(message) {
+            hideAllContainers();
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorContainer').classList.remove('hidden');
+        }
+
+        function hideAllContainers() {
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('pendingContainer').classList.add('hidden');
+            document.getElementById('successContainer').classList.add('hidden');
+            document.getElementById('errorContainer').classList.add('hidden');
+        }
+
+        function refreshQrCode() {
+            if (checkInterval) {
+                clearInterval(checkInterval);
+            }
+            generateQrCode();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - StarMC支付网关</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), transparent);
+            border-left: 3px solid #8b5cf6;
+        }
+    </style>
+</head>
+<body class="flex">
+    <aside class="w-64 glass-panel min-h-screen fixed left-0 top-0 z-50">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold">管理后台</h1>
+                    <p class="text-white/50 text-xs">StarMC支付网关</p>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="#dashboard" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-white">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span>概览</span>
+                </a>
+                <a href="/settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span>基础设置</span>
+                </a>
+                <a href="/qianfu-settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    <span>千服配置</span>
+                </a>
+                <a href="#orders" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span>订单管理</span>
+                </a>
+                <a href="#admins" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span>管理员</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <div class="glass-panel rounded-xl p-4">
+                <div class="flex items-center gap-3">
+                    <img id="adminAvatar" src="" alt="Avatar" class="w-10 h-10 rounded-full bg-white/10">
+                    <div class="flex-1 min-w-0">
+                        <p id="adminName" class="text-white text-sm font-medium truncate">管理员</p>
+                        <p class="text-white/50 text-xs">超级管理员</p>
+                    </div>
+                    <button onclick="logout()" class="text-white/50 hover:text-white transition-colors">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 ml-64 p-8">
+        <header class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-white">仪表盘</h2>
+                <p class="text-white/50">欢迎回来，查看今日数据概览</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="currentTime" class="text-white/50 text-sm"></span>
+                <a href="/" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm">
+                    返回前台
+                </a>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                        <i data-lucide="dollar-sign" class="w-6 h-6 text-blue-400"></i>
+                    </div>
+                    <span class="text-green-400 text-sm">+12.5%</span>
+                </div>
+                <h3 class="text-white/50 text-sm mb-1">今日收入</h3>
+                <p class="text-2xl font-bold text-white">¥12,580</p>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 text-violet-400"></i>
+                    </div>
+                    <span class="text-green-400 text-sm">+8.2%</span>
+                </div>
+                <h3 class="text-white/50 text-sm mb-1">今日订单</h3>
+                <p class="text-2xl font-bold text-white">156</p>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>
+                    </div>
+                    <span class="text-white/50 text-sm">98.5%</span>
+                </div>
+                <h3 class="text-white/50 text-sm mb-1">支付成功率</h3>
+                <p class="text-2xl font-bold text-white">99.2%</p>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6 text-orange-400"></i>
+                    </div>
+                    <span class="text-green-400 text-sm">+23</span>
+                </div>
+                <h3 class="text-white/50 text-sm mb-1">新增用户</h3>
+                <p class="text-2xl font-bold text-white">89</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="activity" class="w-5 h-5 text-violet-400"></i>
+                    最近交易
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <i data-lucide="check" class="w-5 h-5 text-green-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">订单 #20240321001</p>
+                                <p class="text-white/50 text-xs">支付宝支付</p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 font-medium">+¥100.00</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <i data-lucide="check" class="w-5 h-5 text-green-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">订单 #20240321002</p>
+                                <p class="text-white/50 text-xs">微信支付</p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 font-medium">+¥50.00</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                <i data-lucide="clock" class="w-5 h-5 text-yellow-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">订单 #20240321003</p>
+                                <p class="text-white/50 text-xs">千服支付 - 处理中</p>
+                            </div>
+                        </div>
+                        <span class="text-white/50 font-medium">¥200.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+                    <i data-lucide="bell" class="w-5 h-5 text-violet-400"></i>
+                    系统通知
+                </h3>
+                <div class="space-y-3">
+                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-blue-400">
+                        <p class="text-white text-sm">系统更新完成</p>
+                        <p class="text-white/50 text-xs mt-1">v3.1.0 版本已成功部署</p>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-green-400">
+                        <p class="text-white text-sm">支付通道正常</p>
+                        <p class="text-white/50 text-xs mt-1">所有支付渠道运行正常</p>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-yellow-400">
+                        <p class="text-white text-sm">待处理退款</p>
+                        <p class="text-white/50 text-xs mt-1">有 3 笔退款申请待审核</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            checkAuth();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin/login';
+                return;
+            }
+
+            fetch('/admin/auth/check', {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    localStorage.removeItem('adminToken');
+                    window.location.href = '/admin/login';
+                    return;
+                }
+
+                document.getElementById('adminName').textContent = data.data.nickname || '管理员';
+                if (data.data.avatarUrl) {
+                    document.getElementById('adminAvatar').src = data.data.avatarUrl;
+                }
+            })
+            .catch(error => {
+                console.error('Auth check failed:', error);
+            });
+        }
+
+        function logout() {
+            const token = localStorage.getItem('adminToken');
+
+            fetch('/admin/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(() => {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin/login';
+            })
+            .catch(() => {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin/login';
+            });
+        }
+    </script>
+</body>
+</html>

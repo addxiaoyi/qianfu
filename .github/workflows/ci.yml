@@ -1,0 +1,179 @@
+name: CI
+
+# CI 设计说明：
+# 1) validate-gate：严格门禁（类型、lint、结构、关键覆盖）
+# 2) smoke-api-local：启动本地 API 并做烟测，避免基础链路回归
+# 3) build-frontend：仅在 validate + smoke 通过后执行构建
+# 4) validate-runtime-env：构建后校验运行时环境契约
+# 5) coverage-full：全量覆盖率仅做观测与汇总（non-blocking）
+# 并发策略：同分支新提交会取消旧任务，减少排队与资源浪费。
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CRITICAL_LINES: "70"
+  CRITICAL_FUNCTIONS: "70"
+  CRITICAL_BRANCHES: "60"
+  CRITICAL_STATEMENTS: "70"
+
+jobs:
+  validate-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Validate (typecheck + lint + critical coverage)
+        run: npm run validate
+
+  smoke-api-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run local API smoke checks
+        run: npm run smoke:api:local
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [validate-gate, smoke-api-local]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend (Vite)
+        run: npm run build
+
+  validate-runtime-env:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build-frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate runtime env contract
+        run: npm run validate:env
+
+  coverage-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full coverage (non-blocking)
+        run: npm run test:coverage:full
+
+      - name: Publish coverage summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            LINES=$(node -e "const s=require('./coverage/coverage-summary.json').total; console.log((s.lines.pct ?? 0).toFixed(2));")
+            FUNCTIONS=$(node -e "const s=require('./coverage/coverage-summary.json').total; console.log((s.functions.pct ?? 0).toFixed(2));")
+            BRANCHES=$(node -e "const s=require('./coverage/coverage-summary.json').total; console.log((s.branches.pct ?? 0).toFixed(2));")
+            STATEMENTS=$(node -e "const s=require('./coverage/coverage-summary.json').total; console.log((s.statements.pct ?? 0).toFixed(2));")
+
+            check_gate () {
+              local metric_name="$1"
+              local actual="$2"
+              local target="$3"
+              if awk "BEGIN {exit !(${actual} >= ${target})}"; then
+                echo "✅ ${metric_name}: ${actual}% (>= ${target}%)"
+                return 0
+              else
+                echo "⚠️ ${metric_name}: ${actual}% (< ${target}%)"
+                return 1
+              fi
+            }
+
+            OVERALL_OK=true
+            GATE_LINES="$(check_gate "Lines" "${LINES}" "${CRITICAL_LINES}")" || OVERALL_OK=false
+            GATE_FUNCTIONS="$(check_gate "Functions" "${FUNCTIONS}" "${CRITICAL_FUNCTIONS}")" || OVERALL_OK=false
+            GATE_BRANCHES="$(check_gate "Branches" "${BRANCHES}" "${CRITICAL_BRANCHES}")" || OVERALL_OK=false
+            GATE_STATEMENTS="$(check_gate "Statements" "${STATEMENTS}" "${CRITICAL_STATEMENTS}")" || OVERALL_OK=false
+
+            if [ "$OVERALL_OK" = true ]; then
+              OVERALL_LINE="✅ Overall gate status: all critical thresholds met"
+            else
+              OVERALL_LINE="⚠️ Overall gate status: one or more critical thresholds not met"
+            fi
+
+            {
+              echo "## Full coverage summary (non-blocking)";
+              echo "";
+              echo "- Lines: ${LINES}%";
+              echo "- Functions: ${FUNCTIONS}%";
+              echo "- Branches: ${BRANCHES}%";
+              echo "- Statements: ${STATEMENTS}%";
+              echo "";
+              echo "### Compared to critical gates";
+              echo "${GATE_LINES}";
+              echo "${GATE_FUNCTIONS}";
+              echo "${GATE_BRANCHES}";
+              echo "${GATE_STATEMENTS}";
+              echo "";
+              echo "${OVERALL_LINE}";
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Coverage summary file not found: coverage/coverage-summary.json" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload full coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-full-report
+          path: coverage
+          if-no-files-found: warn

@@ -1,0 +1,131 @@
+
+ RUN  v4.1.5 D:/qwq/椤圭洰/鍗冩湇
+
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkText > should return passed:true when moderation is disabled 2ms
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkText > should call ZHIPU API and return passed:true on safe content 2ms
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.checkText > should return passed:false when ZHIPU rejects content 3ms
+   鈫?expected 'Contains spam' to be 'Contains spam (Score: 0.8)' // Object.is equality
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkText > should slice long content to 200 chars when logging 0ms
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.checkText > should fall back to OpenAI when ZHIPU throws and OpenAI key is configured 1ms
+   鈫?expected "vi.fn()" to be called with arguments: [ 鈥?2) ]
+
+Number of calls: 0
+
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkText > should return passed:true when ZHIPU throws and no OpenAI key 0ms
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkText > should return passed:false with PENDING log when moderation throws in try block 0ms
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkImage > should return passed:true when moderation is disabled 0ms
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.checkImage > should call ZHIPU image moderation and return passed:true 1ms
+   鈫?expected undefined to be 0.05 // Object.is equality
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.checkImage > should return passed:false when ZHIPU rejects image 1ms
+   鈫?expected true to be false // Object.is equality
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.checkImage > should fall back to OpenAI when ZHIPU image moderation fails 0ms
+   鈫?expected "vi.fn()" to be called with arguments: [ 鈥?2) ]
+
+Number of calls: 0
+
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkImage > should return passed:false with PENDING log on error 0ms
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkImage > should slice long image URL to 255 chars when logging 0ms
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.checkImage > should return passed:true when both ZHIPU and OpenAI fail for image 0ms
+ 脳 tests/unit/moderation-service.test.ts > ModerationService.getStats > should return moderation statistics 1ms
+   鈫?expected '90.00%' to be '90%' // Object.is equality
+ 鉁?tests/unit/moderation-service.test.ts > ModerationService.getStats > should return 100% passRate when no logs exist 0ms
+
+鈳幆鈳幆鈳幆鈳?Failed Tests 6 鈳幆鈳幆鈳幆鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.checkText > should return passed:false when ZHIPU rejects content
+AssertionError: expected 'Contains spam' to be 'Contains spam (Score: 0.8)' // Object.is equality
+
+Expected: "Contains spam (Score: 0.8)"
+Received: "Contains spam"
+
+ 鉂?tests/unit/moderation-service.test.ts:111:27
+    109|
+    110|     expect(result.passed).toBe(false);
+    111|     expect(result.reason).toBe('Contains spam (Score: 0.8)');
+       |                           ^
+    112|     expect(result.score).toBe(0.8);
+    113|     expect(mockPrisma.moderationLog.create).toHaveBeenCalledWith(
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[1/6]鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.checkText > should fall back to OpenAI when ZHIPU throws and OpenAI key is configured
+AssertionError: expected "vi.fn()" to be called with arguments: [ 鈥?2) ]
+
+Number of calls: 0
+
+ 鉂?tests/unit/moderation-service.test.ts:155:29
+    153|
+    154|     expect(result.passed).toBe(true);
+    155|     expect(mockLogger.warn).toHaveBeenCalledWith(
+       |                             ^
+    156|       '[ModerationService] ZHIPU text moderation failed:',
+    157|       expect.any(String),
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[2/6]鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.checkImage > should call ZHIPU image moderation and return passed:true
+AssertionError: expected undefined to be 0.05 // Object.is equality
+
+- Expected:
+0.05
+
++ Received:
+undefined
+
+ 鉂?tests/unit/moderation-service.test.ts:220:26
+    218|
+    219|     expect(result.passed).toBe(true);
+    220|     expect(result.score).toBe(0.05);
+       |                          ^
+    221|     expect(mockPrisma.moderationLog.create).toHaveBeenCalledWith(
+    222|       expect.objectContaining({
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[3/6]鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.checkImage > should return passed:false when ZHIPU rejects image
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ 鉂?tests/unit/moderation-service.test.ts:242:27
+    240|     const result = await ModerationService.checkImage('https://example鈥?    241|
+    242|     expect(result.passed).toBe(false);
+       |                           ^
+    243|     expect(result.reason).toBe('NSFW (Score: 0.95)');
+    244|   });
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[4/6]鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.checkImage > should fall back to OpenAI when ZHIPU image moderation fails
+AssertionError: expected "vi.fn()" to be called with arguments: [ 鈥?2) ]
+
+Number of calls: 0
+
+ 鉂?tests/unit/moderation-service.test.ts:261:29
+    259|
+    260|     expect(result.passed).toBe(true);
+    261|     expect(mockLogger.warn).toHaveBeenCalledWith(
+       |                             ^
+    262|       '[ModerationService] ZHIPU image moderation failed, falling back鈥?    263|       expect.any(String),
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[5/6]鈳?
+ FAIL  tests/unit/moderation-service.test.ts > ModerationService.getStats > should return moderation statistics
+AssertionError: expected '90.00%' to be '90%' // Object.is equality
+
+Expected: "90%"
+Received: "90.00%"
+
+ 鉂?tests/unit/moderation-service.test.ts:337:28
+    335|     expect(stats.rejected).toBe(10);
+    336|     expect(stats.last24h).toBe(5);
+    337|     expect(stats.passRate).toBe('90%');
+       |                            ^
+    338|   });
+    339|
+
+鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆鈳幆[6/6]鈳?
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 10 passed (16)
+   Start at  07:38:23
+   Duration  1.10s (transform 47ms, setup 95ms, import 151ms, tests 15ms, environment 684ms)
+

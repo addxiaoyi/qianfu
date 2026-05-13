@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>StarMC | 尊享支付体验</title>
+    <meta name="description" content="StarMC 高端支付网关 - 安全、极速、优雅的支付处理服务">
+    <link rel="icon" type="image/png" href="favicon.ico">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Playfair Display', 'serif'],
+                        'sans': ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        'luxury': {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a25',
+                            600: '#252536',
+                            500: '#36364a',
+                        },
+                        'gold': {
+                            50: '#fdf9f0',
+                            100: '#f9f0db',
+                            200: '#f2e0b6',
+                            300: '#e8c984',
+                            400: '#d4a853',
+                            500: '#b8923e',
+                            600: '#9a7630',
+                            700: '#7c5d29',
+                            800: '#654d27',
+                            900: '#533f22',
+                        },
+                        'accent': {
+                            light: '#c9b8ff',
+                            DEFAULT: '#8b7cf7',
+                            dark: '#6366f1',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 8s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 3s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ===== CSS Reset & Base ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #1a1a25 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== Glass Morphism - 优化版 ===== */
+        .glass-luxury {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            will-change: transform, opacity;
+        }
+
+        .glass-luxury-hover {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.3s ease;
+        }
+
+        .glass-luxury-hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(184, 146, 62, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(184, 146, 62, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* ===== 按钮组件 - 无抖动 ===== */
+        .btn-luxury {
+            background: linear-gradient(135deg, #b8923e 0%, #d4a853 50%, #b8923e 100%);
+            background-size: 200% 200%;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .btn-luxury::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-luxury:hover::before {
+            left: 100%;
+        }
+
+        .btn-luxury:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px -10px rgba(184, 146, 62, 0.5);
+        }
+
+        .btn-luxury:active {
+            transform: translateY(0);
+            transition: transform 0.1s ease;
+        }
+
+        /* ===== 支付卡片 - 优化动画 ===== */
+        .payment-card {
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.25s ease,
+                        box-shadow 0.25s ease,
+                        background-color 0.25s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .payment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s ease;
+            pointer-events: none;
+        }
+
+        .payment-card:hover::before {
+            left: 100%;
+        }
+
+        .payment-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(184, 146, 62, 0.4);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 30px rgba(184, 146, 62, 0.1);
+        }
+
+        .payment-card.active {
+            background: linear-gradient(135deg, rgba(184, 146, 62, 0.25) 0%, rgba(184, 146, 62, 0.1) 100%);
+            border-color: #b8923e;
+            box-shadow: 0 0 30px rgba(184, 146, 62, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-card.active .check-badge {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .check-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 20px;
+            height: 20px;
+            background: #b8923e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        /* ===== 金额按钮 - 优化 ===== */
+        .amount-btn {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.2s ease,
+                        background-color 0.2s ease,
+                        box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+        
+        .amount-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(184, 146, 62, 0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .amount-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .amount-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(184, 146, 62, 0.4);
+        }
+        
+        .amount-btn.selected {
+            background: linear-gradient(135deg, rgba(184, 146, 62, 0.25) 0%, rgba(184, 146, 62, 0.1) 100%);
+            border-color: #b8923e;
+            box-shadow: 0 0 20px rgba(184, 146, 62, 0.2);
+        }
+
+        .amount-btn:active {
+            transform: translateY(0);
+            transition: transform 0.1s ease;
+        }
+        
+        /* ===== 装饰元素 ===== */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            opacity: 0.4;
+            will-change: transform;
+        }
+        
+        .orb-gold {
+            background: radial-gradient(circle, rgba(184, 146, 62, 0.6) 0%, transparent 70%);
+        }
+        
+        .orb-purple {
+            background: radial-gradient(circle, rgba(139, 124, 247, 0.5) 0%, transparent 70%);
+        }
+        
+        .orb-blue {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%);
+        }
+        
+        /* ===== 文字效果 ===== */
+        .shimmer-text {
+            background: linear-gradient(90deg, #b8923e 0%, #f2e0b6 25%, #b8923e 50%, #f2e0b6 75%, #b8923e 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+        
+        .divider-luxury {
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, rgba(184, 146, 62, 0.5) 50%, transparent 100%);
+        }
+        
+        /* ===== 3D Tilt 效果 - 优化 ===== */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+            will-change: transform;
+        }
+        
+        .tilt-content {
+            transform: translateZ(40px);
+        }
+        
+        /* ===== 二维码容器 ===== */
+        .qr-container {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        
+        .qr-container:hover {
+            transform: scale(1.02);
+        }
+        
+        /* ===== 卡片折叠动画 - 优化无抖动 ===== */
+        .card-fold {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.3s ease;
+        }
+        
+        .card-fold > div {
+            overflow: hidden;
+        }
+        
+        .card-fold.expanded {
+            grid-template-rows: 1fr;
+            opacity: 1;
+        }
+
+        /* ===== 状态指示器 ===== */
+        .status-dot {
+            animation: pulseDot 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(184, 146, 62, 0.3);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(184, 146, 62, 0.5);
+        }
+
+        /* ===== 输入框 ===== */
+        .input-luxury {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease, 
+                        border-color 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .input-luxury:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(184, 146, 62, 0.5);
+            box-shadow: 0 0 20px rgba(184, 146, 62, 0.1);
+            outline: none;
+        }
+
+        /* ===== 导航项 ===== */
+        .nav-item {
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* ===== 移动端优化 ===== */
+        @media (max-width: 1023px) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                -webkit-text-size-adjust: 100%;
+            }
+
+            header {
+                border-radius: 1rem !important;
+                margin: 0.5rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+
+            main {
+                padding: 1rem !important;
+                padding-bottom: 5rem !important;
+            }
+
+            .glass-luxury {
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+            }
+
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+
+            /* 移动端禁用复杂动画 */
+            .tilt-card {
+                transform: none !important;
+            }
+
+            .orb {
+                opacity: 0.2;
+            }
+        }
+
+        /* ===== 减少动画偏好 ===== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ===== 加载状态 ===== */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== Toast 通知 ===== */
+        .toast-message {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 9999px;
+            background: rgba(184, 146, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 100;
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        opacity 0.3s ease;
+            will-change: transform, opacity;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* ===== 焦点可见性 ===== */
+        :focus-visible {
+            outline: 2px solid rgba(184, 146, 62, 0.5);
+            outline-offset: 2px;
+        }
+
+        /* ===== 选择文本颜色 ===== */
+        ::selection {
+            background: rgba(184, 146, 62, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- 背景装饰 -->
+    <div class="orb orb-gold w-96 h-96 -top-20 -left-20 animate-float" style="animation-delay: 0s;"></div>
+    <div class="orb orb-purple w-80 h-80 bottom-0 right-0 animate-float" style="animation-delay: 3s;"></div>
+    <div class="orb orb-blue w-64 h-64 top-1/3 left-1/4 animate-float" style="animation-delay: 6s;"></div>
+    
+    <div class="relative z-10 min-h-screen flex flex-col">
+        <!-- 头部导航 -->
+        <header class="glass-luxury sticky top-6 mx-6 mt-6 rounded-2xl px-8 py-5">
+            <div class="flex items-center justify-between max-w-7xl mx-auto">
+                <a href="/" class="flex items-center gap-4 group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-500/20 transition-transform duration-300 group-hover:scale-105">
+                        <i data-lucide="crown" class="w-7 h-7 text-luxury-900"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-display font-bold text-white tracking-wide">StarMC</h1>
+                        <p class="text-xs text-white/50 tracking-widest uppercase">Premium Payment Gateway</p>
+                    </div>
+                </a>
+                
+                <nav class="hidden md:flex items-center gap-8" role="navigation" aria-label="主导航">
+                    <a href="/starmc-pay.html" class="nav-item text-gold-400 px-3 py-2 rounded-lg text-sm font-medium tracking-wide" aria-current="page">支付</a>
+                    <a href="/starmc-confirm.html" class="nav-item text-white/60 hover:text-gold-400 px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors">记录</a>
+                    <a href="/starmc-settings.html" class="nav-item text-white/60 hover:text-gold-400 px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors">设置</a>
+                </nav>
+            </div>
+        </header>
+        
+        <!-- 主内容区 -->
+        <main class="flex-1 flex items-center justify-center p-6 md:p-12">
+            <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-10">
+                
+                <!-- 支付表单卡片 -->
+                <div class="tilt-card" id="paymentFormCard">
+                    <div class="glass-luxury glass-luxury-hover rounded-3xl p-8 tilt-content">
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-600/20 flex items-center justify-center border border-gold-400/30">
+                                <i data-lucide="credit-card" class="w-7 h-7 text-gold-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-white">支付详情</h2>
+                                <p class="text-sm text-white/50">安全完成您的尊享交易</p>
+                            </div>
+                        </div>
+
+                        <form id="paymentForm" class="space-y-6" onsubmit="return false;">
+                            <!-- 昵称 -->
+                            <div class="form-group">
+                                <label for="nickName" class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="user" class="w-4 h-4 text-gold-400"></i>
+                                    昵称
+                                </label>
+                                <input type="text" id="nickName" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="请输入您的昵称"
+                                    autocomplete="nickname">
+                            </div>
+
+                            <!-- 支付金额 -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-white/70 mb-3 flex items-center gap-2">
+                                    <i data-lucide="banknote" class="w-4 h-4 text-gold-400"></i>
+                                    支付金额
+                                </label>
+                                <div class="grid grid-cols-2 gap-3 mb-3">
+                                    <button type="button" class="amount-btn py-3 px-4 rounded-xl glass-luxury border border-white/10 text-white/80" onclick="selectAmount(10, this)">¥10</button>
+                                    <button type="button" class="amount-btn py-3 px-4 rounded-xl glass-luxury border border-white/10 text-white/80" onclick="selectAmount(20, this)">¥20</button>
+                                    <button type="button" class="amount-btn py-3 px-4 rounded-xl glass-luxury border border-white/10 text-white/80" onclick="selectAmount(50, this)">¥50</button>
+                                    <button type="button" class="amount-btn py-3 px-4 rounded-xl glass-luxury border border-white/10 text-white/80" onclick="selectAmount(100, this)">¥100</button>
+                                </div>
+                                <input type="number" id="customAmount" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="自定义金额" min="0.01" step="0.01"
+                                    inputmode="decimal">
+                                <p id="amountError" class="text-red-400 text-xs mt-2 hidden flex items-center gap-1" role="alert">
+                                    <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                                    请输入有效金额
+                                </p>
+                            </div>
+
+                            <!-- 邮箱 -->
+                            <div class="form-group">
+                                <label for="email" class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="mail" class="w-4 h-4 text-gold-400"></i>
+                                    邮箱地址
+                                </label>
+                                <input type="email" id="email" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="支付凭证将发送至此邮箱"
+                                    autocomplete="email">
+                            </div>
+
+                            <!-- 留言 -->
+                            <div class="form-group">
+                                <label for="message" class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="message-square" class="w-4 h-4 text-gold-400"></i>
+                                    留言（可选）
+                                </label>
+                                <input type="text" id="message" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="添加支付备注">
+                            </div>
+
+                            <!-- 支付方式 -->
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-white/70 mb-4 flex items-center gap-2">
+                                    <i data-lucide="wallet" class="w-4 h-4 text-gold-400"></i>
+                                    选择支付方式
+                                </label>
+                                <div class="grid grid-cols-2 gap-3" role="radiogroup" aria-label="支付方式">
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('DMF', this)" data-method="DMF" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                                                <i data-lucide="qr-code" class="w-6 h-6 text-blue-400"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">支付宝当面付</p>
+                                                <p class="text-xs text-white/40">扫码支付</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('WechatOfficial', this)" data-method="WechatOfficial" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-green-500/20 flex items-center justify-center">
+                                                <i data-lucide="message-circle" class="w-6 h-6 text-green-400"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">微信支付</p>
+                                                <p class="text-xs text-white/40">官方接口</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('Alipay', this)" data-method="Alipay" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-blue-600/20 flex items-center justify-center">
+                                                <i data-lucide="smartphone" class="w-6 h-6 text-blue-500"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">支付宝</p>
+                                                <p class="text-xs text-white/40">转账模式</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('Wechat', this)" data-method="Wechat" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-green-600/20 flex items-center justify-center">
+                                                <i data-lucide="smartphone" class="w-6 h-6 text-green-500"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">微信</p>
+                                                <p class="text-xs text-white/40">转账模式</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('QQ', this)" data-method="QQ" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                                                <i data-lucide="message-square" class="w-6 h-6 text-yellow-400"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">QQ支付</p>
+                                                <p class="text-xs text-white/40">转账模式</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="payment-card glass-luxury rounded-2xl p-4 border border-white/10" onclick="selectMethod('UnionPay', this)" data-method="UnionPay" role="radio" aria-checked="false" tabindex="0">
+                                        <div class="check-badge">
+                                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-11 rounded-xl bg-red-500/20 flex items-center justify-center">
+                                                <i data-lucide="credit-card" class="w-6 h-6 text-red-400"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-semibold text-white">银联支付</p>
+                                                <p class="text-xs text-white/40">快捷支付</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 提交按钮 -->
+                            <button type="button" onclick="submitPayment()" 
+                                class="btn-luxury w-full py-4 rounded-xl text-luxury-900 font-bold text-lg flex items-center justify-center gap-3"
+                                aria-label="立即支付">
+                                <span>立即支付</span>
+                                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 右侧信息面板（桌面端显示） -->
+                <div class="hidden lg:block" id="infoCard">
+                    <div class="glass-luxury rounded-3xl p-8 h-full flex flex-col">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold-400/20 to-gold-600/20 flex items-center justify-center border border-gold-400/30">
+                                <i data-lucide="shield-check" class="w-7 h-7 text-gold-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-white">安全保障</h2>
+                                <p class="text-sm text-white/50">您的交易安全是我们的首要任务</p>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 space-y-4">
+                            <div class="glass-luxury rounded-xl p-4 flex items-start gap-3 transition-all duration-300 hover:bg-white/5">
+                                <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="lock" class="w-5 h-5 text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium">256位加密</p>
+                                    <p class="text-sm text-white/50">银行级SSL加密保护您的数据</p>
+                                </div>
+                            </div>
+
+                            <div class="glass-luxury rounded-xl p-4 flex items-start gap-3 transition-all duration-300 hover:bg-white/5">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="clock" class="w-5 h-5 text-emerald-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium">实时到账</p>
+                                    <p class="text-sm text-white/50">支付成功后即时处理</p>
+                                </div>
+                            </div>
+
+                            <div class="glass-luxury rounded-xl p-4 flex items-start gap-3 transition-all duration-300 hover:bg-white/5">
+                                <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="headphones" class="w-5 h-5 text-purple-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium">24/7 支持</p>
+                                    <p class="text-sm text-white/50">全天候客服为您服务</p>
+                                </div>
+                            </div>
+
+                            <div class="glass-luxury rounded-xl p-4 flex items-start gap-3 transition-all duration-300 hover:bg-white/5">
+                                <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="receipt" class="w-5 h-5 text-orange-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium">电子凭证</p>
+                                    <p class="text-sm text-white/50">支付凭证将发送至您的邮箱</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-white/10">
+                            <div class="flex items-center justify-center gap-4 text-white/40 text-xs">
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="check-circle" class="w-3 h-3 text-gold-400"></i>
+                                    <span>PCI DSS 认证</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="check-circle" class="w-3 h-3 text-gold-400"></i>
+                                    <span>ISO 27001</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 二维码面板（支付后显示） -->
+                <div class="card-fold" id="qrCard">
+                    <div>
+                        <div class="glass-luxury rounded-3xl p-8 h-full flex flex-col">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 flex items-center justify-center border border-emerald-400/30">
+                                    <i data-lucide="scan-line" class="w-7 h-7 text-emerald-400"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-display font-bold text-white">扫码支付</h2>
+                                    <p class="text-sm text-white/50">使用支付应用扫描二维码</p>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 flex flex-col items-center justify-center">
+                                <div class="qr-container glass-luxury rounded-2xl p-6 mb-6">
+                                    <img id="qrCodeImage" src="" alt="支付二维码" class="w-48 h-48 rounded-lg" loading="lazy">
+                                </div>
+
+                                <div class="text-center space-y-3">
+                                    <p class="text-3xl font-display font-bold text-white">
+                                        <span class="text-gold-400">¥</span><span id="displayAmount">0.00</span>
+                                    </p>
+                                    <p class="text-white/50 text-sm" id="paymentInstructions">请使用支付宝或微信扫描二维码</p>
+                                </div>
+
+                                <div class="mt-8 flex items-center gap-4">
+                                    <div class="flex items-center gap-2 text-white/40 text-sm">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-400 status-dot"></div>
+                                        <span>等待支付...</span>
+                                    </div>
+                                    <div class="h-4 w-px bg-white/20"></div>
+                                    <span class="text-white/40 text-sm" id="countdown">05:00</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-6 border-t border-white/10">
+                                <button onclick="confirmPayment()" 
+                                    class="w-full py-3 rounded-xl glass-luxury border border-white/10 text-white font-medium hover:bg-white/5 transition-all duration-200 flex items-center justify-center gap-2">
+                                    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
+                                    <span>我已完成支付</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 移动端底部导航 -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-luxury-900/95 backdrop-blur-xl border-t border-white/10 z-40 pb-safe">
+            <div class="flex items-center justify-around py-3">
+                <a href="/starmc-pay.html" class="nav-item flex flex-col items-center gap-1 px-4 py-2 text-gold-400" aria-current="page">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    <span class="text-xs">支付</span>
+                </a>
+                <a href="/starmc-confirm.html" class="nav-item flex flex-col items-center gap-1 px-4 py-2 text-white/60 hover:text-gold-400 transition-colors">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="text-xs">记录</span>
+                </a>
+                <a href="/starmc-settings.html" class="nav-item flex flex-col items-center gap-1 px-4 py-2 text-white/60 hover:text-gold-400 transition-colors">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="text-xs">设置</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- 页脚 -->
+        <footer class="glass-luxury mx-6 mb-6 rounded-2xl px-8 py-5 hidden md:block">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-white/40 text-sm">© 2026 StarMC 支付网关。保留所有权利。</p>
+                <div class="flex items-center gap-8">
+                    <a href="#" class="text-white/40 hover:text-gold-400 text-sm transition-colors duration-200">隐私政策</a>
+                    <a href="#" class="text-white/40 hover:text-gold-400 text-sm transition-colors duration-200">服务条款</a>
+                    <a href="#" class="text-white/40 hover:text-gold-400 text-sm transition-colors duration-200">联系支持</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-luxury-900/80 backdrop-blur-xl z-50 hidden items-center justify-center" role="dialog" aria-label="加载中">
+        <div class="glass-luxury rounded-3xl p-10 flex flex-col items-center gap-5">
+            <div class="w-14 h-14 border-4 border-white/10 border-t-gold-400 rounded-full animate-spin"></div>
+            <p class="text-white font-medium tracking-wide">处理中...</p>
+        </div>
+    </div>
+    
+    <!-- 成功弹窗 -->
+    <div id="successModal" class="fixed inset-0 bg-luxury-900/80 backdrop-blur-xl z-50 hidden items-center justify-center" role="dialog" aria-label="支付成功">
+        <div class="glass-luxury rounded-3xl p-8 max-w-sm mx-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 flex items-center justify-center mx-auto mb-5 border border-emerald-400/30">
+                <i data-lucide="check-circle" class="w-8 h-8 text-emerald-400"></i>
+            </div>
+            <h3 class="text-2xl font-display font-bold text-white mb-2">支付成功</h3>
+            <p class="text-white/50 mb-6 text-sm">您的交易已成功完成<br>支付凭证已发送至您的邮箱</p>
+            <button onclick="closeSuccessModal()" class="btn-luxury px-8 py-3 rounded-xl text-luxury-900 font-bold w-full">
+                继续
+            </button>
+        </div>
+    </div>
+
+    <!-- 错误弹窗 -->
+    <div id="errorModal" class="fixed inset-0 bg-luxury-900/80 backdrop-blur-xl z-50 hidden items-center justify-center" role="dialog" aria-label="支付失败">
+        <div class="glass-luxury rounded-3xl p-8 max-w-sm mx-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-red-400/20 to-red-600/20 flex items-center justify-center mx-auto mb-5 border border-red-400/30">
+                <i data-lucide="x-circle" class="w-8 h-8 text-red-400"></i>
+            </div>
+            <h3 class="text-2xl font-display font-bold text-white mb-2">支付失败</h3>
+            <p id="errorMessage" class="text-white/50 mb-6 text-sm">出现错误，请重试</p>
+            <button onclick="closeErrorModal()" class="glass-luxury px-8 py-3 rounded-xl text-white font-bold hover:bg-white/10 transition-all duration-200 w-full">
+                重试
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== 状态管理 =====
+        const state = {
+            selectedAmount: '',
+            selectedMethod: '',
+            currentPayId: '',
+            countdownInterval: null,
+            paymentCheckInterval: null,
+            isSubmitting: false
+        };
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initTiltEffect();
+            initAccessibility();
+        });
+
+        // ===== 3D Tilt 效果（仅桌面端） =====
+        function initTiltEffect() {
+            const card = document.getElementById('paymentFormCard');
+            if (!card || window.matchMedia('(pointer: coarse)').matches) return;
+
+            let rafId = null;
+            let isHovering = false;
+
+            card.addEventListener('mouseenter', () => { isHovering = true; });
+            card.addEventListener('mouseleave', () => {
+                isHovering = false;
+                if (rafId) cancelAnimationFrame(rafId);
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            });
+
+            card.addEventListener('mousemove', (e) => {
+                if (!isHovering) return;
+                
+                if (rafId) cancelAnimationFrame(rafId);
+                
+                rafId = requestAnimationFrame(() => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 25;
+                    const rotateY = (centerX - x) / 25;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+            });
+        }
+
+        // ===== 无障碍支持 =====
+        function initAccessibility() {
+            // 键盘导航支持
+            document.querySelectorAll('.payment-card').forEach(card => {
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            });
+        }
+
+        // ===== 选择金额 =====
+        function selectAmount(amount, btn) {
+            state.selectedAmount = amount.toString();
+            document.getElementById('customAmount').value = amount;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            
+            // 隐藏错误提示
+            document.getElementById('amountError').classList.add('hidden');
+        }
+
+        // ===== 选择支付方式 =====
+        function selectMethod(method, card) {
+            state.selectedMethod = method;
+            
+            // 更新卡片状态
+            document.querySelectorAll('.payment-card').forEach(c => {
+                c.classList.remove('active');
+                c.setAttribute('aria-checked', 'false');
+            });
+            card.classList.add('active');
+            card.setAttribute('aria-checked', 'true');
+        }
+
+        // ===== 验证邮箱 =====
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // ===== 显示/隐藏加载 =====
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+            overlay.setAttribute('aria-hidden', !show);
+        }
+
+        // ===== 显示错误 =====
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            const modal = document.getElementById('errorModal');
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            
+            gsap.from(modal.querySelector('.glass-luxury'), {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        }
+
+        function closeErrorModal() {
+            const modal = document.getElementById('errorModal');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        // ===== Toast 通知 =====
+        function showToast(message) {
+            let toast = document.querySelector('.toast-message');
+            if (toast) toast.remove();
+
+            toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            toast.setAttribute('role', 'status');
+            toast.setAttribute('aria-live', 'polite');
+            document.body.appendChild(toast);
+
+            // 强制重绘
+            toast.offsetHeight;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // ===== 提交支付 =====
+        async function submitPayment() {
+            if (state.isSubmitting) return;
+            
+            const nickName = document.getElementById('nickName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const customAmount = document.getElementById('customAmount').value;
+            const amount = customAmount || state.selectedAmount;
+
+            // 验证
+            if (!nickName) {
+                showError('请输入昵称');
+                document.getElementById('nickName').focus();
+                return;
+            }
+            if (!amount || parseFloat(amount) <= 0) {
+                showError('请选择或输入支付金额');
+                document.getElementById('amountError').classList.remove('hidden');
+                return;
+            }
+            if (!email || !validateEmail(email)) {
+                showError('请输入有效的邮箱地址');
+                document.getElementById('email').focus();
+                return;
+            }
+            if (!state.selectedMethod) {
+                showError('请选择支付方式');
+                return;
+            }
+
+            state.isSubmitting = true;
+            showLoading(true);
+
+            try {
+                const formData = new FormData();
+                formData.append('nickName', nickName);
+                formData.append('money', amount);
+                formData.append('email', email);
+                formData.append('payType', state.selectedMethod);
+                formData.append('message', document.getElementById('message').value);
+
+                let endpoint = '/pay/';
+                switch(state.selectedMethod) {
+                    case 'DMF': endpoint = '/alipay/precreate'; break;
+                    case 'WechatOfficial': endpoint = '/wechat/precreate'; break;
+                    case 'Alipay': endpoint = '/alipay/pay'; break;
+                    case 'Wechat': endpoint = '/wechat/pay'; break;
+                    case 'QQ': endpoint = '/qqpay/pay'; break;
+                    case 'UnionPay': endpoint = '/unipay/pay'; break;
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    state.currentPayId = data.result;
+                    showQRCode(data.result, amount);
+                } else {
+                    showError(data.message || '支付请求失败');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('网络错误，请重试');
+            } finally {
+                state.isSubmitting = false;
+                showLoading(false);
+            }
+        }
+
+        // ===== 显示二维码 =====
+        function showQRCode(payId, amount) {
+            document.getElementById('displayAmount').textContent = parseFloat(amount).toFixed(2);
+            document.getElementById('qrCodeImage').src = '/pay/qr/' + payId;
+
+            // 隐藏信息面板（桌面端）
+            const infoCard = document.getElementById('infoCard');
+            if (infoCard) {
+                gsap.to(infoCard, {
+                    opacity: 0,
+                    scale: 0.95,
+                    duration: 0.3,
+                    onComplete: () => {
+                        infoCard.style.display = 'none';
+                    }
+                });
+            }
+
+            // 显示二维码面板
+            const qrCard = document.getElementById('qrCard');
+            qrCard.style.display = 'block';
+            
+            // 使用 GSAP 动画展开
+            gsap.fromTo(qrCard, 
+                { opacity: 0, scale: 0.95 },
+                { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }
+            );
+            
+            qrCard.classList.add('expanded');
+
+            // 更新支付说明
+            const instructionTexts = {
+                'DMF': '打开支付宝扫一扫，扫描左侧二维码完成支付',
+                'WechatOfficial': '打开微信扫一扫，扫描左侧二维码完成支付',
+                'Alipay': '打开支付宝扫一扫，扫描左侧二维码完成支付',
+                'Wechat': '打开微信扫一扫，扫描左侧二维码完成支付',
+                'QQ': '打开QQ扫一扫，扫描左侧二维码完成支付',
+                'UnionPay': '打开云闪付扫一扫，扫描左侧二维码完成支付'
+            };
+            
+            document.getElementById('paymentInstructions').textContent = 
+                instructionTexts[state.selectedMethod] || '扫描左侧二维码完成支付';
+
+            startCountdown(300);
+            startPaymentCheck();
+        }
+
+        // ===== 倒计时 =====
+        function startCountdown(seconds) {
+            let remaining = seconds;
+            const countdownEl = document.getElementById('countdown');
+            
+            state.countdownInterval = setInterval(() => {
+                remaining--;
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                countdownEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (remaining <= 0) {
+                    clearInterval(state.countdownInterval);
+                    clearInterval(state.paymentCheckInterval);
+                    countdownEl.textContent = '00:00';
+                    showError('支付会话已过期，请重试');
+                }
+            }, 1000);
+        }
+
+        // ===== 检查支付状态 =====
+        function startPaymentCheck() {
+            state.paymentCheckInterval = setInterval(async () => {
+                if (!state.currentPayId) return;
+                
+                try {
+                    const response = await fetch('/pay/state/' + state.currentPayId);
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        switch(data.result) {
+                            case 1: // 支付成功
+                                clearInterval(state.paymentCheckInterval);
+                                clearInterval(state.countdownInterval);
+                                showSuccess();
+                                break;
+                            case 2: // 支付失败
+                                clearInterval(state.paymentCheckInterval);
+                                showError('支付失败，请检查支付详情后重试');
+                                break;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Payment check unavailable:', error.message);
+                }
+            }, 3000);
+        }
+
+        // ===== 确认支付完成 =====
+        function confirmPayment() {
+            window.location.href = '/starmc-confirm.html';
+        }
+
+        // ===== 显示成功 =====
+        function showSuccess() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            
+            gsap.from(modal.querySelector('.glass-luxury'), {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.4,
+                ease: "power2.out"
+            });
+            
+            createConfetti();
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            location.reload();
+        }
+
+        // ===== 彩纸效果 =====
+        function createConfetti() {
+            const colors = ['#b8923e', '#d4a853', '#f2e0b6', '#8b7cf7', '#6366f1'];
+            const fragment = document.createDocumentFragment();
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: ${Math.random() * 8 + 4}px;
+                    height: ${Math.random() * 8 + 4}px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}vw;
+                    top: -10px;
+                    border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+                    z-index: 9999;
+                    pointer-events: none;
+                `;
+                fragment.appendChild(confetti);
+                
+                gsap.to(confetti, {
+                    y: window.innerHeight + 20,
+                    x: (Math.random() - 0.5) * 200,
+                    rotation: Math.random() * 720,
+                    duration: Math.random() * 2 + 2,
+                    ease: "power1.out",
+                    onComplete: () => confetti.remove()
+                });
+            }
+            
+            document.body.appendChild(fragment);
+        }
+
+        // ===== 清理函数 =====
+        window.addEventListener('beforeunload', () => {
+            if (state.countdownInterval) clearInterval(state.countdownInterval);
+            if (state.paymentCheckInterval) clearInterval(state.paymentCheckInterval);
+        });
+    </script>
+</body>
+</html>

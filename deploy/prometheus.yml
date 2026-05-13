@@ -1,0 +1,74 @@
+# Prometheus Configuration for Microservices
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'qianfu'
+    env: 'production'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # API Gateway metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['api-gateway:80']
+    metrics_path: '/nginx_status'
+
+  # User Service
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-service:3001']
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
+
+  # Server Service
+  - job_name: 'server-service'
+    static_configs:
+      - targets: ['server-service:3002']
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
+
+  # Payment Service
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:3003']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # CMS Service
+  - job_name: 'cms-service'
+    static_configs:
+      - targets: ['cms-service:3004']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # RabbitMQ
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15672']
+    metrics_path: '/api/metrics'
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+
+  # PostgreSQL
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'

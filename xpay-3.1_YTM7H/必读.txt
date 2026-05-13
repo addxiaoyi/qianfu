@@ -1,0 +1,25 @@
+### 部署命令 (上传后执行)
+```
+cd /home/ubuntu/xpay
+chmod +x start.sh
+sudo ./start.sh
+```
+### 带密码部署
+```
+DB_PASSWORD=your_mysql_password ./
+start.sh
+```
+### 环境变量
+变量 说明 默认值 DB_PASSWORD MySQL密码 空 DB_HOST 数据库地址 127.0.0.1 REDIS_PASSWORD Redis密码 空 SERVER_URL 服务器URL http://IP:8888 APP_PORT 应用端口 8888
+
+### 上传到阿里云
+```
+# 本地打包
+cd xpay-code
+mvn clean package -DskipTests
+
+# 上传JAR和脚本
+scp -r xpay-code 
+ubuntu@your-server:/home/ubuntu/
+```
+上传内容只需： start.sh , sql/ , src/ , pom.xml , .mvn/

@@ -1,0 +1,6 @@
+# 超级管理员配置
+admin:
+  # 超级管理员的OpenID（首次登录后从数据库获取并填入）
+  super-admin-openid: ""
+  # 是否开启新用户需要确认才能登录
+  require-approval: true

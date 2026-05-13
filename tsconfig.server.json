@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "outDir": "./dist-server",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@prisma/client": ["./prisma/generated/client"],
+      "@prisma/client/*": ["./prisma/generated/client/*"],
+      "@qianfu/shared": ["./packages/shared/src/index.ts"],
+      "@qianfu/shared/*": ["./packages/shared/src/*"]
+    }
+  },
+  "include": [
+    "server/**/*",
+    "scripts/warmup-cache.ts",
+    "scripts/backup-db.ts",
+    "prisma/generated/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-server",
+    "server/scripts/migrateConstants.ts"
+  ]
+}

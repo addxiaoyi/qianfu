@@ -1,0 +1,13 @@
+# 微信公众号配置
+wechat:
+  mp:
+    app-id: wx273345387c8a39f0
+    app-secret: e667a37b07ebb3b836bb257852bd793b
+    token: StarMC2024WechatToken
+    aes-key: ${WECHAT_AES_KEY:}
+    server-url: ${WECHAT_SERVER_URL:http://localhost:8080/wechat/callback}
+
+# JWT配置
+jwt:
+  secret: StarMCAdminSecretKey2026
+  expiration: 86400

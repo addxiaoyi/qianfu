@@ -1,0 +1,33 @@
+# 本地 SuperTokens Core（MySQL），与 https://github.com/supertokens/supertokens-docker-mysql 一致思路
+# 使用：docker compose -f docker-compose.supertokens.yml up -d
+# 默认连接：SUPERTOKENS_CONNECTION_URI=http://127.0.0.1:3567
+
+services:
+  supertokens-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: supertokens
+    ports:
+      - '3366:3306'
+    volumes:
+      - supertokens_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  supertokens:
+    image: registry.supertokens.io/supertokens/supertokens-mysql:11.3.0
+    depends_on:
+      supertokens-db:
+        condition: service_healthy
+    ports:
+      - '3567:3567'
+    environment:
+      MYSQL_CONNECTION_URI: mysql://root:root@supertokens-db:3306/supertokens
+    restart: unless-stopped
+
+volumes:
+  supertokens_mysql_data:

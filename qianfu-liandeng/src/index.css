@@ -1,0 +1,365 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Geist", "Inter", "Outfit", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Roboto Mono", monospace;
+  --color-brand: #000000;
+  --color-brand-foreground: #ffffff;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-card: #ffffff;
+  --color-card-foreground: #000000;
+  --color-muted: #f9f9fb;
+  --color-muted-foreground: #a1a1aa;
+  --color-border: #f1f1f4;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-4xl: 3rem;
+  --radius-5xl: 3.5rem;
+  --color-accent: var(--ui-accent);
+  --color-accent-light: var(--ui-accent-light);
+  --color-accent-medium: var(--ui-accent-medium);
+  --color-accent-subtle: var(--ui-accent-subtle);
+  --color-accent-border: var(--ui-accent-border);
+  --color-accent-glow: var(--ui-accent-glow);
+  --color-accent-shadow: var(--ui-accent-shadow);
+}
+
+@layer base {
+  html {
+    font-size: clamp(14px, 1.1vw, 16px);
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black tracking-tighter text-foreground uppercase italic break-words;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  p, li, span, a, button, label, input, textarea {
+    overflow-wrap: anywhere;
+  }
+  .mono { @apply font-mono tracking-tighter italic; }
+  code  { @apply font-mono bg-zinc-50 px-1.5 py-0.5 rounded-sm text-sm border border-zinc-100 break-words; }
+  input, textarea, select { @apply outline-hidden max-w-full; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCENT COLOR SYSTEM
+   Applied via data-accent="<name>" on <html>.
+   All --ui-accent-* properties cascade to every consumer below.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-accent="zinc"] {
+  --ui-accent:          #18181b;
+  --ui-accent-light:    #f4f4f5;
+  --ui-accent-medium:   #52525b;
+  --ui-accent-subtle:   rgba(24, 24, 27, 0.06);
+  --ui-accent-ring:     rgba(24, 24, 27, 0.25);
+  --ui-accent-shadow:   rgba(24, 24, 27, 0.18);
+  --ui-accent-border:   #d4d4d8;
+  --ui-accent-glow:     rgba(24, 24, 27, 0.12);
+}
+
+[data-accent="amber"] {
+  --ui-accent:          #d97706;
+  --ui-accent-light:    #fffbeb;
+  --ui-accent-medium:   #f59e0b;
+  --ui-accent-subtle:   rgba(217, 119, 6, 0.07);
+  --ui-accent-ring:     rgba(217, 119, 6, 0.30);
+  --ui-accent-shadow:   rgba(217, 119, 6, 0.25);
+  --ui-accent-border:   #fde68a;
+  --ui-accent-glow:     rgba(251, 191, 36, 0.25);
+}
+
+[data-accent="emerald"] {
+  --ui-accent:          #059669;
+  --ui-accent-light:    #ecfdf5;
+  --ui-accent-medium:   #10b981;
+  --ui-accent-subtle:   rgba(5, 150, 105, 0.07);
+  --ui-accent-ring:     rgba(5, 150, 105, 0.30);
+  --ui-accent-shadow:   rgba(5, 150, 105, 0.20);
+  --ui-accent-border:   #a7f3d0;
+  --ui-accent-glow:     rgba(16, 185, 129, 0.20);
+}
+
+[data-accent="sky"] {
+  --ui-accent:          #0284c7;
+  --ui-accent-light:    #f0f9ff;
+  --ui-accent-medium:   #38bdf8;
+  --ui-accent-subtle:   rgba(2, 132, 199, 0.07);
+  --ui-accent-ring:     rgba(2, 132, 199, 0.30);
+  --ui-accent-shadow:   rgba(2, 132, 199, 0.20);
+  --ui-accent-border:   #bae6fd;
+  --ui-accent-glow:     rgba(56, 189, 248, 0.22);
+}
+
+[data-accent="violet"] {
+  --ui-accent:          #7c3aed;
+  --ui-accent-light:    #f5f3ff;
+  --ui-accent-medium:   #a78bfa;
+  --ui-accent-subtle:   rgba(124, 58, 237, 0.07);
+  --ui-accent-ring:     rgba(124, 58, 237, 0.30);
+  --ui-accent-shadow:   rgba(124, 58, 237, 0.20);
+  --ui-accent-border:   #ddd6fe;
+  --ui-accent-glow:     rgba(167, 139, 250, 0.25);
+}
+
+[data-accent="rose"] {
+  --ui-accent:          #e11d48;
+  --ui-accent-light:    #fff1f2;
+  --ui-accent-medium:   #fb7185;
+  --ui-accent-subtle:   rgba(225, 29, 72, 0.07);
+  --ui-accent-ring:     rgba(225, 29, 72, 0.30);
+  --ui-accent-shadow:   rgba(225, 29, 72, 0.20);
+  --ui-accent-border:   #fecdd3;
+  --ui-accent-glow:     rgba(251, 113, 133, 0.22);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   GLOBAL ACCENT EFFECTS — touch every major interactive pattern
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* 1. Input / textarea / select focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--ui-accent) !important;
+  box-shadow: 0 0 0 3px var(--ui-accent-ring), 0 1px 3px rgba(0,0,0,0.06) !important;
+  outline: none !important;
+}
+
+/* 2. Scrollbar uses accent */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--ui-accent-border);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-accent-medium);
+  background-clip: content-box;
+}
+
+/* Custom Scrollbar for Textareas */
+.matrix-textarea::-webkit-scrollbar { width: 4px; }
+.matrix-textarea::-webkit-scrollbar-thumb { background: var(--ui-accent-medium); opacity: 0.3; }
+
+/* 3. Text selection */
+[data-accent="zinc"]    ::selection { background: #18181b; color: #fff; }
+[data-accent="amber"]   ::selection { background: #fde68a; color: #78350f; }
+[data-accent="emerald"] ::selection { background: #a7f3d0; color: #064e3b; }
+[data-accent="sky"]     ::selection { background: #bae6fd; color: #0c4a6e; }
+[data-accent="violet"]  ::selection { background: #ddd6fe; color: #4c1d95; }
+[data-accent="rose"]    ::selection { background: #fecdd3; color: #881337; }
+
+/* 4. Animate-pulse glows: online dots etc. get accent-tinted glow */
+[data-accent="amber"]   .animate-pulse  { --tw-shadow-color: var(--ui-accent-glow); }
+[data-accent="emerald"] .animate-pulse  { --tw-shadow-color: var(--ui-accent-glow); }
+
+/* 5. Navbar bottom border gets subtle accent tint */
+[data-accent="amber"]   nav   { border-bottom-color: #fde68a80 !important; }
+[data-accent="emerald"] nav   { border-bottom-color: #a7f3d080 !important; }
+[data-accent="sky"]     nav   { border-bottom-color: #bae6fd80 !important; }
+[data-accent="violet"]  nav   { border-bottom-color: #ddd6fe80 !important; }
+[data-accent="rose"]    nav   { border-bottom-color: #fecdd380 !important; }
+
+/* 6. Sidebar border gets accent tint */
+[data-accent="amber"]   aside { border-right-color: #fde68a60 !important; }
+[data-accent="emerald"] aside { border-right-color: #a7f3d060 !important; }
+[data-accent="sky"]     aside { border-right-color: #bae6fd60 !important; }
+[data-accent="violet"]  aside { border-right-color: #ddd6fe60 !important; }
+[data-accent="rose"]    aside { border-right-color: #fecdd360 !important; }
+
+/* 7. Page background: very subtle global accent wash (non-zinc only) */
+[data-accent="amber"]   body { background-color: #fffdf7; }
+[data-accent="emerald"] body { background-color: #f7fdfb; }
+[data-accent="sky"]     body { background-color: #f7fbff; }
+[data-accent="violet"]  body { background-color: #faf8ff; }
+[data-accent="rose"]    body { background-color: #fff7f8; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   UTILITY CLASSES — use these in components
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Background */
+.bg-accent        { background-color: var(--ui-accent)        !important; }
+.bg-accent-light  { background-color: var(--ui-accent-light)  !important; }
+.bg-accent-subtle { background-color: var(--ui-accent-subtle) !important; }
+
+/* Text */
+.text-accent      { color: var(--ui-accent)        !important; }
+.text-accent-med  { color: var(--ui-accent-medium) !important; }
+
+/* Border */
+.border-accent    { border-color: var(--ui-accent-border) !important; }
+
+/* Shadow */
+.shadow-accent    { box-shadow: 0 16px 40px var(--ui-accent-shadow) !important; }
+.glow-accent      { box-shadow: 0 0 24px var(--ui-accent-glow), 0 8px 32px var(--ui-accent-shadow) !important; }
+
+/* ── Active sidebar nav item ── */
+.nav-active {
+  background-color: var(--ui-accent) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px var(--ui-accent-shadow);
+}
+.nav-active svg { color: white !important; }
+.nav-active span { color: white !important; }
+
+/* ── Primary CTA button ── */
+.btn-accent {
+  background-color: var(--ui-accent) !important;
+  color: white !important;
+  box-shadow: 0 8px 24px var(--ui-accent-shadow);
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-accent:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 14px 36px var(--ui-accent-shadow);
+}
+.btn-accent:active { transform: scale(0.98); }
+
+/* ── Tab / section active underline (motion.div layoutId bars) ── */
+.tab-active-line {
+  background-color: var(--ui-accent) !important;
+}
+
+/* ── Stat / metric number highlight ── */
+.stat-accent {
+  color: var(--ui-accent) !important;
+}
+
+/* ── Card hover border ── */
+.card-hover-accent:hover {
+  border-color: var(--ui-accent-border) !important;
+  box-shadow: 0 8px 32px var(--ui-accent-subtle) !important;
+}
+
+/* ── Accent progress bar fill ── */
+.progress-accent {
+  background-color: var(--ui-accent) !important;
+}
+
+/* ─── Industrial Utilities ─────────────────────────────────────────────────── */
+.glass {
+  @apply bg-white/80 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.04)];
+}
+.card-shadow {
+  @apply shadow-[0_2px_4px_rgba(0,0,0,0.02),0_12px_24px_rgba(0,0,0,0.04)];
+}
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-linear-to-br from-black to-zinc-500;
+}
+.text-gradient-accent {
+  background: linear-gradient(135deg, var(--ui-accent), var(--ui-accent-medium));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Float animation */
+@keyframes float {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* Accent pulse animation for live indicators */
+@keyframes accent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ui-accent-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+.pulse-accent { animation: accent-pulse 2s ease-in-out infinite; }
+
+/* ─── Command Matrix Utility Overrides ────────────────────────────────────── */
+.matrix-input {
+  @apply w-full max-w-full px-0 py-4 bg-transparent border-b border-zinc-100 transition-all outline-hidden text-xl sm:text-2xl md:text-[clamp(1rem,2vw,1.5rem)] font-black italic tracking-tight placeholder:text-zinc-100;
+}
+.matrix-input:focus {
+  border-color: var(--ui-accent-border) !important;
+}
+
+.matrix-textarea {
+  @apply w-full max-w-full px-6 sm:px-10 py-8 sm:py-10 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent transition-all outline-hidden rounded-[2rem] sm:rounded-[2.5rem] min-h-[220px] sm:min-h-[350px] text-base sm:text-lg font-bold italic leading-relaxed shadow-xs;
+}
+
+.matrix-card {
+  @apply p-6 sm:p-10 bg-white border border-zinc-100 rounded-[2rem] sm:rounded-[3.5rem] transition-all duration-700 hover:shadow-2xl hover:shadow-accent/5;
+}
+
+.matrix-badge {
+  @apply px-3 sm:px-4 py-1.5 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] rounded-sm italic max-w-full;
+}
+
+/* ─── Rich Text Editor Content Styles ─────────────────────────────────────── */
+.prose {
+  @apply text-zinc-600;
+}
+.prose strong {
+  @apply text-black font-black italic;
+}
+.prose h1 {
+  @apply text-3xl sm:text-4xl font-black italic tracking-tighter uppercase mb-6 mt-10 break-words;
+}
+.prose h2 {
+  @apply text-xl sm:text-2xl font-black italic tracking-tighter uppercase mb-4 mt-8 break-words;
+}
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+.prose ul {
+  @apply list-disc pl-6 mb-4 space-y-2;
+}
+.prose ol {
+  @apply list-decimal pl-6 mb-4 space-y-2;
+}
+.prose a {
+  @apply text-accent font-black underline decoration-2 underline-offset-4 hover:text-black transition-colors;
+}
+.prose img {
+  @apply rounded-[2rem] border border-zinc-100 shadow-xl my-8;
+}
+
+/* Table Styles */
+.prose table {
+  @apply w-full border-collapse rounded-2xl overflow-hidden border border-zinc-100 my-8 italic shadow-xs;
+}
+.prose th {
+  @apply bg-zinc-50/80 backdrop-blur-sm border border-zinc-100 p-4 text-left text-xs font-black uppercase tracking-[0.2em] text-zinc-400;
+}
+.prose td {
+  @apply border border-zinc-50 p-4 text-sm font-bold text-zinc-600;
+}
+.prose tr:nth-child(even) {
+  @apply bg-zinc-50/30;
+}
+
+/* Code Block Styles */
+.prose pre {
+  @apply bg-black text-white p-8 rounded-[2rem] my-8 overflow-x-auto shadow-2xl relative border border-white/5;
+}
+.prose pre::before {
+  content: "TERMINAL_FEED";
+  @apply absolute top-4 right-8 text-[8px] font-black uppercase tracking-[0.4em] opacity-20 italic;
+}
+.prose code {
+  @apply font-mono text-sm leading-relaxed;
+}
+
+/* Syntax Highlighting (Basic) */
+.hljs-comment, .hljs-quote { @apply text-zinc-600 italic; }
+.hljs-keyword, .hljs-selector-tag { @apply text-accent font-black; }
+.hljs-string, .hljs-doctag { @apply text-green-400; }
+.hljs-title, .hljs-section { @apply text-blue-400 font-black; }
+.hljs-variable, .hljs-template-variable { @apply text-orange-400; }
+.hljs-bullet, .hljs-number { @apply text-red-400; }

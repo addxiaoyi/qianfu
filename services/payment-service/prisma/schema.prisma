@@ -1,0 +1,59 @@
+// Payment Service 数据库 Schema
+// 用于独立的 Payment 微服务
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") ?: "file:./dev.db"
+}
+
+// ============================================================================
+// 支付表
+// ============================================================================
+
+model Payment {
+  id                     String    @id @default(uuid())
+  userId                 String
+  amount                 Int       // 金额（分）
+  currency               String    @default("CNY")
+  status                 String    @default("pending") // pending, processing, succeeded, failed, cancelled
+  provider               String    // alipay, wechat, stripe, etc.
+  providerTransactionId  String?   // 支付平台返回的交易号
+  description            String?
+  metadata               String?   // JSON 格式的额外数据
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  // 关系
+  refunds Refund[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerTransactionId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// 退款表
+// ============================================================================
+
+model Refund {
+  id           String    @id @default(uuid())
+  paymentId    String
+  amount       Int       // 退款金额（分）
+  reason       String?
+  status       String    @default("pending") // pending, processing, succeeded, failed
+  providerRefundId String? // 支付平台返回的退款号
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // 关系
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([status])
+  @@index([providerRefundId])
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@qianfu/contracts",
+  "version": "1.0.0",
+  "description": "Service contracts and event definitions for QianFu microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events/index.js",
+      "types": "./dist/events/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": ["qianfu", "contracts", "events", "api"],
+  "author": "QianFu Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

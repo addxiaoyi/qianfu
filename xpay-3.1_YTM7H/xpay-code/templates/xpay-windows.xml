@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service>
+  <id>xpay</id>
+  <name>StarMC Payment System</name>
+  <description>StarMC Payment System v3.1</description>
+  <executable>java</executable>
+  <arguments>-Xms{{JVM_MIN}} -Xmx{{JVM_MAX}} -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="{{LOGS_DIR}}\heapdump.hprof" -jar "{{APP_DIR}}\target\xpay-3.1.0.jar" --spring.config.location="{{APP_DIR}}\src\main\resources\application.properties"</arguments>
+  <workingdirectory>{{APP_DIR}}</workingdirectory>
+  <logmode>rotate</logmode>
+  <logpath>{{LOGS_DIR}}</logpath>
+  <depend>Mysql</depend>
+  <startmode>Automatic</startmode>
+  <onfailure action="restart" delay="10 sec"/>
+  <Env name="JAVA_HOME" value="{{JAVA_HOME}}"/>
+</service>

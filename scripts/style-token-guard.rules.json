@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "hardcodedColor": "error",
+    "transitionAll": "warn"
+  },
+  "overrides": [
+    {
+      "pathPrefix": "src/components/ui",
+      "rules": {
+        "hardcodedColor": "error",
+        "transitionAll": "error"
+      }
+    },
+    {
+      "pathPrefix": "src/components/profile-page.module.css",
+      "rules": {
+        "transitionAll": "warn"
+      }
+    }
+  ]
+}

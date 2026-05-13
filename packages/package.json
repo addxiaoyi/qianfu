@@ -1,0 +1,14 @@
+{
+  "name": "@qianfu/monorepo",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "contracts",
+    "../services/*"
+  ],
+  "scripts": {
+    "build:packages": "npm run build --workspace=@qianfu/shared && npm run build --workspace=@qianfu/contracts",
+    "dev:shared": "npm run watch --workspace=@qianfu/shared",
+    "dev:contracts": "npm run watch --workspace=@qianfu/contracts"
+  }
+}

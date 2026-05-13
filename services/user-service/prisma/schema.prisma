@@ -1,0 +1,98 @@
+// User Service 数据库 Schema
+// 用于独立的 User 微服务
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") ?: "file:./dev.db"
+}
+
+// ============================================================================
+// 用户表
+// ============================================================================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  first_name   String?
+  last_name    String?
+  bio          String?
+  avatar_url   String?
+  password_hash String?
+  email_verified Boolean @default(false)
+  is_active    Boolean   @default(true)
+  role         String    @default("user")
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  // 关系
+  profile    Profile?
+  sessions   Session[]
+  accounts   Account[]
+
+  @@index([email])
+  @@index([username])
+  @@index([deleted_at])
+}
+
+// ============================================================================
+// 会话表
+// ============================================================================
+
+model Session {
+  id         String   @id @default(uuid())
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  // 关系
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+// ============================================================================
+// OAuth 账户表
+// ============================================================================
+
+model Account {
+  id                String  @id @default(uuid())
+  user_id           String
+  provider          String  // github, google, qq, etc.
+  provider_account_id String
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // 关系
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_account_id])
+  @@index([user_id])
+}
+
+// ============================================================================
+// 用户资料表
+// ============================================================================
+
+model Profile {
+  id              String  @id @default(uuid())
+  user_id         String  @unique
+  locale          String  @default("zh-CN")
+  timezone        String?
+  notification_email Boolean @default(true)
+  notification_push Boolean @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // 关系
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}

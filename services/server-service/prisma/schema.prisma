@@ -1,0 +1,80 @@
+// Server Service 数据库 Schema
+// 用于游戏服务器管理和实例控制
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") ?: "file:./dev.db"
+}
+
+// ============================================================================
+// 服务器表
+// ============================================================================
+
+model Server {
+  id             String    @id @default(uuid())
+  name           String    @unique
+  ownerId        String    // 所有者用户ID（来自 User Service）
+  type           String    @default("minecraft") // minecraft, valheim, ark, etc.
+  status         String    @default("offline") // offline, online, starting, stopping, error
+  maxPlayers     Int       @default(10)
+  currentPlayers Int       @default(0)
+  config         String?   // JSON 配置
+  version        String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  // 关系
+  instances      ServerInstance[]
+  players        Player[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([type])
+}
+
+// ============================================================================
+// 服务器实例表
+// ============================================================================
+
+model ServerInstance {
+  id        String    @id @default(uuid())
+  serverId  String
+  host      String    @default("localhost")
+  port      Int       @default(25565)
+  status    String    @default("stopped") // stopped, starting, running, stopping, error
+  processId Int?
+  startedAt DateTime?
+  stoppedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // 关系
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@index([status])
+}
+
+// ============================================================================
+// 玩家记录表
+// ============================================================================
+
+model Player {
+  id        String    @id @default(uuid())
+  serverId  String
+  playerId  String    // 来自 User Service 的用户ID
+  username  String?
+  joinedAt  DateTime  @default(now())
+  leftAt    DateTime?
+
+  // 关系
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@index([playerId])
+}

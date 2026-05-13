@@ -1,0 +1,521 @@
+// PostgreSQL Prisma Schema - 千服项目
+// 从 SQLite 迁移而来
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/postgres-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// 用户与认证
+// ============================================
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  email              String    @unique
+  password_hash      String?
+  supertokens_user_id String?  @unique
+  supabase_id        String?   @unique
+  username           String?
+  display_name       String?
+  avatar_url         String?
+  role               String    @default("NORMAL")
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @updatedAt @db.Timestamptz(6)
+  password_changed_at DateTime?
+  email_verified     Boolean   @default(false)
+  verification_token String?
+  token_expiry       DateTime?
+  last_login_at      DateTime?
+  login_count        Int       @default(0)
+  email_cipher       String?
+  preferences        Json      @default("{}")
+  bio_html           String?
+  permissions        Json      @default("[]")
+  reset_token        String?
+  reset_token_expiry DateTime?
+  experience_points  Int       @default(0)
+  last_checkin_at    DateTime? @db.Timestamptz(6)
+
+  @@index([role])
+  @@index([created_at])
+  @@index([last_login_at])
+  @@index([email_verified])
+  @@index([username])
+
+  // 关系
+  servers            Server[]
+  edited_versions    ServerVersion[] @relation("UserEditedVersions")
+  user_versions      UserBioVersion[] @relation("UserBioVersions")
+  reviewed_servers   Server[]  @relation("ServerReviewer")
+  review_history     ReviewHistory[]
+  assigned_permissions PermissionHistory[] @relation("PermissionAssigner")
+  permission_history PermissionHistory[]
+  audit_logs         AuditLog[]
+  moderation_logs    ModerationLog[]
+  tickets            Ticket[]
+  ticket_messages    TicketMessage[]
+  payments           Payment[]
+  wallet             Wallet?
+  notifications      Notification[]
+  sessions           Session[]
+  reports_made       Report[]  @relation("ReportReporter")
+  reports_handled    Report[]  @relation("ReportHandler")
+  server_comments    ServerComment[]
+  server_likes       ServerLike[]
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  user_id      Int
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  token        String   @unique
+  expires_at   DateTime @db.Timestamptz(6)
+  user_agent   String?
+  ip_address   String?
+  is_revoked   Boolean  @default(false)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([user_id])
+  @@index([token])
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  type        String   @default("INFO")
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id])
+  @@index([is_read])
+  @@index([created_at])
+}
+
+// ============================================
+// 钱包与支付 (金额使用 Int/分)
+// ============================================
+
+model Wallet {
+  id           Int           @id @default(autoincrement())
+  user_id      Int           @unique
+  user         User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  balance      Int           @default(0) // 余额，单位：分
+  currency     String        @default("CNY")
+  is_active    Boolean       @default(true)
+  created_at   DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime      @updatedAt @db.Timestamptz(6)
+  transactions Transaction[]
+
+  @@index([user_id])
+}
+
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  wallet_id    Int
+  wallet       Wallet   @relation(fields: [wallet_id], references: [id])
+  amount       Int      // 金额，单位：分（正数=入账，负数=出账）
+  type         String   // DEPOSIT, PAYMENT, REFUND, ADJUSTMENT
+  status       String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  description  String?
+  metadata     Json?    // JSON 对象存储额外详情
+  signature    String?  // HMAC 签名
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([wallet_id])
+  @@index([created_at])
+  @@index([type])
+}
+
+model Payment {
+  id             String   @id @default(uuid())
+  user_id        Int
+  user           User     @relation(fields: [user_id], references: [id])
+  amount         Int      // 金额，单位：分
+  currency       String   @default("CNY")
+  status         String   // PENDING, COMPLETED, FAILED
+  plan_id        String
+  payment_method String
+  provider       String?  // xpay, alipay, wechat
+  provider_tx_id String?  // 第三方交易ID
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+  tickets        Ticket[]
+
+  @@index([user_id])
+  @@index([status])
+}
+
+// ============================================
+// 用户内容版本控制
+// ============================================
+
+model UserBioVersion {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  user         User     @relation("UserBioVersions", fields: [user_id], references: [id])
+  version      Int
+  content_html String?
+  editor_id    Int?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([user_id, version])
+}
+
+// ============================================
+// 服务器
+// ============================================
+
+model Server {
+  id           Int       @id @default(autoincrement())
+  owner_id     Int
+  owner        User      @relation(fields: [owner_id], references: [id])
+  name         String
+  name_en      String?
+  thumbnail    String?
+  summary      String?
+  summary_en   String?
+  content_html String?
+  ip           String?   @default("Hidden")
+  group_number String?
+  tags         String?   @default("[]")
+  link         String?
+  activity     Int       @default(0)
+  synced_at    DateTime?
+  review_status String   @default("PENDING")
+  review_notes  String?
+  reviewed_by   Int?
+  reviewer      User?     @relation("ServerReviewer", fields: [reviewed_by], references: [id])
+  reviewed_at   DateTime?
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
+  platform     String?   // java | bedrock
+  category     String?   // 生存 / 小游戏 / RPG 等
+  online_mode  Boolean?
+  supported_versions String?
+  network_env  String?
+  like_count   Int       @default(0)
+  comment_count Int      @default(0)
+
+  @@index([owner_id])
+  @@index([review_status])
+  @@index([activity(sort: Desc)])
+  @@index([created_at])
+  @@index([updated_at])
+  @@index([name])
+  @@index([platform])
+  @@index([category])
+
+  versions        ServerVersion[]
+  status          ServerStatus?
+  status_history  ServerStatusHistory[]
+  comments        ServerComment[]
+  likes           ServerLike[]
+}
+
+model ServerVersion {
+  id           Int      @id @default(autoincrement())
+  server_id    Int
+  server       Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  version      Int
+  name         String?
+  summary      String?
+  content_html String?
+  tags         String?
+  ip           String?
+  editor_id    Int?
+  editor       User?    @relation("UserEditedVersions", fields: [editor_id], references: [id])
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([server_id, version])
+  @@index([server_id])
+}
+
+model ServerStatus {
+  id              Int      @id @default(autoincrement())
+  serverId        Int      @unique
+  server          Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  online          Boolean  @default(false)
+  host            String
+  port            Int
+  versionNameRaw  String?
+  versionProtocol Int?
+  playersOnline   Int?
+  playersMax      Int?
+  playersList     String?
+  motdRaw         String?
+  motdClean       String?
+  motdHtml        String?
+  favicon         String?
+  srvRecord       String?
+  lastUpdated     DateTime @default(now()) @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([online])
+  @@index([playersOnline(sort: Desc)])
+  @@index([lastUpdated])
+}
+
+model ServerStatusHistory {
+  id             Int      @id @default(autoincrement())
+  server_id      Int
+  server         Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  sampled_at     DateTime @default(now()) @db.Timestamptz(6)
+  online         Boolean
+  players_online Int?
+  players_max    Int?
+  latency_ms     Int?
+  version_raw    String?
+
+  @@index([server_id, sampled_at])
+}
+
+model ServerComment {
+  id         Int      @id @default(autoincrement())
+  server_id  Int
+  server     Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  body       String
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([server_id, created_at])
+}
+
+model ServerLike {
+  id         Int      @id @default(autoincrement())
+  server_id  Int
+  server     Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([server_id, user_id])
+  @@index([server_id])
+}
+
+// ============================================
+// 系统配置
+// ============================================
+
+model SystemConfig {
+  key         String   @id
+  value       String
+  is_secret   Boolean  @default(false)
+  description String?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model TeamMember {
+  id             Int      @id @default(autoincrement())
+  qq             String   @unique
+  name           String
+  name_en        String?
+  role           String
+  role_en        String?
+  description    String?
+  description_en String?
+  avatar_url     String?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model AllianceGroup {
+  id             String   @id
+  name           String
+  name_en        String?
+  link           String?
+  description    String?
+  description_en String?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model ResourceLink {
+  id             Int      @id @default(autoincrement())
+  title          String   @unique
+  title_en       String?
+  url            String
+  description    String?
+  description_en String?
+  category       String
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([category])
+}
+
+// ============================================
+// 审核与权限
+// ============================================
+
+model ReviewHistory {
+  id           Int      @id @default(autoincrement())
+  reviewer_id  Int
+  reviewer     User     @relation(fields: [reviewer_id], references: [id])
+  server_id    Int
+  action       String   // APPROVED, REJECTED, NEEDS_CHANGES
+  notes        String?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([server_id])
+  @@index([reviewer_id])
+}
+
+model PermissionHistory {
+  id           Int      @id @default(autoincrement())
+  admin_id     Int
+  admin        User     @relation("PermissionAssigner", fields: [admin_id], references: [id])
+  user_id      Int
+  user         User     @relation(fields: [user_id], references: [id])
+  action       String   // GRANTED, REVOKED
+  permission   String
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  user_id       Int?
+  user          User?    @relation(fields: [user_id], references: [id])
+  action        String
+  target        String?
+  details       String?
+  ip_address    String?
+  rechecked_at  DateTime?
+  recheck_status String?
+  rechecked_by  Int?
+  hash          String?
+  previous_hash String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id])
+  @@index([action])
+  @@index([created_at])
+}
+
+model ModerationLog {
+  id           Int      @id @default(autoincrement())
+  user_id      Int?
+  user         User?    @relation(fields: [user_id], references: [id])
+  action       String
+  content_type String
+  content      String?
+  reason       String?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([action])
+  @@index([created_at])
+}
+
+// ============================================
+// 工单系统
+// ============================================
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+  title       String
+  description String
+  category    String   @default("SUPPORT")
+  status      String   @default("OPEN")
+  priority    String   @default("MEDIUM")
+  payment_id  String?
+  payment     Payment? @relation(fields: [payment_id], references: [id])
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime @updatedAt @db.Timestamptz(6)
+
+  messages    TicketMessage[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([user_id])
+}
+
+model TicketMessage {
+  id          Int      @id @default(autoincrement())
+  ticket_id   Int
+  ticket      Ticket   @relation(fields: [ticket_id], references: [id])
+  sender_id   Int?
+  sender      User?    @relation(fields: [sender_id], references: [id])
+  content     String
+  is_ai       Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([ticket_id])
+}
+
+// ============================================
+// 内容页面
+// ============================================
+
+model IntroPage {
+  id               Int       @id @default(autoincrement())
+  slug             String    @unique
+  title            String
+  content_md       String
+  content_html     String
+  status           String    @default("DRAFT")
+  version          Int       @default(1)
+  hash             String?
+  seo_title        String?
+  seo_description  String?
+  editor_lock_user Int?
+  lock_expires_at  DateTime?
+  last_published_at DateTime?
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime  @updatedAt @db.Timestamptz(6)
+
+  versions         IntroPageVersion[]
+}
+
+model IntroPageVersion {
+  id           Int      @id @default(autoincrement())
+  page_id      Int
+  page         IntroPage @relation(fields: [page_id], references: [id], onDelete: Cascade)
+  version      Int
+  title        String
+  content_md   String
+  content_html String
+  author_id    Int?
+  hash         String?
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([page_id])
+  @@index([version])
+}
+
+// ============================================
+// 举报系统
+// ============================================
+
+model Report {
+  id               Int      @id @default(autoincrement())
+  reporter_id      Int
+  reporter         User     @relation("ReportReporter", fields: [reporter_id], references: [id])
+  target_type      String
+  target_id        Int
+  reason           String
+  description      String?
+  status           String   @default("PENDING")
+  resolution_notes String?
+  handler_id       Int?
+  handler          User?    @relation("ReportHandler", fields: [handler_id], references: [id])
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([reporter_id])
+  @@index([status])
+}

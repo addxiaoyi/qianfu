@@ -1,0 +1,120 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: qianfu-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-xpay_root_123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-xpay}
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./xpay-3.1_YTM7H/xpay-code/sql/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-xpay_root_123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: qianfu-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  xpay:
+    image: qianfu-xpay:offline
+    container_name: qianfu-xpay
+    environment:
+      SERVER_PORT: 8888
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-xpay}?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-xpay_root_123}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      QIANFU_API_URL: http://xpay:8888/qianfu-api
+      QIANFU_CALLBACK_URL: http://app:3001/api/qianfu/xpay/notify
+    ports:
+      - "8888:8888"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8888/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  app:
+    image: qianfu-app:offline
+    container_name: qianfu-app
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: file:/app/data/app.db
+      LOCAL_AUTH_ONLY: "true"
+      JWT_SECRET: ${JWT_SECRET:-replace-with-32-char-secret-1234567890}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-replace-admin-token-123456}
+      JWT_EXPIRES_IN: 7d
+      REDIS_URL: redis://redis:6379
+      QIANFU_ENABLED: "true"
+      QIANFU_API_URL: http://xpay:8888/qianfu-api
+      QIANFU_CALLBACK_URL: http://app:3001/api/qianfu/xpay/notify
+      XPAY_API_URL: http://xpay:8888/api/pay
+      XPAY_NOTIFY_URL: http://app:3001/api/payment/xpay/notify
+      XPAY_TOKEN: ${XPAY_TOKEN:-replace-xpay-sign-token-123456}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:80}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:80}
+    volumes:
+      - app-data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+      xpay:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: qianfu-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./dist:/usr/share/nginx/html:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+  app-data:
+
+networks:
+  default:
+    name: qianfu-offline-network

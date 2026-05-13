@@ -1,0 +1,60 @@
+# 分域部署示例：API 域名
+# API: https://api.example.com -> Node 127.0.0.1:3000
+
+upstream qianfu_api {
+    server 127.0.0.1:3000;
+    keepalive 64;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name api.example.com;
+
+    # TODO: 替换为真实证书路径
+    ssl_certificate     /etc/letsencrypt/live/api.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.com/privkey.pem;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Referrer-Policy no-referrer-when-downgrade always;
+
+    # CORS 预检（实际允许源仍由后端 CORS_ALLOWED_ORIGINS 控制）
+    if ($request_method = OPTIONS) {
+        add_header Content-Length 0;
+        add_header Content-Type text/plain;
+        return 204;
+    }
+
+    location /api/ {
+        proxy_pass http://qianfu_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    location /auth/ {
+        proxy_pass http://qianfu_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+
+    location = /health {
+        proxy_pass http://qianfu_api/health;
+        proxy_set_header Host $host;
+    }
+}

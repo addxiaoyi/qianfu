@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>StarMC | 千服支付配置</title>
+    <meta name="description" content="StarMC 千服支付网关配置 - 管理千服支付渠道">
+    <link rel="icon" type="image/png" href="favicon.ico">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Playfair Display', 'serif'],
+                        'sans': ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        'luxury': {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a25',
+                            600: '#252536',
+                            500: '#36364a',
+                        },
+                        'gold': {
+                            50: '#fdf9f0',
+                            100: '#f9f0db',
+                            200: '#f2e0b6',
+                            300: '#e8c984',
+                            400: '#d4a853',
+                            500: '#b8923e',
+                            600: '#9a7630',
+                            700: '#7c5d29',
+                            800: '#654d27',
+                            900: '#533f22',
+                        },
+                    },
+                    animation: {
+                        'float': 'float 8s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #1a1a25 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            will-change: transform, opacity;
+        }
+
+        .glass-panel-hover {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.3s ease;
+        }
+
+        .glass-panel-hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(184, 146, 62, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(184, 146, 62, 0.15);
+        }
+
+        .input-luxury {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.2s ease, 
+                        border-color 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .input-luxury:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(184, 146, 62, 0.5);
+            box-shadow: 0 0 20px rgba(184, 146, 62, 0.1);
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #b8923e 0%, #d4a853 50%, #b8923e 100%);
+            background-size: 200% 200%;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px -10px rgba(184, 146, 62, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        background-color 0.2s ease,
+                        border-color 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .switch-toggle {
+            width: 48px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .switch-toggle.active {
+            background: #b8923e;
+        }
+
+        .switch-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .switch-toggle.active::after {
+            transform: translateX(24px);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6b7280;
+        }
+
+        .status-dot.connected {
+            background: #22c55e;
+            animation: pulseStatus 2s ease-in-out infinite;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        .status-dot.connecting {
+            background: #eab308;
+            animation: pulseStatus 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseStatus {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        .toast-message {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 9999px;
+            background: rgba(184, 146, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 100;
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        opacity 0.3s ease;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                -webkit-text-size-adjust: 100%;
+            }
+
+            header {
+                border-radius: 1rem !important;
+                margin: 0.5rem !important;
+                padding: 0.75rem 1rem !important;
+            }
+
+            main {
+                padding: 1rem !important;
+                padding-bottom: 5rem !important;
+            }
+
+            .glass-panel {
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+            }
+
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="orb w-96 h-96 -top-20 -left-20 animate-float" style="background: radial-gradient(circle, rgba(184, 146, 62, 0.6) 0%, transparent 70%); animation-delay: 0s;"></div>
+    <div class="orb w-80 h-80 bottom-0 right-0 animate-float" style="background: radial-gradient(circle, rgba(139, 124, 247, 0.5) 0%, transparent 70%); animation-delay: 3s;"></div>
+
+    <div class="relative z-10 min-h-screen flex flex-col">
+        <header class="glass-panel sticky top-6 mx-6 mt-6 rounded-2xl px-8 py-5">
+            <div class="flex items-center justify-between max-w-7xl mx-auto">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center shadow-lg shadow-gold-500/20 transition-transform duration-300 hover:scale-105">
+                        <i data-lucide="crown" class="w-7 h-7 text-luxury-900"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-display font-bold text-white tracking-wide">StarMC</h1>
+                        <p class="text-xs text-white/50 tracking-widest uppercase">Qianfu Payment Config</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="/starmc-pay.html" class="text-white/60 hover:text-gold-400 transition-colors text-sm font-medium tracking-wide">支付</a>
+                    <a href="/starmc-confirm.html" class="text-white/60 hover:text-gold-400 transition-colors text-sm font-medium tracking-wide">记录</a>
+                    <a href="/starmc-settings.html" class="text-white/60 hover:text-gold-400 transition-colors text-sm font-medium tracking-wide">设置</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 p-6 md:p-12">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="glass-panel rounded-2xl p-8">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400/20 to-purple-600/20 flex items-center justify-center border border-purple-400/30">
+                            <i data-lucide="settings-2" class="w-7 h-7 text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-display font-bold text-white">千服支付配置</h2>
+                            <p class="text-sm text-white/50">配置千服支付网关参数</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="building-2" class="w-4 h-4 text-gold-400"></i>
+                                    商户ID
+                                </label>
+                                <input type="text" id="qianfuMerchantId" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="请输入千服商户ID">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="key" class="w-4 h-4 text-gold-400"></i>
+                                    API密钥
+                                </label>
+                                <input type="password" id="qianfuApiKey" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="请输入API密钥">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                <i data-lucide="globe" class="w-4 h-4 text-gold-400"></i>
+                                网关地址
+                            </label>
+                            <input type="text" id="qianfuGateway" 
+                                class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                placeholder="https://api.qianfu.com/v1"
+                                value="https://api.qianfu.com/v1">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="webhook" class="w-4 h-4 text-gold-400"></i>
+                                    回调地址
+                                </label>
+                                <input type="text" id="qianfuNotifyUrl" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="https://your-domain.com/qianfu/notify">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-white/70 mb-2 flex items-center gap-2">
+                                    <i data-lucide="arrow-left" class="w-4 h-4 text-gold-400"></i>
+                                    跳转地址
+                                </label>
+                                <input type="text" id="qianfuReturnUrl" 
+                                    class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                                    placeholder="https://your-domain.com/pay/success">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between py-4 border-t border-white/10">
+                            <div>
+                                <p class="text-white font-medium">启用千服支付</p>
+                                <p class="text-sm text-white/50">开启后将使用千服作为支付渠道</p>
+                            </div>
+                            <div id="qianfuEnableSwitch" class="switch-toggle" onclick="toggleSwitch('enable')"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between py-4 border-t border-white/10">
+                            <div>
+                                <p class="text-white font-medium">沙箱模式</p>
+                                <p class="text-sm text-white/50">开启后使用测试环境进行支付</p>
+                            </div>
+                            <div id="qianfuSandboxSwitch" class="switch-toggle" onclick="toggleSwitch('sandbox')"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between py-4 border-t border-white/10">
+                            <div class="flex items-center gap-3">
+                                <div id="connectionStatus" class="status-dot disconnected"></div>
+                                <div>
+                                    <p class="text-white font-medium">连接状态</p>
+                                    <p id="connectionText" class="text-sm text-white/50">未连接</p>
+                                </div>
+                            </div>
+                            <button onclick="refreshConnection()" class="p-2 rounded-lg hover:bg-white/5 transition-colors" title="刷新状态">
+                                <i data-lucide="refresh-cw" class="w-5 h-5 text-white/50"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-8">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/20 flex items-center justify-center border border-emerald-400/30">
+                            <i data-lucide="wallet" class="w-7 h-7 text-emerald-400"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-display font-bold text-white">账户信息</h2>
+                            <p class="text-sm text-white/50">当前账户余额状态</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="glass-panel rounded-xl p-4 text-center">
+                            <p class="text-sm text-white/50 mb-1">余额</p>
+                            <p id="balanceAmount" class="text-2xl font-display font-bold text-emerald-400">¥0.00</p>
+                        </div>
+                        <div class="glass-panel rounded-xl p-4 text-center">
+                            <p class="text-sm text-white/50 mb-1">冻结</p>
+                            <p id="frozenAmount" class="text-2xl font-display font-bold text-orange-400">¥0.00</p>
+                        </div>
+                        <div class="glass-panel rounded-xl p-4 text-center">
+                            <p class="text-sm text-white/50 mb-1">可用</p>
+                            <p id="availableAmount" class="text-2xl font-display font-bold text-gold-400">¥0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="refreshBalance()" class="btn-secondary flex-1 py-3 rounded-xl glass-panel border border-white/10 text-white font-medium flex items-center justify-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            刷新
+                        </button>
+                        <button onclick="openRechargeModal()" class="btn-primary flex-1 py-3 rounded-xl text-luxury-900 font-bold flex items-center justify-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            充值
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-6">
+                    <h3 class="text-lg font-display font-bold text-white mb-4 flex items-center gap-2">
+                        <i data-lucide="info" class="w-5 h-5 text-gold-400"></i>
+                        配置说明
+                    </h3>
+                    <ul class="space-y-3 text-sm text-white/60">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"></i>
+                            <span>商户ID和API密钥请从千服商户后台获取</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"></i>
+                            <span>确保回调地址可被公网访问，用于接收支付结果通知</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"></i>
+                            <span>沙箱模式仅供测试使用，生产环境请关闭</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-end gap-4">
+                    <button onclick="testConnection()" class="btn-secondary px-6 py-3 rounded-xl glass-panel border border-white/10 text-white font-medium flex items-center justify-center gap-2">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                        测试连接
+                    </button>
+                    <button onclick="saveConfig()" class="btn-primary px-8 py-3 rounded-xl text-luxury-900 font-bold flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        保存配置
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-luxury-900/95 backdrop-blur-xl border-t border-white/10 z-40 pb-safe">
+            <div class="flex items-center justify-around py-3">
+                <a href="/starmc-pay.html" class="flex flex-col items-center gap-1 px-4 py-2 text-white/60 hover:text-gold-400">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i>
+                    <span class="text-xs">支付</span>
+                </a>
+                <a href="/starmc-confirm.html" class="flex flex-col items-center gap-1 px-4 py-2 text-white/60 hover:text-gold-400">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                    <span class="text-xs">记录</span>
+                </a>
+                <a href="/starmc-settings.html" class="flex flex-col items-center gap-1 px-4 py-2 text-white/60 hover:text-gold-400">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="text-xs">设置</span>
+                </a>
+            </div>
+        </nav>
+
+        <footer class="glass-panel mx-4 mb-4 rounded-2xl px-6 py-4 hidden md:block">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <p class="text-white/50 text-sm">© 2026 StarMC 支付网关。保留所有权利。</p>
+                <div class="flex items-center gap-6">
+                    <a href="#" class="text-white/50 hover:text-white text-sm transition-colors">隐私政策</a>
+                    <a href="#" class="text-white/50 hover:text-white text-sm transition-colors">服务条款</a>
+                    <a href="#" class="text-white/50 hover:text-white text-sm transition-colors">联系支持</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="rechargeModal" class="fixed inset-0 bg-luxury-900/80 backdrop-blur-xl z-50 hidden items-center justify-center">
+        <div class="glass-panel rounded-3xl p-8 max-w-sm mx-4 w-full">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-display font-bold text-white">余额充值</h3>
+                <button onclick="closeRechargeModal()" class="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5 text-white/50"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-white/70 mb-2">充值金额</label>
+                    <input type="number" id="rechargeAmount" 
+                        class="input-luxury w-full px-5 py-4 rounded-xl text-white placeholder-white/30"
+                        placeholder="请输入充值金额" min="1" step="0.01">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="setRechargeAmount(10)" class="py-2 rounded-lg glass-panel border border-white/10 text-white/80 text-sm hover:border-gold-400/30 transition-colors">¥10</button>
+                    <button onclick="setRechargeAmount(50)" class="py-2 rounded-lg glass-panel border border-white/10 text-white/80 text-sm hover:border-gold-400/30 transition-colors">¥50</button>
+                    <button onclick="setRechargeAmount(100)" class="py-2 rounded-lg glass-panel border border-white/10 text-white/80 text-sm hover:border-gold-400/30 transition-colors">¥100</button>
+                </div>
+
+                <button onclick="submitRecharge()" class="btn-primary w-full py-3 rounded-xl text-luxury-900 font-bold flex items-center justify-center gap-2 mt-4">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    立即充值
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-luxury-900/80 backdrop-blur-xl z-50 hidden items-center justify-center">
+        <div class="glass-panel rounded-3xl p-10 flex flex-col items-center gap-5">
+            <div class="w-14 h-14 border-4 border-white/10 border-t-gold-400 rounded-full animate-spin"></div>
+            <p class="text-white font-medium tracking-wide">处理中...</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast-message"></div>
+
+    <script>
+        let state = {
+            enabled: false,
+            sandbox: false,
+            connected: false
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadConfig();
+            loadBalance();
+        });
+
+        function toggleSwitch(type) {
+            if (type === 'enable') {
+                state.enabled = !state.enabled;
+                document.getElementById('qianfuEnableSwitch').classList.toggle('active', state.enabled);
+            } else if (type === 'sandbox') {
+                state.sandbox = !state.sandbox;
+                document.getElementById('qianfuSandboxSwitch').classList.toggle('active', state.sandbox);
+            }
+        }
+
+        function loadConfig() {
+            fetch('/qianfu/config')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const config = data.result;
+                        document.getElementById('qianfuMerchantId').value = config.appId || '';
+                        document.getElementById('qianfuGateway').value = config.apiUrl || 'https://api.qianfu.com/v1';
+                        document.getElementById('qianfuNotifyUrl').value = config.callbackUrl || '';
+                        
+                        state.enabled = config.enabled;
+                        state.sandbox = config.sandbox;
+                        
+                        document.getElementById('qianfuEnableSwitch').classList.toggle('active', state.enabled);
+                        document.getElementById('qianfuSandboxSwitch').classList.toggle('active', state.sandbox);
+                        
+                        if (config.enabled) {
+                            testConnection();
+                        }
+                    }
+                })
+                .catch(err => console.error('加载配置失败:', err));
+        }
+
+        function loadBalance() {
+            fetch('/qianfu/account/balance')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('balanceAmount').textContent = '¥' + parseFloat(data.result.balance).toFixed(2);
+                        document.getElementById('frozenAmount').textContent = '¥' + parseFloat(data.result.frozen).toFixed(2);
+                        document.getElementById('availableAmount').textContent = '¥' + parseFloat(data.result.available).toFixed(2);
+                    }
+                })
+                .catch(err => console.error('加载余额失败:', err));
+        }
+
+        function refreshBalance() {
+            loadBalance();
+            showToast('余额已刷新');
+        }
+
+        function refreshConnection() {
+            testConnection();
+        }
+
+        function testConnection() {
+            const statusDot = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('connectionText');
+            
+            statusDot.className = 'status-dot connecting';
+            statusText.textContent = '连接中...';
+
+            fetch('/qianfu/config/test', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    state.connected = data.success;
+                    if (data.success) {
+                        statusDot.className = 'status-dot connected';
+                        statusText.textContent = '已连接';
+                    } else {
+                        statusDot.className = 'status-dot disconnected';
+                        statusText.textContent = '连接失败';
+                    }
+                })
+                .catch(err => {
+                    state.connected = false;
+                    statusDot.className = 'status-dot disconnected';
+                    statusText.textContent = '连接失败';
+                });
+        }
+
+        function saveConfig() {
+            const config = {
+                appId: document.getElementById('qianfuMerchantId').value,
+                secretKey: document.getElementById('qianfuApiKey').value,
+                apiUrl: document.getElementById('qianfuGateway').value,
+                callbackUrl: document.getElementById('qianfuNotifyUrl').value,
+                enabled: state.enabled,
+                sandbox: state.sandbox
+            };
+
+            if (!config.appId) {
+                showToast('请输入商户ID');
+                return;
+            }
+
+            showLoading(true);
+
+            fetch('/qianfu/config/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showLoading(false);
+                    if (data.success) {
+                        showToast('配置已保存');
+                        testConnection();
+                    } else {
+                        showToast('保存失败: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    showLoading(false);
+                    showToast('保存失败');
+                });
+        }
+
+        function openRechargeModal() {
+            document.getElementById('rechargeModal').style.display = 'flex';
+            gsap.from(document.getElementById('rechargeModal').querySelector('.glass-panel'), {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        }
+
+        function closeRechargeModal() {
+            const modal = document.getElementById('rechargeModal');
+            gsap.to(modal.querySelector('.glass-panel'), {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.2,
+                ease: "power2.in",
+                onComplete: () => {
+                    modal.style.display = 'none';
+                    document.getElementById('rechargeAmount').value = '';
+                }
+            });
+        }
+
+        function setRechargeAmount(amount) {
+            document.getElementById('rechargeAmount').value = amount;
+        }
+
+        function submitRecharge() {
+            const amount = document.getElementById('rechargeAmount').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('请输入有效的充值金额');
+                return;
+            }
+
+            const rechargeId = 'RC' + Date.now();
+            
+            showLoading(true);
+            closeRechargeModal();
+
+            fetch('/qianfu/account/recharge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rechargeId: rechargeId,
+                    amount: amount
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showLoading(false);
+                    if (data.success) {
+                        showToast('充值请求已提交');
+                        loadBalance();
+                    } else {
+                        showToast('充值失败: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    showLoading(false);
+                    showToast('充值失败');
+                });
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            
+            gsap.fromTo(toast, 
+                { y: -30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }
+            );
+
+            setTimeout(() => {
+                gsap.to(toast, {
+                    y: -30,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: "power2.in"
+                });
+            }, 2500);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('rechargeModal');
+                if (modal.style.display !== 'none') {
+                    closeRechargeModal();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+[Unit]
+Description=StarMC Payment System
+Documentation=https://github.com/Exrick/xpay
+After=network.target mysql.service redis.service
+Wants=mysql.service redis.service
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{USER}}
+WorkingDirectory={{APP_DIR}}
+Environment="JAVA_HOME={{JAVA_HOME}}"
+Environment="PATH={{JAVA_HOME}}/bin:$PATH"
+ExecStart={{JAVA_HOME}}/bin/java -Xms{{JVM_MIN}} -Xmx{{JVM_MAX}} -XX:+UseG1GC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath={{LOGS_DIR}}/heapdump.hprof -jar {{APP_DIR}}/target/xpay-3.1.0.jar --spring.config.location={{APP_DIR}}/src/main/resources/application.properties
+ExecStop=/bin/kill -TERM $MAINPID
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+StandardOutput=append:{{LOGS_DIR}}/stdout.log
+StandardError=append:{{LOGS_DIR}}/stderr.log
+
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=infinity
+
+MemoryMax={{MEMORY_LIMIT}}
+MemorySwapMax={{SWAP_LIMIT}}
+
+CPUQuota={{CPU_QUOTA}}
+
+# 安全设置
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths={{APP_DIR}} {{LOGS_DIR}} {{BACKUP_DIR}}
+
+PrivateTmp=true
+PrivateDevices=true
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
