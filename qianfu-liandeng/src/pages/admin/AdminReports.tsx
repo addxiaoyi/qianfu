@@ -1,128 +1,198 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, Search } from 'lucide-react';
 import { api } from '@/api/request';
 import StatusWrapper from '@/components/StatusWrapper';
 import AdminPageHeader from '@/components/AdminPageHeader';
 import { toast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
 import GeometricLantern from '@/components/icons/GeometricLantern';
+import { cn } from '@/utils/cn';
+import { formatDateTime } from '@/utils/serverView';
 
-const reportsBadge = 'SANCTIONS_DIVISION / NODE_0';
-const adminShellClass = 'space-y-16 pb-32 bg-white';
-const adminHeaderTagClass = 'px-4 py-1.5 bg-accent text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-sm shadow-2xl shadow-accent/20 italic';
+type ReportStatus = 'PENDING' | 'REVIEWING' | 'RESOLVED' | 'REJECTED';
+
+type ReportItem = {
+  id: number;
+  reporter_id: number;
+  target_type: string;
+  target_id: number;
+  reason: string;
+  description?: string | null;
+  status: ReportStatus;
+  resolution_notes?: string | null;
+  handler_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  reporter?: {
+    username?: string | null;
+    display_name?: string | null;
+  } | null;
+  handler?: {
+    username?: string | null;
+    display_name?: string | null;
+  } | null;
+};
+
+const statusLabelMap: Record<'pending' | 'resolved' | 'all', string> = {
+  pending: '待处理',
+  resolved: '已归档',
+  all: '全部案件',
+};
+
+const reportTone: Record<ReportStatus, string> = {
+  PENDING: 'bg-orange-50 text-orange-600 border-orange-200',
+  REVIEWING: 'bg-blue-50 text-blue-600 border-blue-200',
+  RESOLVED: 'bg-green-50 text-green-600 border-green-200',
+  REJECTED: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+};
 
 const AdminReports: React.FC = () => {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'pending' | 'resolved'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'resolved' | 'all'>('pending');
+  const [search, setSearch] = useState('');
 
-  const { data: reports, isLoading, isError, refetch } = useQuery({
+  const { data: reports = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-reports'],
-    queryFn: () => api.get<any[]>('/admin/reports'),
+    queryFn: () => api.get<ReportItem[]>('/reports', { limit: 100 }),
   });
 
   const resolveMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string, status: string }) => 
-      api.patch(`/admin/reports/${id}`, { status }),
+    mutationFn: ({ id, status }: { id: number; status: ReportStatus }) =>
+      api.patch(`/reports/${id}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
-      toast({ title: 'OPERATION SUCCESSFUL', description: 'Sanction status has been updated in the global ledger.' });
-    }
+      toast({ title: '举报状态已更新' });
+    },
   });
 
-  const filtered = reports?.filter(r => r.status.toLowerCase() === activeTab);
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return reports.filter((report) => {
+      const matchTab =
+        activeTab === 'all'
+          ? true
+          : activeTab === 'pending'
+            ? report.status === 'PENDING' || report.status === 'REVIEWING'
+            : report.status === 'RESOLVED' || report.status === 'REJECTED';
+      if (!matchTab) return false;
+      if (!query) return true;
+      return [report.reason, report.description, report.reporter?.username, String(report.target_id)]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [activeTab, reports, search]);
+
+  const pendingCount = reports.filter((report) => report.status === 'PENDING' || report.status === 'REVIEWING').length;
+  const resolvedCount = reports.filter((report) => report.status === 'RESOLVED' || report.status === 'REJECTED').length;
 
   return (
-    <div className={adminShellClass}>
+    <div className="space-y-16 pb-32 bg-white">
       <StatusWrapper isLoading={isLoading} isError={isError} onRetry={() => refetch()}>
         <AdminPageHeader
-          badge={reportsBadge}
-          title="Justice."
-          description="审阅违规举报，维护社区净土。所有执行的操作都将被永久记录在审计日志中以备溯源。"
-          statusLabel="Enforcement Protocol: ACTIVE"
-          statusTone="danger"
+          badge="举报处理 / 实时数据"
+          title="举报管理"
+          description="审阅违规举报并记录处置结果。这里现在只展示真实举报数据，不再显示伪造案件。"
+          statusLabel={`待处理 ${pendingCount} / 已归档 ${resolvedCount}`}
+          statusTone={pendingCount > 0 ? 'warning' : 'success'}
           rightSlot={(
-            <div className="p-10 bg-zinc-50 border border-zinc-100 rounded-[3rem] flex items-center gap-10 shadow-xs hover:bg-white hover:border-zinc-200 transition-all duration-700 group cursor-default">
-              <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center border border-zinc-100 shadow-xs group-hover:bg-accent group-hover:text-white transition-all duration-700">
-                <GeometricLantern variant="activity" className="w-10 h-10 text-zinc-300 group-hover:text-white" />
+            <div className="p-10 bg-zinc-50 border border-zinc-100 rounded-[3rem] flex items-center gap-10 shadow-xs">
+              <div className="w-20 h-20 bg-white rounded-[2rem] flex items-center justify-center border border-zinc-100 shadow-xs">
+                <GeometricLantern variant="alert" className="w-10 h-10 text-zinc-400" />
               </div>
               <div className="space-y-2">
-                <div className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">Community Health</div>
-                <div className="text-4xl font-black font-mono tracking-tighter italic leading-none">94.2%</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">待处理队列</div>
+                <div className="text-4xl font-black font-mono tracking-tighter italic leading-none">{pendingCount}</div>
               </div>
             </div>
           )}
         />
 
-      {/* Tab Nav & Search */}
-      <div className="flex flex-col xl:flex-row items-center justify-between gap-10 pt-12 border-t border-zinc-50">
-         <div className="flex gap-16 overflow-x-auto no-scrollbar w-full xl:w-auto">
-           {[
-             { id: 'pending', label: 'Awaiting Judgment', tag: 'JUS_01' },
-             { id: 'resolved', label: 'Archived Cases', tag: 'JUS_02' },
-           ].map(tab => (
-             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex flex-col items-start gap-3 pb-10 transition-all relative group ${activeTab === tab.id ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
-               <span className="text-[12px] font-black uppercase tracking-[0.4em] italic">{tab.label}</span>
-               <span className="text-[9px] font-black font-mono tracking-widest text-zinc-400">/ {tab.tag}</span>
-               {activeTab === tab.id && <motion.div layoutId="report-tab" className="absolute bottom-0 left-0 right-0 h-1.5 bg-accent" />}
-             </button>
-           ))}
-         </div>
-         <div className="relative w-full xl:w-[36rem] group">
-            <GeometricLantern variant="terminal" className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-200 group-focus-within:text-accent transition-colors duration-500" />
-            <input type="text" placeholder="SEARCH BY CASE_ID..." className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-accent rounded-[3rem] outline-hidden text-lg font-black italic transition-all duration-500 shadow-xs" />
-         </div>
-      </div>
+        <div className="flex flex-col xl:flex-row items-center justify-between gap-10 pt-12 border-t border-zinc-50">
+          <div className="flex gap-16 overflow-x-auto no-scrollbar w-full xl:w-auto">
+            {[
+              { id: 'pending' as const, label: '待处理', tag: `JUS_01 / ${pendingCount}` },
+              { id: 'resolved' as const, label: '已归档', tag: `JUS_02 / ${resolvedCount}` },
+              { id: 'all' as const, label: '全部案件', tag: `JUS_ALL / ${reports.length}` },
+            ].map((tab) => (
+              <button type="button" key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex flex-col items-start gap-3 pb-10 transition-all relative group ${activeTab === tab.id ? 'opacity-100' : 'opacity-40 hover:opacity-100'}`}>
+                <span className="text-[12px] font-black uppercase tracking-[0.4em] italic">{tab.label}</span>
+                <span className="text-[9px] font-black font-mono tracking-widest text-zinc-400">{tab.tag}</span>
+                {activeTab === tab.id && <motion.div layoutId="report-tab" className="absolute bottom-0 left-0 right-0 h-1.5 bg-accent" />}
+              </button>
+            ))}
+          </div>
+          <div className="relative w-full xl:w-[36rem] group">
+            <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-accent transition-colors duration-500" />
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="搜索举报原因、举报人或目标 ID"
+              className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-accent rounded-[3rem] outline-hidden text-lg font-black italic transition-all duration-500 shadow-xs"
+            />
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           <AnimatePresence mode="popLayout">
-            {filtered?.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-48 border border-zinc-50 rounded-[5rem] bg-zinc-50/20 text-center border-dashed space-y-10 group/empty">
-                 <div className="relative inline-block">
-                    <GeometricLantern variant="alert" className="w-24 h-24 text-zinc-100 mx-auto transition-all duration-1000 group-hover/empty:text-accent group-hover/empty:scale-110" />
-                    <GeometricLantern variant="activity" className="absolute inset-0 w-24 h-24 text-zinc-100 opacity-20 animate-ping" />
-                 </div>
-                 <div className="space-y-4">
-                    <p className="text-[12px] font-black text-zinc-300 uppercase tracking-[0.6em] italic">Perfect Order: 0 Incident Reports</p>
-                    <p className="text-[9px] font-black text-zinc-100 uppercase tracking-widest italic">Community enforcement clear / No active sanctions pending</p>
-                 </div>
+            {filtered.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-36 border border-zinc-50 rounded-[5rem] bg-zinc-50/20 text-center border-dashed space-y-8">
+                <AlertCircle className="w-14 h-14 text-zinc-300 mx-auto" />
+                <div className="space-y-3">
+                  <p className="text-[12px] font-black text-zinc-400 uppercase tracking-[0.6em] italic">当前没有举报</p>
+                  <p className="text-sm font-bold text-zinc-400">{statusLabelMap[activeTab]}范围内暂无真实举报记录。</p>
+                </div>
               </motion.div>
             ) : (
-              filtered?.map((report: any, idx: number) => (
-                <motion.div key={report.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05, duration: 0.5 }} className="p-16 border border-zinc-50 rounded-[5rem] bg-white flex flex-col xl:flex-row xl:items-center justify-between gap-16 group hover:border-zinc-100 hover:shadow-2xl hover:shadow-black/5 transition-all duration-1000 shadow-xs relative overflow-hidden">
-                  <div className="absolute left-0 top-0 w-2 h-full rounded-l-[5rem] bg-red-500 opacity-60" />
+              filtered.map((report, idx) => (
+                <motion.div key={report.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.04, duration: 0.4 }} className="p-16 border border-zinc-50 rounded-[5rem] bg-white flex flex-col xl:flex-row xl:items-center justify-between gap-16 shadow-xs relative overflow-hidden">
+                  <div className={cn('absolute left-0 top-0 w-2 h-full rounded-l-[5rem]', report.status === 'PENDING' ? 'bg-orange-400' : report.status === 'REVIEWING' ? 'bg-blue-400' : report.status === 'RESOLVED' ? 'bg-green-500' : 'bg-zinc-200')} />
                   <div className="space-y-8 flex-grow pl-6">
-                     <div className="flex items-center gap-6">
-                        <div className={`px-5 py-2 rounded-sm text-[10px] font-black uppercase tracking-[0.4em] italic border shadow-xs ${report.targetType === 'server' ? 'bg-accent text-white border-accent shadow-accent/20' : 'bg-zinc-800 text-white border-zinc-700'}`}>
-                           {report.targetType}
-                        </div>
-                        <div className="flex items-center gap-3 text-[10px] font-black font-mono text-zinc-300 uppercase tracking-[0.3em] italic">
-                           CASE_ID: <span className="text-accent not-italic font-black underline underline-offset-4">{report.targetId}</span>
-                        </div>
-                     </div>
-                     <h3 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-accent group-hover:translate-x-2 transition-transform duration-700">{report.reason}</h3>
-                     <div className="flex flex-wrap items-center gap-10 text-[10px] font-black font-mono text-zinc-300 uppercase tracking-[0.3em] italic">
-                        <span className="flex items-center gap-3"><GeometricLantern variant="user" className="w-4 h-4" /> AGENT: {report.reporter?.username}</span>
-                        <span className="flex items-center gap-3"><GeometricLantern variant="activity" className="w-4 h-4" /> STAMP: {new Date(report.createdAt).toLocaleString()}</span>
-                     </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className={cn('px-5 py-2 rounded-sm text-[10px] font-black uppercase tracking-[0.4em] italic border shadow-xs', reportTone[report.status])}>
+                        {report.status}
+                      </div>
+                      <div className="text-[10px] font-black font-mono text-zinc-300 uppercase tracking-[0.3em] italic">
+                        CASE #{report.id} / TARGET {report.target_type} #{report.target_id}
+                      </div>
+                    </div>
+                    <h3 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-accent">{report.reason}</h3>
+                    {report.description ? (
+                      <p className="text-base font-bold text-zinc-500 leading-7 max-w-4xl">{report.description}</p>
+                    ) : null}
+                    <div className="flex flex-wrap items-center gap-10 text-[10px] font-black font-mono text-zinc-300 uppercase tracking-[0.3em] italic">
+                      <span className="flex items-center gap-3"><GeometricLantern variant="user" className="w-4 h-4" /> 举报人：{report.reporter?.display_name || report.reporter?.username || `USER_${report.reporter_id}`}</span>
+                      <span className="flex items-center gap-3"><GeometricLantern variant="activity" className="w-4 h-4" /> 创建时间：{formatDateTime(report.created_at)}</span>
+                      <span className="flex items-center gap-3"><GeometricLantern variant="terminal" className="w-4 h-4" /> 更新时间：{formatDateTime(report.updated_at)}</span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
-                     {report.status === 'PENDING' ? (
-                       <>
-                         <button onClick={() => resolveMutation.mutate({ id: report.id, status: 'REJECTED' })} className="w-20 h-20 flex items-center justify-center border border-zinc-100 rounded-[2rem] hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all duration-500 group/btn shadow-xs active:scale-[0.95]" title="Dismiss Case">
-                            <GeometricLantern variant="alert" className="w-8 h-8 text-zinc-300 group-hover/btn:text-red-500 transition-colors" />
-                         </button>
-                         <button onClick={() => resolveMutation.mutate({ id: report.id, status: 'RESOLVED' })} className="group/btn px-12 py-6 btn-accent rounded-[2.5rem] transition-all duration-500 shadow-2xl shadow-accent/20 flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.4em] italic active:scale-[0.98]">
-                            <GeometricLantern variant="security" className="w-5 h-5 group-hover/btn:scale-110 transition-transform" /> EXECUTE_SANCTION
-                         </button>
-                       </>
-                     ) : (
-                       <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-600 bg-green-50 px-8 py-5 rounded-[2rem] border border-green-100 italic shadow-xs">
-                          <GeometricLantern variant="spark" className="w-5 h-5" /> RESOLUTION_LOGGED
-                       </div>
-                     )}
-                     <button className="w-20 h-20 flex items-center justify-center border border-zinc-100 rounded-[2rem] hover:bg-zinc-50 hover:border-zinc-200 transition-all duration-500 group/btn shadow-xs active:scale-[0.95]">
-                        <GeometricLantern variant="network" className="w-6 h-6 text-zinc-300 group-hover/btn:text-accent transition-colors" />
-                     </button>
+                    {report.status === 'PENDING' || report.status === 'REVIEWING' ? (
+                      <>
+                        <button type="button"
+                          onClick={() => resolveMutation.mutate({ id: report.id, status: 'REJECTED' })}
+                          disabled={resolveMutation.isPending}
+                          className="w-20 h-20 flex items-center justify-center border border-zinc-100 rounded-[2rem] hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all duration-500 shadow-xs active:scale-[0.95]"
+                          title="驳回案件"
+                        >
+                          <GeometricLantern variant="alert" className="w-8 h-8 text-zinc-300" />
+                        </button>
+                        <button type="button"
+                          onClick={() => resolveMutation.mutate({ id: report.id, status: 'RESOLVED' })}
+                          disabled={resolveMutation.isPending}
+                          className="px-10 py-6 btn-accent rounded-[2.5rem] transition-all duration-500 shadow-2xl shadow-accent/20 flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.4em] italic active:scale-[0.98] disabled:opacity-50"
+                        >
+                          <GeometricLantern variant="security" className="w-5 h-5" /> 结案
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-green-600 bg-green-50 px-8 py-5 rounded-[2rem] border border-green-100 italic shadow-xs">
+                        <GeometricLantern variant="spark" className="w-5 h-5" /> 已记录处理结果
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))

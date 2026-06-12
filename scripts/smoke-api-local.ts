@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import net from 'node:net';
 
 type CheckResult = {
   name: string;
@@ -12,27 +13,96 @@ type ProbeAttempt = {
 };
 
 const HEALTH_PATHS = ['/api/health', '/health'];
+const DEFAULT_HOST = '127.0.0.1';
+const EXPLICIT_BASE_PROVIDED = Boolean(
+  process.env.SMOKE_API_BASE_URL || process.env.SMOKE_BASE_URL || process.env.API_PUBLIC_URL,
+);
+const DEFAULT_LOCAL_PORT = Number(process.env.SMOKE_LOCAL_PORT || 13000);
 const DEFAULT_BASE =
-  process.env.SMOKE_API_BASE_URL || process.env.SMOKE_BASE_URL || process.env.API_PUBLIC_URL || 'http://127.0.0.1:3000';
+  process.env.SMOKE_API_BASE_URL ||
+  process.env.SMOKE_BASE_URL ||
+  process.env.API_PUBLIC_URL ||
+  `http://${DEFAULT_HOST}:${DEFAULT_LOCAL_PORT}`;
 const STARTUP_TIMEOUT_MS = Number(process.env.SMOKE_STARTUP_TIMEOUT_MS || 60000);
 const POLL_INTERVAL_MS = 1500;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const normalizeBase = (base: string) => base.replace(/\/+$/, '');
+const buildBaseFromPort = (port: number) => `http://${DEFAULT_HOST}:${port}`;
 const waitForExit = (cp: ReturnType<typeof spawn>) =>
   new Promise<void>((resolve) => {
     cp.once('exit', () => resolve());
   });
+const terminateProcessTree = async (cp: ReturnType<typeof spawn>): Promise<void> => {
+  if (cp.killed) return;
+  if (process.platform === 'win32') {
+    try {
+      const killer = spawn('taskkill', ['/pid', String(cp.pid), '/t', '/f'], {
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      await waitForExit(killer);
+      await waitForExit(cp);
+      return;
+    } catch {
+      // fallback to default kill below
+    }
+  }
 
-const buildCandidateBases = (): string[] => {
+  cp.kill('SIGTERM');
+  await waitForExit(cp);
+};
+
+const isPortAvailable = (port: number, host = DEFAULT_HOST): Promise<boolean> =>
+  new Promise((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.on('error', () => resolve(false));
+    server.listen(port, host, () => {
+      server.close(() => resolve(true));
+    });
+  });
+
+const findEphemeralPort = (host = DEFAULT_HOST): Promise<number> =>
+  new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.unref();
+    server.on('error', reject);
+    server.listen(0, host, () => {
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        server.close(() => reject(new Error('Failed to resolve ephemeral port')));
+        return;
+      }
+      const { port } = address;
+      server.close((closeErr) => {
+        if (closeErr) {
+          reject(closeErr);
+          return;
+        }
+        resolve(port);
+      });
+    });
+  });
+
+const resolveLocalPort = async (preferredPort: number): Promise<number> => {
+  if (await isPortAvailable(preferredPort)) return preferredPort;
+  return findEphemeralPort();
+};
+
+const buildCandidateBases = (primaryBase: string): string[] => {
   const envCandidates = [
     process.env.SMOKE_API_BASE_URL,
     process.env.SMOKE_BASE_URL,
     process.env.API_PUBLIC_URL,
   ].filter(Boolean) as string[];
 
+  if (!EXPLICIT_BASE_PROVIDED) {
+    return [normalizeBase(primaryBase)];
+  }
+
   const defaults = [DEFAULT_BASE, 'http://127.0.0.1:3000', 'http://localhost:3000'];
-  return [...new Set([...envCandidates.map(normalizeBase), ...defaults.map(normalizeBase)])];
+  return [...new Set([normalizeBase(primaryBase), ...envCandidates.map(normalizeBase), ...defaults.map(normalizeBase)])];
 };
 
 const probeHealth = async (base: string): Promise<boolean> => {
@@ -49,8 +119,12 @@ const probeHealth = async (base: string): Promise<boolean> => {
   return false;
 };
 
-async function checkEndpoint(name: string, paths: string[], allowedStatusCodes: number[] = [200]): Promise<CheckResult> {
-  const bases = buildCandidateBases();
+async function checkEndpoint(
+  name: string,
+  paths: string[],
+  bases: string[],
+  allowedStatusCodes: number[] = [200],
+): Promise<CheckResult> {
   const attempts: ProbeAttempt[] = [];
 
   for (const base of bases) {
@@ -84,20 +158,21 @@ async function checkEndpoint(name: string, paths: string[], allowedStatusCodes: 
   return { name, ok: false, detail: summary || 'No reachable endpoint' };
 }
 
-async function runSmokeChecks(): Promise<number> {
+async function runSmokeChecksAgainstBase(base: string): Promise<number> {
+  const bases = buildCandidateBases(base);
   const allowReady503 = process.env.SMOKE_ALLOW_READY_503 !== 'false';
 
   const checks = await Promise.all([
-    checkEndpoint('health', ['/api/health', '/health']),
-    checkEndpoint('ready', ['/api/ready'], allowReady503 ? [200, 503] : [200]),
+    checkEndpoint('health', ['/api/health', '/health'], bases),
+    checkEndpoint('ready', ['/api/ready'], bases, allowReady503 ? [200, 503] : [200]),
     checkEndpoint('public-servers', [
       '/api/public/servers?page=1&limit=5',
       '/api/v1/public/servers?page=1&limit=5',
-    ]),
+    ], bases),
   ]);
 
   let failed = 0;
-  console.log('[smoke:api:local] Candidate bases:', buildCandidateBases().join(', '));
+  console.log('[smoke:api:local] Candidate bases:', bases.join(', '));
   console.log('[smoke:api:local] Results:');
   for (const c of checks) {
     if (!c.ok) failed += 1;
@@ -107,58 +182,78 @@ async function runSmokeChecks(): Promise<number> {
 }
 
 const run = async (): Promise<number> => {
-  const base = normalizeBase(DEFAULT_BASE);
+  const localPort = EXPLICIT_BASE_PROVIDED
+    ? null
+    : await resolveLocalPort(DEFAULT_LOCAL_PORT);
+  const base = normalizeBase(
+    EXPLICIT_BASE_PROVIDED ? DEFAULT_BASE : buildBaseFromPort(localPort as number),
+  );
+
+  if (!EXPLICIT_BASE_PROVIDED && localPort !== DEFAULT_LOCAL_PORT) {
+    console.warn(
+      `[smoke:api:local] Port ${DEFAULT_LOCAL_PORT} is busy, falling back to ${localPort}.`
+    );
+  }
+
   console.log(`[smoke:api:local] Probing ${base}`);
 
-  // If API is already up, just run smoke checks directly.
+  const runWithSpawnedServer = async (): Promise<number> => {
+    const spawnEnv: NodeJS.ProcessEnv = EXPLICIT_BASE_PROVIDED
+      ? process.env
+      : {
+          ...process.env,
+          PORT: String(localPort),
+          API_PUBLIC_URL: base,
+        };
+
+    const server = spawn(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'server/index.ts'], {
+      stdio: 'inherit',
+      env: spawnEnv,
+      windowsHide: true,
+    });
+
+    let serverExited = false;
+    server.on('exit', (code, signal) => {
+      serverExited = true;
+      console.error(`[smoke:api:local] Server process exited (code=${code ?? 'null'}, signal=${signal ?? 'null'}).`);
+    });
+    server.on('error', (err) => {
+      console.error('[smoke:api:local] Failed to start local API server:', err);
+    });
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < STARTUP_TIMEOUT_MS) {
+      if (serverExited) {
+        console.error('[smoke:api:local] Server exited before becoming healthy.');
+        return 1;
+      }
+
+      if (await probeHealth(base)) {
+        console.log('[smoke:api:local] API became healthy, running smoke checks.');
+        const failed = await runSmokeChecksAgainstBase(base);
+        await terminateProcessTree(server);
+        return failed > 0 ? 1 : 0;
+      }
+
+      await sleep(POLL_INTERVAL_MS);
+    }
+
+    await terminateProcessTree(server);
+    console.error(`[smoke:api:local] API did not become healthy within ${STARTUP_TIMEOUT_MS}ms at ${base}.`);
+    return 1;
+  };
+
+  // If API is already up, run smoke checks directly.
   if (await probeHealth(base)) {
     console.log('[smoke:api:local] API already healthy, running smoke checks.');
-    const failed = await runSmokeChecks();
-    return failed > 0 ? 1 : 0;
+    const failed = await runSmokeChecksAgainstBase(base);
+    if (failed === 0) return 0;
+    // Existing process might be stale/flaky; retry with a managed child process.
+    console.warn('[smoke:api:local] Existing API failed smoke checks, retrying with managed local server.');
+    return runWithSpawnedServer();
   }
 
-  const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const server = spawn(npxCommand, ['tsx', 'server/index.ts'], {
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-    env: process.env,
-  });
-
-  let serverExited = false;
-  server.on('exit', (code, signal) => {
-    serverExited = true;
-    console.error(`[smoke:api:local] Server process exited (code=${code ?? 'null'}, signal=${signal ?? 'null'}).`);
-  });
-  server.on('error', (err) => {
-    console.error('[smoke:api:local] Failed to start local API server:', err);
-  });
-
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < STARTUP_TIMEOUT_MS) {
-    if (serverExited) {
-      console.error('[smoke:api:local] Server exited before becoming healthy.');
-      return 1;
-    }
-
-    if (await probeHealth(base)) {
-      console.log('[smoke:api:local] API became healthy, running smoke checks.');
-      const failed = await runSmokeChecks();
-      if (!server.killed) {
-        server.kill('SIGTERM');
-        await waitForExit(server);
-      }
-      return failed > 0 ? 1 : 0;
-    }
-
-    await sleep(POLL_INTERVAL_MS);
-  }
-
-  if (!server.killed) {
-    server.kill('SIGTERM');
-    await waitForExit(server);
-  }
-  console.error(`[smoke:api:local] API did not become healthy within ${STARTUP_TIMEOUT_MS}ms at ${base}.`);
-  return 1;
+  return runWithSpawnedServer();
 };
 
 run().catch((err) => {

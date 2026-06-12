@@ -1,0 +1,634 @@
+{
+  "timestamp": "2026-06-08T02:01:53.950Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "total": 12,
+  "failed": 12,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": 200,
+      "findings": [
+        "certificate_error_detected",
+        "console_errors=3",
+        "error_responses=3",
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 平台状态 已连接 数据同步 同步中 站点摘要 MINECRAFT 服务器发现、发布与支持 千服..."
+      ]
+    }
+  ],
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 平台状态 已连接 数据同步 同步中 站点摘要 MINECRAFT 服务器发现、发布与支持 千服...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/servers/stats",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/servers/stats",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\home-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "千服联灯 · 服务器",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 公开展示中 公开列表已开放 发现服务器 目前共有 0 个已公开的服务器可浏览。 全部 生存 创造 极限 小游戏 角色扮演 公开索引 MINECRAFT 服务器公开列表 这里汇总已公开的服务器名称、分类、标签、版本、在线状态和简介，方便玩家按关键词和玩法筛选目标服务器。 列表状态: 正常 ...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/public/servers?limit=60",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/public/servers?limit=60",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 通用发现 / 搜索核心 探索 网络世界。 通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG 纯净 空岛 科技 魔法 版本节点 1.20.x 1.19.x 1.18.x 1.16.x 1...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\search-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 RESOURCE CENTER 资源中心 整理常用的官方链接、社区论坛、技术百科与实用工具，并聚合玩家店铺与商品。 AI READY SUMMARY MINECRAFT 工具、社区与店铺聚合页 千服联灯资源中心整理 Minecraft 官方网站、社区论坛、百科、启动器和常用工具，也聚合玩...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/qianfu/marketplace/products?sortBy=featured&page=1&pageSize=6",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/rules",
+      "ogUrl": "https://mc-u.top/rules",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 BACK 等级与经验规则 用户通过站内互动积累成长经验，最高可达 100 级。等级与角色权限合并计算，部分权益需达到对应等级后解锁。 经验获取 (XP GAIN) 首次给已通过审核的服务器点赞 +3 经验 发表评论 +8 经验（每条评论） 每日签到 +25 经验（每日限一次） 等级与解锁...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 千服联灯. MINECRAFT 服务器平台 玩法经验 / REDSTONE 轮播中 稳定胜过复杂 \"红石线每传 15 格会衰减。把中继器放在关键节点后，机器从“偶尔能跑”变成“挂机一晚都稳”。这也是大神说的：先做稳定，再做复杂。\" 登录安全保障 账号登录、验证码和会话都经过加密校验，异常...",
+      "inputCount": 3,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/auth/oauth-status",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\login-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/register",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 千服联灯. MINECRAFT 服务器平台 服务器内容 / BRAND 轮播中 超越地址的艺术 \"一个好的服务器是一件艺术品。从 MOTD 的第一行字，到主城的每一块圆石，都在向玩家宣告：这里是一个值得停留的家园。\" 注册与邮箱校验 注册后会立即发送邮箱验证码，完成验证后即可发布服务器、...",
+      "inputCount": 5,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\register-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/forgot-password",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 千服联灯. MINECRAFT 服务器平台 SECURITY / RECOVERY 轮播中 忘记密码？ \"请输入您的邮箱地址，我们将发送验证码以重置您的密码。\" 账号找回与重置 重置密码前需要先完成邮箱验证码校验，避免他人绕过账号安全直接修改密码。 1 IDENTIFY 2 VERIFY...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 通用发现 / 搜索核心 探索 网络世界。 通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG 纯净 空岛 科技 魔法 版本节点 1.20.x 1.19.x 1.18.x 1.16.x 1...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "千服联灯 · 服务器",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 公开展示中 公开列表已开放 发现服务器 目前共有 0 个已公开的服务器可浏览。 全部 生存 创造 极限 小游戏 角色扮演 公开索引 MINECRAFT 服务器公开列表 这里汇总已公开的服务器名称、分类、标签、版本、在线状态和简介，方便玩家按关键词和玩法筛选目标服务器。 列表状态: 正常 ...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/public/servers?limit=60",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/public/servers?limit=60",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=3",
+        "error_responses=3"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 RESOURCE CENTER 资源中心 整理常用的官方链接、社区论坛、技术百科与实用工具，并聚合玩家店铺与商品。 AI READY SUMMARY MINECRAFT 工具、社区与店铺聚合页 千服联灯资源中心整理 Minecraft 官方网站、社区论坛、百科、启动器和常用工具，也聚合玩...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/qianfu/marketplace/products?sortBy=featured&page=1&pageSize=6",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 平台状态 已连接 数据同步 同步中 站点摘要 MINECRAFT 服务器发现、发布与支持 千服...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://pay.star-web.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://pay.star-web.top/api/v1/servers/stats",
+          "status": 502,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "https://pay.star-web.top/api/v1/servers/stats",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-08T02-01-08-962Z\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "certificate_error_detected",
+        "console_errors=3",
+        "error_responses=3",
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 平台状态 已连接 数据同步 同步中 站点摘要 MINECRAFT 服务器发现、发布与支持 千服..."
+      ]
+    }
+  ]
+}

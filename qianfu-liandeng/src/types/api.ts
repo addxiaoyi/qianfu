@@ -3,16 +3,25 @@ export interface User {
   username: string;
   email: string;
   email_verified: boolean;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'operator' | 'moderator' | 'normal';
   balance?: string;
   joinDate?: string;
   level?: number;
   experience_points?: number;
+  xp_into_level?: number;
+  xp_for_next_level?: number;
+  level_progress?: number;
+  last_checkin_at?: string;
 }
 
 export interface Order {
   orderId: string;
   paymentUrl: string;
+  provider?: string;
+  qrImagePath?: string;
+  paymentQrContent?: string;
+  tenantKey?: string;
+  upstreamOrderId?: string;
   planId: string;
   amount: number;
   status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';

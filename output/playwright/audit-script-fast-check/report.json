@@ -1,0 +1,466 @@
+{
+  "timestamp": "2026-06-08T07:26:58.387Z",
+  "baseUrl": "http://127.0.0.1:4173",
+  "payUrl": "http://127.0.0.1:4173",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check",
+  "plannedTotal": 12,
+  "completed": 12,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 3000,
+    "stableWaitMs": 100
+  },
+  "total": 12,
+  "failed": 12,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "http://127.0.0.1:4173/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/ Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "http://127.0.0.1:4173/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/servers Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "http://127.0.0.1:4173/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/search Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "http://127.0.0.1:4173/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/resources Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "http://127.0.0.1:4173/rules",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/rules Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4173/login",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/login Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4173/register",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/register Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4173/forgot-password",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/forgot-password Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4173/#/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/search Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "http://127.0.0.1:4173/#/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/servers Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "http://127.0.0.1:4173/#/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/resources Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4173/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/ Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [],
+  "commonErrorResponses": [],
+  "payRoot": {
+    "finalUrl": "chrome-error://chromewebdata/",
+    "title": "",
+    "canonicalHref": null,
+    "ogUrl": null,
+    "textSnippet": "",
+    "certificateErrorDetected": false,
+    "bodyMismatch": ""
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "http://127.0.0.1:4173/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\home-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/ Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "http://127.0.0.1:4173/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/servers",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/servers Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "http://127.0.0.1:4173/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/search",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\search-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/search Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "http://127.0.0.1:4173/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/resources",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/resources Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "http://127.0.0.1:4173/rules",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/rules",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/rules Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4173/login",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/login",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\login-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/login Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4173/register",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/register",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\register-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/register Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4173/forgot-password",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/forgot-password",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/forgot-password Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4173/#/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/search Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "http://127.0.0.1:4173/#/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/servers Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "http://127.0.0.1:4173/#/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/#/resources Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4173/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4173/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_REFUSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-fast-check\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4173/ Call log: \u001b[2m - navigating to \"http://127.0.0.1:4173/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ]
+}

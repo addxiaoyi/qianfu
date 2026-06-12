@@ -1,45 +1,45 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
-  ArrowLeft, Search, ChevronRight, Clock,
-  AlertCircle, CheckCircle, Filter, Plus
+  Search, Clock, AlertCircle, Plus, MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { api } from '../../api/request';
 import { cn } from '../../utils/cn';
+import { formatDateTime } from '../../utils/serverView';
+import { toArray } from '../../utils/apiData';
 
-type TicketStatus = 'open' | 'pending' | 'closed';
+type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
+type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 
 interface Ticket {
-  id: string;
-  title: string;
-  status: TicketStatus;
-  priority: 'low' | 'medium' | 'high';
-  replies: number;
-  lastReply: string;
-  category: string;
+  id: number | string;
+  title?: string;
+  subject?: string;
+  description?: string;
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  updated_at?: string;
+  updatedAt?: string;
+  created_at?: string;
+  messages?: unknown[];
 }
 
-const mockTickets: Ticket[] = [
-  { id: '1', title: '服务器连接问题', status: 'open', priority: 'high', replies: 5, lastReply: '2小时前', category: '技术支持' },
-  { id: '2', title: '支付失败反馈', status: 'pending', priority: 'high', replies: 3, lastReply: '1天前', category: '支付问题' },
-  { id: '3', title: '功能建议：暗黑模式', status: 'open', priority: 'low', replies: 1, lastReply: '3天前', category: '功能建议' },
-  { id: '4', title: '账户登录异常', status: 'closed', priority: 'medium', replies: 7, lastReply: '1周前', category: '账户问题' },
-  { id: '5', title: 'API 使用咨询', status: 'open', priority: 'medium', replies: 2, lastReply: '2天前', category: '技术咨询' },
-];
-
-const statusConfig = {
-  open: { label: '进行中', color: 'bg-blue-500', bg: 'bg-blue-50 text-blue-600' },
-  pending: { label: '待回复', color: 'bg-yellow-500', bg: 'bg-yellow-50 text-yellow-600' },
-  closed: { label: '已解决', color: 'bg-green-500', bg: 'bg-green-50 text-green-600' },
+const statusConfig: Record<TicketStatus, { label: string; bg: string }> = {
+  OPEN: { label: '进行中', bg: 'bg-blue-50 text-blue-600' },
+  IN_PROGRESS: { label: '处理中', bg: 'bg-amber-50 text-amber-600' },
+  RESOLVED: { label: '已解决', bg: 'bg-green-50 text-green-600' },
+  CLOSED: { label: '已关闭', bg: 'bg-zinc-100 text-zinc-500' },
 };
 
-const priorityConfig = {
-  low: { label: '低', color: 'text-zinc-400' },
-  medium: { label: '中', color: 'text-orange-500' },
-  high: { label: '高', color: 'text-red-500' },
+const priorityConfig: Record<TicketPriority, { label: string; color: string }> = {
+  LOW: { label: '低', color: 'text-zinc-400' },
+  MEDIUM: { label: '中', color: 'text-orange-500' },
+  HIGH: { label: '高', color: 'text-red-500' },
+  URGENT: { label: '紧急', color: 'text-red-600' },
 };
 
-/** Debounce helper — returns latest value after `delay` ms of inactivity. */
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
   React.useEffect(() => {
@@ -52,68 +52,69 @@ function useDebounce<T>(value: T, delay: number): T {
 const MobileTicketList: React.FC = () => {
   const [filter, setFilter] = useState<'all' | TicketStatus>('all');
   const [rawSearch, setRawSearch] = useState('');
-  const debouncedSearch = useDebounce(rawSearch, 300);
+  const debouncedSearch = useDebounce(rawSearch.trim(), 250);
 
-  const filteredTickets = useMemo(
-    () =>
-      mockTickets.filter((ticket) => {
-        const matchFilter = filter === 'all' || ticket.status === filter;
-        const matchSearch =
-          !debouncedSearch ||
-          ticket.title.includes(debouncedSearch) ||
-          ticket.category.includes(debouncedSearch);
-        return matchFilter && matchSearch;
-      }),
-    [filter, debouncedSearch],
-  );
+  const { data: ticketResponse, isLoading, isError, refetch } = useQuery({
+    queryKey: ['tickets', 'mobile'],
+    queryFn: () => api.get<any>('/tickets', { limit: 100 }),
+  });
+  const tickets = toArray<Ticket>(ticketResponse);
+
+  const filteredTickets = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    return tickets.filter((ticket) => {
+      const status = ticket.status || 'OPEN';
+      const title = ticket.title || ticket.subject || '';
+      const body = ticket.description || '';
+      const matchFilter = filter === 'all' || status === filter;
+      const matchSearch = !q || `${title} ${body}`.toLowerCase().includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [tickets, filter, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-100">
-        <div className="flex items-center justify-between px-4 py-4">
-          <Link to="/me" className="flex items-center gap-1 text-sm font-bold">
-            <ArrowLeft className="w-4 h-4" />
-            返回
-          </Link>
-          <h1 className="text-base font-black uppercase tracking-tight">工单</h1>
-          <Link to="/tickets/new">
+      <div className="px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={rawSearch}
+              onChange={(e) => setRawSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.preventDefault();
+              }}
+              placeholder="搜索工单..."
+              className="w-full pl-10 pr-4 py-3 bg-white rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black/10"
+            />
+          </div>
+          <Link
+            to="/tickets/new"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-black text-white"
+            aria-label="新建工单"
+          >
             <Plus className="w-5 h-5" />
           </Link>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="px-4 py-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={rawSearch}
-            onChange={(e) => setRawSearch(e.target.value)}
-            placeholder="搜索工单..."
-            className="w-full pl-10 pr-4 py-3 bg-white rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black/10"
-          />
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
       <div className="px-4 pb-4">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {[
             { key: 'all' as const, label: '全部' },
-            { key: 'open' as const, label: '进行中' },
-            { key: 'pending' as const, label: '待回复' },
-            { key: 'closed' as const, label: '已解决' },
+            { key: 'OPEN' as const, label: '进行中' },
+            { key: 'IN_PROGRESS' as const, label: '处理中' },
+            { key: 'RESOLVED' as const, label: '已解决' },
+            { key: 'CLOSED' as const, label: '已关闭' },
           ].map((tab) => (
             <button
+              type="button"
               key={tab.key}
               onClick={() => setFilter(tab.key)}
               className={cn(
                 'px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors',
-                filter === tab.key
-                  ? 'bg-black text-white'
-                  : 'bg-white text-zinc-600',
+                filter === tab.key ? 'bg-black text-white' : 'bg-white text-zinc-600',
               )}
             >
               {tab.label}
@@ -122,23 +123,29 @@ const MobileTicketList: React.FC = () => {
         </div>
       </div>
 
-      {/* Ticket List */}
       <div className="px-4 space-y-3">
-        {filteredTickets.length === 0 ? (
+        {isLoading ? (
+          [1, 2, 3].map((item) => <div key={item} className="h-32 rounded-2xl bg-white animate-pulse" />)
+        ) : isError ? (
           <div className="py-16 text-center">
-            <AlertCircle className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
+            <AlertCircle className="w-12 h-12 text-red-300 mx-auto mb-3" />
+            <p className="text-sm font-bold text-muted-foreground">工单加载失败</p>
+            <button type="button" onClick={() => refetch()} className="mt-4 text-sm font-black text-black">重试</button>
+          </div>
+        ) : filteredTickets.length === 0 ? (
+          <div className="py-16 text-center">
+            <MessageSquare className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
             <p className="text-sm font-bold text-muted-foreground">暂无工单</p>
-            <Link
-              to="/tickets/new"
-              className="mt-4 inline-block text-sm font-bold text-primary"
-            >
+            <Link to="/tickets/new" className="mt-4 inline-block text-sm font-bold text-primary">
               创建新工单
             </Link>
           </div>
         ) : (
           filteredTickets.map((ticket) => {
-            const status = statusConfig[ticket.status];
-            const priority = priorityConfig[ticket.priority];
+            const status = statusConfig[ticket.status || 'OPEN'];
+            const priority = priorityConfig[ticket.priority || 'MEDIUM'];
+            const title = ticket.title || ticket.subject || `工单 #${ticket.id}`;
+            const replies = Array.isArray(ticket.messages) ? Math.max(ticket.messages.length - 1, 0) : 0;
 
             return (
               <motion.div
@@ -148,35 +155,27 @@ const MobileTicketList: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Link
-                  to={`/tickets/${ticket.id}`}
-                  className="block bg-white rounded-2xl p-4 space-y-3"
-                >
-                  {/* Title and Status */}
+                <Link to={`/tickets/${ticket.id}`} className="block bg-white rounded-2xl p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-bold flex-1">{ticket.title}</h3>
+                    <h3 className="text-sm font-bold flex-1 line-clamp-2">{title}</h3>
                     <span className={cn('px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap', status.bg)}>
                       {status.label}
                     </span>
                   </div>
 
-                  {/* Meta */}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {ticket.lastReply}
+                      {formatDateTime(ticket.updated_at || ticket.updatedAt || ticket.created_at)}
                     </span>
                     <span className="flex items-center gap-1">
-                      💬 {ticket.replies} 回复
+                      <MessageSquare className="w-3 h-3" />
+                      {replies} 回复
                     </span>
-                    <span>{ticket.category}</span>
                     <span className={cn('font-bold', priority.color)}>
                       优先级: {priority.label}
                     </span>
                   </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-gray-100" />
                 </Link>
               </motion.div>
             );

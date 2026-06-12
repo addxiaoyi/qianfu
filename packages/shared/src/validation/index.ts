@@ -114,7 +114,7 @@ export function validatePartial<T>(
 
  */
 
-export function validateOrThrow<T>(schema: ZodSchema<T>, data: unknown, message = 'Validation failed'): T {
+export function validateOrThrow<T>(schema: ZodSchema<T>, data: unknown, _message = 'Validation failed'): T {
 
   return validate(schema, data);
 

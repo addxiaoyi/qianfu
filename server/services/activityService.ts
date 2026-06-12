@@ -70,7 +70,7 @@ export class ActivityService {
       logger.info(`[ActivityService] Probing ${servers.length} servers...`);
 
       // 2. Prepare probe requests
-      const probeRequests = servers.map(s => {
+      const probeRequests = servers.map((s: any) => {
         const isBedrock = s.tags?.toLowerCase().includes('bedrock') || s.tags?.toLowerCase().includes('基岩');
         return {
           id: String(s.id),
@@ -107,7 +107,7 @@ export class ActivityService {
         if (!result.id) continue;
 
         const serverId = parseInt(result.id);
-        const server = servers.find(s => s.id === serverId);
+        const server = servers.find((s: any) => s.id === serverId);
         if (!server) continue;
 
         const currentActivity = server.activity || 0;
@@ -164,7 +164,7 @@ export class ActivityService {
 
       // Execute batch updates in a single transaction
       if (serverUpdates.length > 0 || statusUpserts.length > 0) {
-        await localPrisma.$transaction(async (tx) => {
+        await localPrisma.$transaction(async (tx: any) => {
           // Batch update server activities
           if (serverUpdates.length > 0) {
             const activityUpdatePromises = serverUpdates.map(({ id, activity }) =>

@@ -35,6 +35,7 @@ const ForgotPassword: React.FC = () => {
   const [activeStory, setActiveStory] = useState(0);
   const [step, setStep] = useState<ForgotStep>('identify');
   const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
   const [countdown, setCountdown] = useState(0);
   const backendReady = useAuthStore((state) => state.backendReady);
   const navigate = useNavigate();
@@ -108,7 +109,7 @@ const ForgotPassword: React.FC = () => {
     }
     setSendingCode(true);
     try {
-      await api.post('/auth/forgot-password', { email: values.email });
+      await api.post('/auth/forgot-password', { email: values.email }, { skipCsrf: true });
       setVerifiedEmail(values.email);
       setStep('verify');
       setCountdown(60);
@@ -127,9 +128,9 @@ const ForgotPassword: React.FC = () => {
     }
     setLoading(true);
     try {
-      await api.post('/auth/verify-code', { email: verifiedEmail, code: values.code });
+      setResetCode(values.code);
       setStep('reset');
-      toast({ title: 'Verified', description: 'Identity confirmed. Set your new password.' });
+      toast({ title: 'Code ready', description: 'Set your new password to complete verification.' });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: err.message });
     } finally {
@@ -144,7 +145,7 @@ const ForgotPassword: React.FC = () => {
     }
     setLoading(true);
     try {
-      await api.post('/auth/reset-password', { email: verifiedEmail, password: values.password });
+      await api.post('/auth/reset-password', { email: verifiedEmail, code: resetCode, password: values.password }, { skipCsrf: true });
       toast({ title: 'Password reset', description: 'Your password has been reset successfully.' });
       navigate('/login');
     } catch (err: any) {
@@ -176,7 +177,7 @@ const ForgotPassword: React.FC = () => {
                 {t('admin.title')}.
               </span>
               <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] italic leading-none">
-                全球网络矩阵
+                Minecraft 服务器平台
               </span>
             </div>
           </Link>
@@ -198,7 +199,7 @@ const ForgotPassword: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic">
-                      同步中
+                      轮播中
                     </span>
                   </div>
                 </div>
@@ -214,6 +215,7 @@ const ForgotPassword: React.FC = () => {
             <div className="flex gap-3">
               {STORIES.map((_, i) => (
                 <button
+                  type="button"
                   key={i}
                   onClick={() => setActiveStory(i)}
                   className={`h-1.5 rounded-full transition-all duration-1000 ${
@@ -231,13 +233,13 @@ const ForgotPassword: React.FC = () => {
               <div className="flex items-center gap-4">
                 <GeometricLantern variant="security" className="w-5 h-5 text-zinc-400 group-hover:text-accent transition-colors" />
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white italic leading-none">
-                  安全协议 v4.0
+                  账号找回与重置
                 </span>
               </div>
               <GeometricLantern variant="data" className="w-4 h-4 text-zinc-800" />
             </div>
             <p className="text-[12px] text-zinc-500 font-medium leading-relaxed italic max-w-sm">
-              数据经过端到端加密存储，仅由您本人通过安全令牌访问。所有节点注册均经过多重熵校验以确保身份唯一性。
+              重置密码前需要先完成邮箱验证码校验，避免他人绕过账号安全直接修改密码。
             </p>
           </div>
         </div>
@@ -249,12 +251,12 @@ const ForgotPassword: React.FC = () => {
       </aside>
 
       {/* Form Side */}
-      <main className="flex-grow flex items-center justify-center p-12 md:p-24 lg:p-40 relative overflow-y-auto">
+      <main className="flex-grow flex items-center justify-center p-5 sm:p-8 md:p-24 lg:p-40 relative overflow-y-auto">
         <div className="absolute top-0 right-0 p-24 opacity-[0.02] pointer-events-none lg:block hidden">
           <GeometricLantern variant="spark" className="w-96 h-96 rotate-12" />
         </div>
 
-        <div className="w-full max-w-lg space-y-20 relative z-10 py-12">
+        <div className="w-full max-w-lg space-y-12 sm:space-y-16 lg:space-y-20 relative z-10 py-6 sm:py-12">
           {/* Header */}
           <header className="space-y-6">
             <div className="w-16 h-16 bg-black text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl lg:hidden mb-12 animate-float">
@@ -262,12 +264,12 @@ const ForgotPassword: React.FC = () => {
             </div>
 
             {/* Step indicators */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1">
               {steps.map((s, i) => (
                 <React.Fragment key={s.key}>
                   <div className="flex items-center gap-2">
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all duration-500 ${
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all duration-500 ${
                         i < currentStepIndex
                           ? 'bg-accent text-white shadow-lg shadow-accent/30'
                           : i === currentStepIndex
@@ -282,7 +284,7 @@ const ForgotPassword: React.FC = () => {
                       )}
                     </div>
                     <span
-                      className={`text-[9px] font-black uppercase tracking-widest transition-colors ${
+                      className={`hidden sm:inline whitespace-nowrap text-[9px] font-black uppercase tracking-widest transition-colors ${
                         i <= currentStepIndex ? 'text-zinc-700' : 'text-zinc-200'
                       }`}
                     >
@@ -291,7 +293,7 @@ const ForgotPassword: React.FC = () => {
                   </div>
                   {i < steps.length - 1 && (
                     <div
-                      className={`w-8 h-0.5 transition-colors duration-500 ${
+                      className={`w-6 sm:w-8 h-0.5 transition-colors duration-500 ${
                         i < currentStepIndex ? 'bg-accent' : 'bg-zinc-100'
                       }`}
                     />

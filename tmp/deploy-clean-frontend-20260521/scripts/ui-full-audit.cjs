@@ -1,0 +1,213 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const { chromium, devices } = require('playwright');
+
+const BASE_URL = process.env.QA_BASE_URL || 'http://localhost:5173';
+const OUT_DIR = path.resolve(process.cwd(), 'output', 'ui-audit-2026-05-21');
+const LOCAL_AUTH_TOKEN_KEY = 'qf_local_auth_token';
+const USER_LOGIN = {
+  identifier: process.env.QA_LOGIN_IDENTIFIER || process.env.QA_LOGIN_USER || 'qa_user',
+  password: process.env.QA_LOGIN_PASSWORD || 'QaTest123!',
+};
+const ADMIN_LOGIN = {
+  identifier: process.env.QA_ADMIN_IDENTIFIER || process.env.QA_ADMIN_USER || 'qa_admin',
+  password: process.env.QA_ADMIN_PASSWORD || 'QaAdmin123!',
+};
+
+const desktopPublicRoutes = [
+  '/', '/servers', '/search', '/rules', '/resources', '/team', '/promotion', '/terms', '/privacy', '/login', '/register', '/forgot-password'
+];
+
+const desktopUserRoutes = [
+  '/dashboard', '/tickets', '/me', '/me/edit', '/payment', '/editor', '/marketplace/shop', '/marketplace/manage', '/promotion/tasks', '/promotion/claims'
+];
+
+const desktopAdminRoutes = [
+  '/admin', '/admin-users', '/admin-review', '/admin-tickets', '/admin-reports', '/admin-audit', '/admin-audit-stats', '/admin-moderation', '/admin-port5555', '/admin-qianfu', '/admin-settings', '/admin-mail'
+];
+
+const mobileRoutes = [
+  '/mobile', '/servers', '/search', '/tickets', '/tickets/new', '/me', '/me/edit', '/me/settings', '/me/notifications', '/payment', '/messages', '/editor', '/dashboard'
+];
+
+function hashPath(route) {
+  if (route === '/') return `${BASE_URL}/#/`;
+  return `${BASE_URL}/#${route}`;
+}
+
+async function ensureDir(p) {
+  await fs.promises.mkdir(p, { recursive: true });
+}
+
+async function waitPageStable(page) {
+  await page.waitForLoadState('domcontentloaded', { timeout: 20000 });
+  await page.waitForTimeout(1500);
+}
+
+async function snapshot(page) {
+  const errs = await page.locator('text=/TypeError|ReferenceError|Unhandled|An unexpected error occurred|Cannot read/i').count();
+  const body = await page.locator('body').innerText();
+  const textLen = body.trim().length;
+  const title = await page.title();
+  return { errs, textLen, title, bodyStart: body.slice(0, 220), body };
+}
+
+async function readAuthState(page) {
+  return await page.evaluate(async ({ tokenKey }) => {
+    const token =
+      window.sessionStorage.getItem(tokenKey) ||
+      window.localStorage.getItem(tokenKey);
+    if (!token) {
+      return { hasToken: false, profileOk: false, role: '' };
+    }
+    try {
+      const resp = await fetch('/api/v1/profile', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!resp.ok) {
+        return { hasToken: true, profileOk: false, role: '', status: resp.status };
+      }
+      const json = await resp.json().catch(() => null);
+      const role = String(json?.data?.role ?? json?.role ?? '').toUpperCase();
+      return { hasToken: true, profileOk: true, role, status: resp.status };
+    } catch (error) {
+      return { hasToken: true, profileOk: false, role: '', error: String(error) };
+    }
+  }, { tokenKey: LOCAL_AUTH_TOKEN_KEY });
+}
+
+async function ensureLoggedIn(page, expectAdmin = false) {
+  const state = await readAuthState(page);
+  if (!state.hasToken || !state.profileOk) return false;
+  if (expectAdmin && state.role !== 'ADMIN') return false;
+  return true;
+}
+
+async function login(page, creds, expectAdmin = false) {
+  await page.goto(hashPath('/login'), { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1200);
+
+  const idInput = page.locator('input[autocomplete="username"], input[name="identifier"], input[type="text"]').first();
+  const pwInput = page.locator('input[autocomplete="current-password"], input[name="password"], input[type="password"]').first();
+
+  if (await idInput.count()) {
+    await idInput.fill(creds.identifier);
+    await pwInput.fill(creds.password);
+    const agreeBtn = page.getByRole('button', { name: /同意|agree/i }).first();
+    if (await agreeBtn.count()) await agreeBtn.click();
+    const submitButton = page.locator('form button[type="submit"]').first();
+    await Promise.allSettled([
+      page.waitForResponse((resp) => resp.url().includes('/api/v1/auth/login') && resp.request().method() === 'POST', { timeout: 15000 }),
+      submitButton.click(),
+    ]);
+    await page.waitForTimeout(1800);
+  }
+
+  const ok = await ensureLoggedIn(page, expectAdmin);
+  if (!ok) {
+    const state = await readAuthState(page);
+    throw new Error(`login failed for ${creds.identifier}: ${JSON.stringify(state)}`);
+  }
+}
+
+function isProtectedRoute(route) {
+  const protectedPrefixes = ['/dashboard', '/tickets', '/me', '/payment', '/editor', '/marketplace/manage', '/admin', '/promotion/tasks', '/promotion/claims'];
+  return protectedPrefixes.some((p) => route === p || route.startsWith(`${p}/`));
+}
+
+async function runSection(page, routes, section, tag, options = { loggedIn: false }) {
+  const results = [];
+  const shotDir = path.join(OUT_DIR, 'shots', tag, section);
+  await ensureDir(shotDir);
+
+  for (const route of routes) {
+    const url = hashPath(route);
+    let ok = true;
+    let note = '';
+    let redirectedToLogin = false;
+
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await waitPageStable(page);
+      const info = await snapshot(page);
+      const currentUrl = page.url();
+
+      if (currentUrl.includes('#/login') && route !== '/login') {
+        redirectedToLogin = true;
+      }
+
+      if (info.errs > 0) {
+        ok = false;
+        note = `error-text:${info.errs}`;
+      }
+      if (info.textLen < 40) {
+        ok = false;
+        note = `${note}|low-text`;
+      }
+
+      if (options.loggedIn && isProtectedRoute(route) && redirectedToLogin) {
+        ok = false;
+        note = `${note}|unexpected-login-redirect`;
+      }
+
+      const safeName = route.replace(/[\/:*?"<>|]/g, '_').replace(/^_+/, '') || 'root';
+      const shotPath = path.join(shotDir, `${safeName}.png`);
+      await page.screenshot({ path: shotPath, fullPage: true });
+
+      results.push({ section, route, url: currentUrl, ok, note, redirectedToLogin, title: info.title, textLen: info.textLen, screenshot: shotPath });
+    } catch (e) {
+      ok = false;
+      note = String(e && e.message ? e.message : e);
+      results.push({ section, route, url, ok, note, redirectedToLogin, title: '', textLen: 0, screenshot: '' });
+    }
+  }
+  return results;
+}
+
+(async () => {
+  await ensureDir(OUT_DIR);
+  const browser = await chromium.launch({ headless: true });
+
+  const deskCtx = await browser.newContext({ viewport: { width: 1440, height: 960 } });
+  const deskPage = await deskCtx.newPage();
+  const adminCtx = await browser.newContext({ viewport: { width: 1440, height: 960 } });
+  const adminPage = await adminCtx.newPage();
+  const mobileCtx = await browser.newContext({ ...devices['iPhone 13'] });
+  const mobilePage = await mobileCtx.newPage();
+
+  const results = [];
+  results.push(...await runSection(deskPage, desktopPublicRoutes, 'desktop-public', 'desktop'));
+
+  await login(deskPage, USER_LOGIN, false);
+  results.push(...await runSection(deskPage, desktopUserRoutes, 'desktop-user', 'desktop', { loggedIn: true }));
+
+  await login(adminPage, ADMIN_LOGIN, true);
+  results.push(...await runSection(adminPage, desktopAdminRoutes, 'desktop-admin', 'desktop', { loggedIn: true }));
+
+  await login(mobilePage, USER_LOGIN, false);
+  results.push(...await runSection(mobilePage, mobileRoutes, 'mobile-user', 'mobile', { loggedIn: true }));
+
+  await deskCtx.close();
+  await adminCtx.close();
+  await mobileCtx.close();
+  await browser.close();
+
+  const failed = results.filter(r => !r.ok);
+  const summary = {
+    timestamp: new Date().toISOString(),
+    baseUrl: BASE_URL,
+    total: results.length,
+    failed: failed.length,
+    failedRoutes: failed.map(f => ({ section: f.section, route: f.route, note: f.note, url: f.url })),
+    results
+  };
+
+  const outFile = path.join(OUT_DIR, 'report.json');
+  await fs.promises.writeFile(outFile, JSON.stringify(summary, null, 2), 'utf8');
+
+  console.log(JSON.stringify({ outFile, total: summary.total, failed: summary.failed, failedRoutes: summary.failedRoutes }, null, 2));
+})();

@@ -1,10 +1,16 @@
-import React, { type ReactNode, useEffect, useCallback, useRef } from 'react';
+import React, { type ReactNode, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowLeft, Settings } from 'lucide-react';
 import MobileBottomNav from './MobileBottomNav';
 import { cn } from '../../utils/cn';
 
+const ICP_LINK = 'https://beian.miit.gov.cn/';
+const ICP_LABEL = '苏ICP备2026025306号-2';
+
 interface MobileLayoutProps {
   children: ReactNode;
+  title?: string;
   onBack?: () => void;
   hideNav?: boolean;
   onRefresh?: () => void;
@@ -19,42 +25,138 @@ interface MobileLayoutProps {
  */
 const MobileLayout: React.FC<MobileLayoutProps> = ({
   children,
+  title,
   onBack,
   hideNav = false,
   onRefresh,
 }) => {
+  const location = useLocation();
+  const rootRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [pullDistance, setPullDistance] = React.useState(0);
+  const [topOffset, setTopOffset] = React.useState(0);
   const touchStartYRef = useRef<number | null>(null);
+  const pullDistanceRef = useRef(0);
+  const refreshEnabled = typeof onRefresh === 'function';
 
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    if (window.scrollY === 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-      setPullDistance(0);
-    }
-  }, []);
-
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (touchStartYRef.current === null) return;
-    const y = e.touches[0].clientY;
-    const diff = Math.max(0, y - touchStartYRef.current);
-    setPullDistance(diff);
-  }, []);
-
-  const onTouchEnd = useCallback(() => {
-    if (pullDistance >= 80) {
-      // Trigger reload — in a real app this would call a refresh callback
-      window.location.reload();
-    }
-    setPullDistance(0);
-    touchStartYRef.current = null;
+  useEffect(() => {
+    pullDistanceRef.current = pullDistance;
   }, [pullDistance]);
 
+  useEffect(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl) return;
+
+    const isInteractiveTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return Boolean(
+        target.closest(
+          'input, textarea, select, [contenteditable="true"], .tox, .ProseMirror',
+        ),
+      );
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (isInteractiveTarget(event.target)) {
+        touchStartYRef.current = null;
+        setPullDistance(0);
+        return;
+      }
+
+      if ((contentEl.scrollTop ?? 0) <= 0) {
+        touchStartYRef.current = event.touches[0]?.clientY ?? null;
+        setPullDistance(0);
+      } else {
+        touchStartYRef.current = null;
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (touchStartYRef.current === null) return;
+      const y = event.touches[0]?.clientY;
+      if (typeof y !== 'number') return;
+      const diff = Math.max(0, y - touchStartYRef.current);
+
+      if (diff > 0 && event.cancelable) {
+        // Prevent browser native pull-to-refresh, which feels like random page reload on forms.
+        event.preventDefault();
+      }
+
+      setPullDistance(diff);
+    };
+
+    const handleTouchEnd = () => {
+      if (refreshEnabled && pullDistanceRef.current >= 80 && onRefresh) {
+        onRefresh();
+      }
+      setPullDistance(0);
+      touchStartYRef.current = null;
+    };
+
+    contentEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+    contentEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+    contentEl.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      contentEl.removeEventListener('touchstart', handleTouchStart);
+      contentEl.removeEventListener('touchmove', handleTouchMove);
+      contentEl.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [onRefresh, refreshEnabled]);
+
+  useEffect(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl) return;
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    contentEl.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const updateTopOffset = () => {
+      const top = Math.max(0, Math.round(rootRef.current?.getBoundingClientRect().top ?? 0));
+      setTopOffset((current) => (current === top ? current : top));
+    };
+
+    updateTopOffset();
+
+    const resizeObserver = new ResizeObserver(updateTopOffset);
+    if (rootRef.current?.parentElement) {
+      resizeObserver.observe(rootRef.current.parentElement);
+    }
+    resizeObserver.observe(document.body);
+
+    const mutationObserver = new MutationObserver(() => {
+      window.requestAnimationFrame(updateTopOffset);
+    });
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+
+    window.addEventListener('resize', updateTopOffset);
+    window.addEventListener('orientationchange', updateTopOffset);
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      window.removeEventListener('resize', updateTopOffset);
+      window.removeEventListener('orientationchange', updateTopOffset);
+    };
+  }, []);
+
+  const shellHeight = topOffset > 0 ? `calc(100svh - ${topOffset}px)` : '100svh';
+
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 flex flex-col relative">
+    <div
+      ref={rootRef}
+      className="relative flex flex-col overflow-hidden bg-zinc-50 text-zinc-900"
+      style={{ height: shellHeight, minHeight: shellHeight }}
+    >
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
-        {pullDistance > 0 && (
+        {refreshEnabled && pullDistance > 0 && (
           <motion.div
             className="fixed top-0 left-0 right-0 flex items-center justify-center z-50"
             style={{
@@ -71,53 +173,60 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Safe top area for notches */}
+      {/* App header */}
       <div
         className={cn(
-          'bg-white shadow-sm',
-          onBack ? 'flex items-center px-4' : 'px-4 py-3',
+          'shrink-0 border-b border-zinc-200 bg-white/95 px-4 pb-3 shadow-sm backdrop-blur',
+          onBack ? 'flex items-end gap-2' : 'flex items-end justify-between',
         )}
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
       >
         {onBack && (
-          <motion.button
+          <motion.button type="button"
             whileTap={{ scale: 0.9 }}
-            className="w-12 h-12 flex items-center justify-center -ml-2 active:bg-zinc-100 rounded-full"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full active:bg-zinc-100"
             onClick={onBack}
+            aria-label="返回"
           >
-            <svg
-              className="w-6 h-6 text-zinc-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft className="h-5 w-5 text-zinc-700" />
           </motion.button>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
+            千服
+          </div>
+          <h1 className="truncate text-lg font-black tracking-tight text-zinc-950">
+            {title || '千服联灯'}
+          </h1>
+        </div>
+        {!onBack && (
+          <Link
+            to="/me/settings"
+            className="ml-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-zinc-100 bg-zinc-50 text-zinc-700 active:bg-zinc-100"
+            aria-label="打开设置"
+          >
+            <Settings className="h-5 w-5" />
+          </Link>
         )}
       </div>
 
       {/* Page content */}
       <motion.div
         ref={contentRef}
+        data-mobile-scroll-root="true"
         className={cn(
-          'flex-1 overflow-y-auto',
-          !hideNav ? 'pb-20' : '',
+          'min-h-0 flex-1 overflow-y-auto',
         )}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+        style={{
+          paddingBottom: !hideNav ? '1rem' : undefined,
+          overscrollBehaviorY: 'none',
+          WebkitOverflowScrolling: 'touch',
+          touchAction: 'pan-y',
+        }}
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={
-              children
-                ? React.isValidElement(children)
-                  ? String((children as React.ReactElement).key ?? (children as React.ReactElement).type)
-                  : 'content'
-                : 'content'
-            }
+            key={location.pathname}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -132,9 +241,20 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       {/* Bottom navigation */}
       {!hideNav && (
         <motion.div
-          className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-zinc-200/80"
+          className="relative z-40 shrink-0 border-t border-zinc-200/80 bg-white"
           style={{ paddingBottom: 'max(0px, env(safe-area-inset-bottom))' }}
         >
+          <div className="absolute inset-x-0 -top-8 h-10 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+          <div className="border-b border-zinc-100 px-4 py-1 text-center">
+            <a
+              href={ICP_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[9px] font-semibold leading-none text-zinc-500 transition-colors hover:text-black"
+            >
+              {ICP_LABEL}
+            </a>
+          </div>
           <MobileBottomNav />
         </motion.div>
       )}

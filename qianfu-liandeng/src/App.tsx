@@ -1,11 +1,8 @@
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { Suspense, useEffect, lazy, useMemo, type ComponentType } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, useEffect, lazy, useState } from "react";
 import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from "./store/authStore";
 import { useUIStore, applyAccent } from "./store/uiStore";
-import { useMobile } from "./hooks/useMobile";
-import MobileLayout from "./components/mobile/MobileLayout";
 import MobileWrapperPage from "./components/mobile/MobileWrapperPage";
 
 // Components
@@ -15,6 +12,9 @@ import GlobalProgress from "./components/GlobalProgress";
 import AnnouncementBanner from "./components/AnnouncementBanner";
 import Footer from "./components/Footer";
 import GlobalSettingsPanel from "./components/GlobalSettingsPanel";
+import DynamicBranding from "./components/DynamicBranding";
+import SeoHead from "./components/SeoHead";
+import { useBackendHealth } from "./hooks/useBackendHealth";
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
@@ -26,6 +26,7 @@ const Payment = lazy(() => import("./pages/Payment"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const OAuthCallback = lazy(() => import("./pages/auth/OAuthCallback"));
 const ServerDetail = lazy(() => import("./pages/ServerDetail"));
 const ServerEditor = lazy(() => import("./pages/ServerEditor"));
 const TicketList = lazy(() => import("./pages/TicketList"));
@@ -42,6 +43,8 @@ const AdminAuditStats = lazy(() => import("./pages/admin/AdminAuditStats"));
 const AdminModeration = lazy(() => import("./pages/admin/AdminModeration"));
 const AdminPortSecurity = lazy(() => import("./pages/admin/AdminPortSecurity"));
 const AdminPaymentConfig = lazy(() => import("./pages/admin/AdminPaymentConfig"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminMailConfig = lazy(() => import("./pages/admin/AdminMailConfig"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFail = lazy(() => import("./pages/PaymentFail"));
 const UserPublicProfile = lazy(() => import("./pages/UserPublicProfile"));
@@ -53,9 +56,11 @@ const MobileHome = lazy(() => import("./pages/MobileHome"));
 const PromotionLanding = lazy(() => import("./pages/PromotionLanding"));
 const ResourceCenter = lazy(() => import("./pages/ResourceCenter"));
 const Team = lazy(() => import("./pages/Team"));
+const LevelRules = lazy(() => import("./pages/LevelRules"));
 const ServerPortal = lazy(() => import("./pages/ServerPortal"));
 const MarketplaceShop = lazy(() => import("./pages/MarketplaceShop"));
 const MarketplaceDetail = lazy(() => import("./pages/MarketplaceDetail"));
+const MarketplaceOrderDetail = lazy(() => import("./pages/MarketplaceOrderDetail"));
 const MarketplaceManage = lazy(() => import("./pages/MarketplaceManage"));
 const AdminPromoTasks = lazy(() => import("./pages/admin/AdminPromoTasks"));
 const AdminPromoClaims = lazy(() => import("./pages/admin/AdminPromoClaims"));
@@ -74,7 +79,19 @@ const MobileMessages = lazy(() => import("./components/mobile/MobileMessages"));
 const MobileTicketCreate = lazy(() => import("./components/mobile/MobileTicketCreate"));
 const MobileTicketDetail = lazy(() => import("./components/mobile/MobileTicketDetail"));
 
-const queryClient = new QueryClient();
+const detectInitialMobileShell = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const forceMobileByUrl =
+    window.location.pathname.startsWith('/mobile') ||
+    window.location.hash.startsWith('#/mobile') ||
+    new URLSearchParams(window.location.search).get('mobile') === '1';
+
+  const isNarrowViewport = window.matchMedia('(max-width: 767.98px)').matches;
+  return forceMobileByUrl || isNarrowViewport;
+};
 
 function App() {
   const { hydrateFromSession, isAuthenticated, isLoading, user } = useAuthStore(
@@ -86,14 +103,13 @@ function App() {
     }))
   );
   const accent = useUIStore((state) => state.accent);
-  const { isMobile } = useMobile(768);
+  const [isMobileShell] = useState(detectInitialMobileShell);
 
-  const { data: backendReady = true } = useQuery({
-    queryKey: ['health'],
-    queryFn: () => fetch('/api/health').then((r) => r.ok),
-    staleTime: 15_000,
-    retry: 1,
-  });
+  const {
+    backendReady,
+    isLoading: backendHealthLoading,
+    isError: backendHealthError,
+  } = useBackendHealth();
 
   const LoadingState = () => (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -136,8 +152,11 @@ function App() {
   };
 
   const RedirectIfAuthed = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading) return <LoadingState />;
-    if (isAuthenticated) return <Navigate to="/" replace />;
+    if (!isLoading && isAuthenticated && !user?.email_verified) {
+      const email = user?.email ?? '';
+      return <Navigate to={`/verify-code?email=${encodeURIComponent(email)}`} replace />;
+    }
+    if (!isLoading && isAuthenticated) return <Navigate to="/dashboard" replace />;
     return <>{children}</>;
   };
 
@@ -151,25 +170,56 @@ function App() {
   }, [accent]);
 
   // ─── Mobile routes shared wrapper ────────────────────────────────
-  const mobileRoutes = useMemo(
+  const mobileRoutes = (
     <>
       <Route path="/mobile" element={<MobileWrapperPage><MobileHome /></MobileWrapperPage>} />
-      <Route path="/servers" element={<MobileWrapperPage title="发现"><ServerList /></MobileWrapperPage>} />
-      <Route path="/server/:id" element={<MobileWrapperPage title="服务器详情"><MobileServerDetail /></MobileWrapperPage>} />
+      <Route path="/servers" element={<MobileWrapperPage title="发现"><MobileSearch /></MobileWrapperPage>} />
+      <Route path="/server/:id" element={<MobileWrapperPage title="服务器详情" hideNav><MobileServerDetail /></MobileWrapperPage>} />
       <Route path="/search" element={<MobileWrapperPage title="搜索"><MobileSearch /></MobileWrapperPage>} />
-      <Route path="/messages" element={<MobileWrapperPage title="消息"><MobileMessages /></MobileWrapperPage>} />
-      <Route path="/editor" element={<MobileWrapperPage title="发布"><MobileEditor /></MobileWrapperPage>} />
-      <Route path="/payment" element={<MobileWrapperPage title="支付"><MobilePayment /></MobileWrapperPage>} />
-      <Route path="/me" element={<MobileWrapperPage title="我的"><MobileUserCenter /></MobileWrapperPage>} />
-      <Route path="/me/settings" element={<MobileWrapperPage title="设置"><MobileSettings /></MobileWrapperPage>} />
-      <Route path="/me/notifications" element={<MobileWrapperPage title="通知"><MobileNotifications /></MobileWrapperPage>} />
-      <Route path="/tickets" element={<MobileWrapperPage title="工单"><MobileTicketList /></MobileWrapperPage>} />
-      <Route path="/tickets/:id" element={<MobileWrapperPage title="工单详情"><MobileTicketDetail /></MobileWrapperPage>} />
-      <Route path="/tickets/new" element={<MobileWrapperPage title="新建工单"><MobileTicketCreate /></MobileWrapperPage>} />
-      <Route path="/dashboard" element={<MobileWrapperPage title="仪表盘"><MobileAdminDashboard /></MobileWrapperPage>} />
+      <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
+      <Route path="/login/oauth" element={<RedirectIfAuthed><OAuthSelection /></RedirectIfAuthed>} />
+      <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
+      <Route path="/forgot-password" element={<RedirectIfAuthed><ForgotPassword /></RedirectIfAuthed>} />
+      <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
+      <Route path="/oauth/callback/:provider" element={<OAuthCallback />} />
+      <Route path="/verify-code" element={<RequireAuth><VerifyEmail /></RequireAuth>} />
+      <Route path="/terms" element={<MobileWrapperPage title="服务条款"><Terms /></MobileWrapperPage>} />
+      <Route path="/privacy" element={<MobileWrapperPage title="隐私政策"><Privacy /></MobileWrapperPage>} />
+      <Route path="/rules" element={<MobileWrapperPage title="规则"><LevelRules /></MobileWrapperPage>} />
+      <Route path="/payment/success" element={<PaymentSuccess />} />
+      <Route path="/payment/fail" element={<PaymentFail />} />
+      <Route path="/messages" element={<RequireAuth><MobileWrapperPage title="消息"><MobileMessages /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/editor" element={<RequireEmailVerified><MobileWrapperPage title="发布" hideNav><MobileEditor /></MobileWrapperPage></RequireEmailVerified>} />
+      <Route path="/payment" element={<RequireAuth><MobileWrapperPage title="支付" hideNav><MobilePayment /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me" element={<RequireAuth><MobileWrapperPage title="我的"><MobileUserCenter /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/edit" element={<RequireAuth><MobileWrapperPage title="编辑资料" hideNav><ProfileEdit /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/settings" element={<RequireAuth><MobileWrapperPage title="设置"><MobileSettings /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/notifications" element={<RequireAuth><MobileWrapperPage title="通知"><MobileNotifications /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/tickets" element={<RequireAuth><MobileWrapperPage title="工单"><MobileTicketList /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/tickets/:id" element={<RequireAuth><MobileWrapperPage title="工单详情" hideNav><MobileTicketDetail /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/tickets/new" element={<RequireEmailVerified><MobileWrapperPage title="新建工单" hideNav><MobileTicketCreate /></MobileWrapperPage></RequireEmailVerified>} />
+      <Route path="/dashboard" element={<RequireAuth><MobileWrapperPage title="仪表盘"><MobileAdminDashboard /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/dashboard/servers" element={<RequireAuth><Navigate to="/servers" replace /></RequireAuth>} />
+      <Route path="/dashboard/tickets" element={<RequireAuth><Navigate to="/tickets" replace /></RequireAuth>} />
+      <Route path="/dashboard/tickets/new" element={<RequireEmailVerified><Navigate to="/tickets/new" replace /></RequireEmailVerified>} />
+      <Route path="/dashboard/tickets/:id" element={<RequireAuth><Navigate to="/tickets" replace /></RequireAuth>} />
+      <Route path="/dashboard/billing" element={<RequireAuth><Navigate to="/payment" replace /></RequireAuth>} />
+      <Route path="/dashboard/profile" element={<RequireAuth><Navigate to="/me" replace /></RequireAuth>} />
+      <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-users" element={<RequireAdmin><AdminLayout><AdminUsers /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-review" element={<RequireAdmin><AdminLayout><AdminReview /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-tickets" element={<RequireAdmin><AdminLayout><AdminTickets /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-reports" element={<RequireAdmin><AdminLayout><AdminReports /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-audit" element={<RequireAdmin><AdminLayout><AdminLogs /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-audit-stats" element={<RequireAdmin><AdminLayout><AdminAuditStats /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-moderation" element={<RequireAdmin><AdminLayout><AdminModeration /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-port5555" element={<RequireAdmin><AdminLayout><AdminPortSecurity /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-qianfu" element={<RequireAdmin><AdminLayout><AdminPaymentConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-settings" element={<RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-mail" element={<RequireAdmin><AdminLayout><AdminMailConfig /></AdminLayout></RequireAdmin>} />
       <Route path="/" element={<Navigate to="/mobile" replace />} />
-    </>,
-    []
+      <Route path="*" element={<Navigate to="/mobile" replace />} />
+    </>
   );
 
   // ─── Desktop routes ─────────────────────────────────────────────
@@ -186,22 +236,25 @@ function App() {
       <Route path="/register" element={<RedirectIfAuthed><Register /></RedirectIfAuthed>} />
       <Route path="/forgot-password" element={<RedirectIfAuthed><ForgotPassword /></RedirectIfAuthed>} />
       <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
+      <Route path="/oauth/callback/:provider" element={<OAuthCallback />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/promotion" element={<PromotionLanding />} />
       <Route path="/promotion/tasks" element={<RequireAuth><AdminPromoTasks /></RequireAuth>} />
       <Route path="/promotion/claims" element={<RequireAuth><AdminPromoClaims /></RequireAuth>} />
-      <Route path="/rules" element={<Navigate to="/team" replace />} />
+      <Route path="/rules" element={<LevelRules />} />
       <Route path="/resources" element={<ResourceCenter />} />
       <Route path="/team" element={<Team />} />
       <Route path="/portal/:uuid" element={<ServerPortal />} />
       <Route path="/shop/:id" element={<MarketplaceShop />} />
       <Route path="/marketplace/products/:id" element={<MarketplaceDetail />} />
       <Route path="/marketplace/:id" element={<MarketplaceDetail />} />
+      <Route path="/marketplace/orders/:id" element={<MarketplaceOrderDetail />} />
       <Route path="/seller/shop" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
       <Route path="/seller/marketplace" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
       <Route path="/marketplace/shop" element={<MarketplaceShop />} />
       <Route path="/marketplace/manage" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
+      <Route path="/marketplace/orders/:id" element={<MarketplaceOrderDetail />} />
 
       {/* Auth Routes */}
       <Route path="/verify-code" element={<RequireAuth><VerifyEmail /></RequireAuth>} />
@@ -230,6 +283,8 @@ function App() {
       <Route path="/admin-moderation" element={<RequireAdmin><AdminLayout><AdminModeration /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-port5555" element={<RequireAdmin><AdminLayout><AdminPortSecurity /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-qianfu" element={<RequireAdmin><AdminLayout><AdminPaymentConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-settings" element={<RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-mail" element={<RequireAdmin><AdminLayout><AdminMailConfig /></AdminLayout></RequireAdmin>} />
 
       {/* Redirect mobile path on desktop */}
       <Route path="/mobile" element={<Navigate to="/" replace />} />
@@ -237,7 +292,6 @@ function App() {
       <Route path="/me/settings" element={<Navigate to="/me/edit" replace />} />
       <Route path="/me/notifications" element={<Navigate to="/" replace />} />
       <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
-      <Route path="/dashboard" element={<Navigate to="/dashboard/*" replace />} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" />} />
@@ -245,45 +299,37 @@ function App() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <GlobalProgress />
-        <AnnouncementBanner />
-        <GlobalSettingsPanel />
-        <div className="min-h-screen flex flex-col">
-          {/* Desktop-only header — hidden on mobile */}
-          <div className="hidden md:block">
-            <Navbar />
-          </div>
-
-          {/* Mobile header — hidden on desktop */}
-          <div className="block md:hidden bg-white border-b border-zinc-200 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-bold">千服</span>
-              <div className="flex items-center gap-2">
-                <a href="/me/settings" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100">
-                  <svg className="w-5 h-5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Page content */}
-          <div className="flex-grow">
-            <Suspense fallback={<LoadingState />}>
-              <Routes>
-                {isMobile ? mobileRoutes : desktopRoutes}
-              </Routes>
-            </Suspense>
-          </div>
-
-          {/* Desktop-only footer — hidden on mobile */}
-          <div className="hidden md:block">
-            <Footer />
-          </div>
+    <Router>
+      <SeoHead />
+      <DynamicBranding />
+      <GlobalProgress />
+      <AnnouncementBanner />
+      <GlobalSettingsPanel />
+      <div className="min-h-screen flex flex-col">
+        {/* Desktop-only header — hidden on mobile */}
+        <div className="hidden md:block">
+          <Navbar />
         </div>
-      </Router>
-    </QueryClientProvider>
+
+        {/* Page content */}
+        <div className="flex-grow">
+          <Suspense fallback={<LoadingState />}>
+            <Routes>
+              {isMobileShell ? mobileRoutes : desktopRoutes}
+            </Routes>
+          </Suspense>
+        </div>
+
+        {/* Desktop-only footer — hidden on mobile */}
+        <div className="hidden md:block">
+          <Footer
+            backendReady={backendReady}
+            backendHealthLoading={backendHealthLoading}
+            backendHealthError={backendHealthError}
+          />
+        </div>
+      </div>
+    </Router>
   );
 }
 

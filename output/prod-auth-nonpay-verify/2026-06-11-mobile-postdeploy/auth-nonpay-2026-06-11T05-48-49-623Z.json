@@ -1,0 +1,46 @@
+{
+  "startedAt": "2026-06-11T05:46:42.555Z",
+  "finishedAt": "2026-06-11T05:48:49.623Z",
+  "baseUrl": "https://mc-u.top",
+  "plannedRoutes": 2,
+  "passedRoutes": 0,
+  "failedRoutes": 2,
+  "skipped": [
+    {
+      "scope": "desktop-admin",
+      "reason": "admin login probe failed (fetch failed)"
+    }
+  ],
+  "login": {
+    "username": null,
+    "role": null,
+    "emailVerified": null,
+    "adminProbeOk": false
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "(login)",
+      "label": "desktop-user login",
+      "ok": false,
+      "finalUrl": "chrome-error://chromewebdata/",
+      "error": {
+        "message": "page.goto: net::ERR_CONNECTION_TIMED_OUT at https://mc-u.top/login\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\2026-06-11-mobile-postdeploy\\desktop-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\2026-06-11-mobile-postdeploy\\desktop-user-login.png"
+      }
+    },
+    {
+      "context": "mobile-user",
+      "path": "(login)",
+      "label": "mobile-user login",
+      "ok": false,
+      "finalUrl": "chrome-error://chromewebdata/",
+      "error": {
+        "message": "page.goto: net::ERR_CONNECTION_TIMED_OUT at https://mc-u.top/login\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\2026-06-11-mobile-postdeploy\\mobile-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\2026-06-11-mobile-postdeploy\\mobile-user-login.png"
+      }
+    }
+  ]
+}

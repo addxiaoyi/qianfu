@@ -11,6 +11,12 @@ import { UPLOAD_CONFIG } from '../config/upload';
 import { AppError, ErrorCode } from '../utils/errors';
 
 const router = Router();
+const MAX_BASE64_UPLOAD_SIZE = UPLOAD_CONFIG.maxBase64FileSize;
+
+const safeOriginalName = (value: string | undefined) => {
+  const normalized = String(value || 'upload').replace(/\\/g, '/').split('/').pop() || 'upload';
+  return normalized.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100) || 'upload';
+};
 
 // Configure multer for memory storage
 const upload = multer({
@@ -22,11 +28,17 @@ const upload = multer({
     const kind = String((req.body as any)?.kind || 'image').toLowerCase();
     const allowedMimes = kind === 'asset' ? UPLOAD_CONFIG.allowedAssetMimeTypes : UPLOAD_CONFIG.allowedImageMimeTypes;
     const allowedExtensions = kind === 'asset' ? UPLOAD_CONFIG.allowedAssetExtensions : UPLOAD_CONFIG.allowedImageExtensions;
-    if (allowedMimes.includes(file.mimetype)) {
-      const name = (file.originalname || '').toLowerCase();
-      const extOk = allowedExtensions.some(ext => name.endsWith(ext));
-      if (extOk) return cb(null, true);
-    }
+    const name = (file.originalname || '').toLowerCase();
+    const extOk = allowedExtensions.some(ext => name.endsWith(ext));
+    if (allowedMimes.includes(file.mimetype) && extOk) return cb(null, true);
+
+    // In multipart forms, fields appended after the file are not guaranteed to
+    // be visible to multer's fileFilter yet. Let plausible marketplace assets
+    // reach UploadService, where kind-specific MIME/content checks still run.
+    const assetExtOk = UPLOAD_CONFIG.allowedAssetExtensions.some(ext => name.endsWith(ext));
+    const assetMimeOk = UPLOAD_CONFIG.allowedAssetMimeTypes.includes(file.mimetype);
+    if (kind === 'image' && assetExtOk && assetMimeOk) return cb(null, true);
+
     cb(new Error(kind === 'asset' ? 'Invalid file type. Only marketplace assets are allowed.' : 'Invalid file type. Only images are allowed.'));
   }
 });
@@ -66,7 +78,7 @@ router.post('/upload', authenticate, requireVerifiedEmail, uploadLimiter, csrfPr
     // Handle multipart/form-data
     if (req.file) {
       buffer = req.file.buffer;
-      filename = req.file.originalname;
+      filename = safeOriginalName(req.file.originalname);
     } 
     // Handle base64/dataUrl (Legacy support)
     else if (req.body && (req.body.dataUrl || req.body.base64)) {
@@ -78,11 +90,17 @@ router.post('/upload', authenticate, requireVerifiedEmail, uploadLimiter, csrfPr
 
         if (typeof dataUrl === 'string') {
           const parsed = parseDataUrl(dataUrl);
-          if (parsed) fileBase64 = parsed.base64;
+          if (parsed) {
+            if (!UPLOAD_CONFIG.allowedImageMimeTypes.includes(parsed.mime)) {
+              throw new AppError('Invalid data URL MIME type', 400, ErrorCode.VALIDATION_ERROR);
+            }
+            fileBase64 = parsed.base64;
+          }
         }
 
         if (fileBase64) {
           buffer = Buffer.from(fileBase64, 'base64');
+          filename = safeOriginalName(filename);
         }
       }
     }
@@ -92,11 +110,12 @@ router.post('/upload', authenticate, requireVerifiedEmail, uploadLimiter, csrfPr
     }
 
     // Validate File Size (Double check for base64)
-    if (buffer.length > UPLOAD_CONFIG.maxFileSize) {
-      throw new AppError('File size too large. Max 5MB allowed.', 400, ErrorCode.VALIDATION_ERROR);
+    const kind = String(req.body?.kind || 'image').toLowerCase();
+    const maxSize = kind === 'asset' ? UPLOAD_CONFIG.maxFileSize : MAX_BASE64_UPLOAD_SIZE;
+    if (buffer.length > maxSize) {
+      throw new AppError(`File size too large. Max ${Math.floor(maxSize / 1024 / 1024)}MB allowed.`, 400, ErrorCode.VALIDATION_ERROR);
     }
 
-    const kind = String(req.body?.kind || 'image').toLowerCase();
     const result = kind === 'asset'
       ? await UploadService.processAndSaveAsset(buffer, filename || 'upload')
       : await UploadService.processAndSaveImage(buffer, filename || 'upload', user?.id);

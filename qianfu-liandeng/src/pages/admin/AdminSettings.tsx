@@ -1,165 +1,119 @@
 import React from 'react';
-import { useForm, useWatch } from 'react-hook-form';
-import { request } from '@/api/request';
-import { toast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AdminPageHeader from '@/components/AdminPageHeader';
 import GeometricLantern from '@/components/icons/GeometricLantern';
 
-const settingsBadge = 'SYSTEM_CORE / ALPHA-CONFIG';
+type ConfigEntry = {
+  title: string;
+  description: string;
+  path: string;
+  variant: any;
+  badge: string;
+};
 
-const adminSectionCardClass = 'bg-white border border-zinc-100 rounded-[3rem] p-12 space-y-12 shadow-xs group hover:border-accent transition-all duration-700';
-const adminHeaderTagClass = 'px-2 py-1 bg-accent text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-sm shadow-xl shadow-accent/20';
+type ConfigGroup = {
+  title: string;
+  description: string;
+  entries: ConfigEntry[];
+};
+
+const CONFIG_GROUPS: ConfigGroup[] = [
+  {
+    title: 'System Core',
+    description: '超管高频系统配置入口，优先处理支付、总控与网络安全。',
+    entries: [
+      { title: '支付矩阵', description: '配置 Creem、QiuPay、XPay、TPay 与项目级回调链路。', path: '/admin-qianfu', variant: 'payment', badge: 'PAY' },
+      { title: '邮件配置', description: '配置 SMTP、验证码邮件、重置密码与测试发信。', path: '/admin-mail', variant: 'data', badge: 'MAIL' },
+      { title: '控制总览', description: '进入总控看板，查看站点运行状态与关键指标。', path: '/admin', variant: 'spark', badge: 'CORE' },
+      { title: '端口安全', description: '治理端口、入口策略与敏感暴露面。', path: '/admin-port5555', variant: 'network', badge: 'NET' },
+    ],
+  },
+  {
+    title: 'Operations',
+    description: '用户、审核、工单与内容处理的操作入口。',
+    entries: [
+      { title: '用户管理', description: '账户目录、权限与管理员账户治理。', path: '/admin-users', variant: 'user', badge: 'AUTH' },
+      { title: '服务器审核', description: '节点上架审核与状态裁定。', path: '/admin-review', variant: 'security', badge: 'NODE' },
+      { title: '工单管理', description: '支持流程与人工处理台。', path: '/admin-tickets', variant: 'activity', badge: 'HELP' },
+      { title: '内容审核', description: '站内内容、屏蔽词与风控过滤。', path: '/admin-moderation', variant: 'security', badge: 'SAFE' },
+    ],
+  },
+  {
+    title: 'Growth & Commerce',
+    description: '推广激励与商家端配置面板。',
+    entries: [
+      { title: '激励任务', description: '创建、配置与发布推广任务。', path: '/promotion/tasks', variant: 'spark', badge: 'GROW' },
+      { title: '领取审核', description: '审核奖励领取与发放流转。', path: '/promotion/claims', variant: 'activity', badge: 'CLAIM' },
+      { title: '店铺管理', description: '维护店铺资料、商品与商家前台信息。', path: '/seller/shop', variant: 'data', badge: 'SHOP' },
+    ],
+  },
+  {
+    title: '审计与风控',
+    description: '审计日志、指标与举报风险面板。',
+    entries: [
+      { title: '审计日志', description: '查看关键动作账本与追踪记录。', path: '/admin-audit', variant: 'terminal', badge: 'LOG' },
+      { title: '数据统计', description: '查看超管指标、趋势与平台状态。', path: '/admin-audit-stats', variant: 'data', badge: 'STAT' },
+      { title: '举报管理', description: '处理举报、异常与处罚流转。', path: '/admin-reports', variant: 'alert', badge: 'RISK' },
+    ],
+  },
+];
 
 const AdminSettings: React.FC = () => {
-  const { register, handleSubmit, control } = useForm({
-    defaultValues: {
-      siteName: '千服联灯',
-      siteDesc: 'Minecraft 服务器宣传平台',
-      minWithdraw: 100,
-      feeRate: 0.1,
-      maintenance: false
-    }
-  });
-
-  const values = useWatch({ control });
-
-  const onSubmit = async (values: any) => {
-    try {
-      await request('/admin/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      toast({ title: 'CONFIGURATION SYNCHRONIZED', description: 'System variables updated across all nodes.' });
-    } catch { }
-  };
-
   return (
-    <div className="space-y-16 pb-24">
+    <div className="space-y-16 pb-24 bg-white">
       <AdminPageHeader
-        badge="System Core / Alpha-Config"
-        title="Matrix."
-        description="全局参数配置与站点架构管理。调整结算阈值、服务费率及系统运行模式。所有更改均具备原子性。"
-        statusLabel="Variables: Mutable"
-        statusTone="warning"
+        badge="Super Admin / Config Hub"
+        title="配置总控"
+        description="把超管可配置项统一收口到一个页面。这里直接跳转到真实可用的配置模块，不再保留演示表单。"
+        statusLabel="配置入口已启用"
+        statusTone="success"
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-zinc-100 rounded-[3rem] p-12 space-y-12 shadow-xs group hover:border-accent transition-all duration-700"
-        >
-          <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-300 group-hover:bg-accent group-hover:text-white transition-all duration-500">
-               <GeometricLantern variant="network" className="w-8 h-8" />
-            </div>
-            <div className="space-y-1">
-               <h3 className="text-2xl font-black uppercase tracking-tighter italic">Identity.</h3>
-               <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic leading-none">Public Presence and SEO primitives</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-             <div className="space-y-4">
-                <label className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-400 italic">Site Identifier</label>
-                <input 
-                  {...register('siteName')}
-                  className="w-full px-8 py-5 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent rounded-2xl text-sm font-black italic transition-all outline-hidden shadow-xs"
-                />
-             </div>
-             <div className="space-y-4">
-                <label className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-400 italic">Core Metadata Description</label>
-                <input 
-                  {...register('siteDesc')}
-                  className="w-full px-8 py-5 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent rounded-2xl text-sm font-black italic transition-all outline-hidden shadow-xs"
-                />
-             </div>
-          </div>
-        </motion.section>
-
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white border border-zinc-100 rounded-[3rem] p-12 space-y-12 shadow-xs group hover:border-accent transition-all duration-700"
-        >
-          <div className="flex items-center gap-6">
-            <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-300 group-hover:bg-accent group-hover:text-white transition-all duration-500">
-               <GeometricLantern variant="payment" className="w-8 h-8" />
-            </div>
-            <div className="space-y-1">
-               <h3 className="text-2xl font-black uppercase tracking-tighter italic">Financials.</h3>
-               <p className="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic leading-none">Settlement thresholds and service tax nodes</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                   <label className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-400 italic">Min. Withdrawal Threshold (¥)</label>
-                   <GeometricLantern variant="data" className="w-4 h-4 text-zinc-200" />
-                </div>
-                <input 
-                  type="number"
-                  {...register('minWithdraw')}
-                  className="w-full px-8 py-5 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent rounded-2xl text-sm font-black font-mono italic transition-all outline-hidden shadow-xs"
-                />
-             </div>
-             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                   <label className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-400 italic">Platform Protocol Fee (0.0-1.0)</label>
-                   <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-200" />
-                </div>
-                <input 
-                  type="number"
-                  step="0.01"
-                  {...register('feeRate')}
-                  className="w-full px-8 py-5 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent rounded-2xl text-sm font-black font-mono italic transition-all outline-hidden shadow-xs"
-                />
-             </div>
-          </div>
-        </motion.section>
-
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-zinc-50/50 border border-zinc-100 rounded-[3rem] p-12 flex flex-col md:flex-row items-center justify-between gap-8 group hover:border-red-100 transition-all duration-700"
-        >
-          <div className="flex items-center gap-8">
-             <div className="w-20 h-20 bg-accent text-white rounded-[2rem] flex items-center justify-center shadow-2xl shadow-accent/20">
-               <GeometricLantern variant="security" className="w-10 h-10" />
-             </div>
-             <div className="space-y-1">
-               <h3 className="text-3xl font-black uppercase tracking-tighter italic leading-none">Hardened Maintenance.</h3>
-               <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic leading-none">启用后非管理员用户将无法访问站点，进入安全隔离模式。</p>
-             </div>
-          </div>
-          <div className="flex items-center gap-6">
-             <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic">{values.maintenance ? 'STATUS: ISOLATED' : 'STATUS: OPERATIONAL'}</span>
-             <div className="relative inline-block w-20 h-10">
-                <input 
-                  type="checkbox" 
-                  {...register('maintenance')} 
-                  className="peer appearance-none w-full h-full bg-zinc-200 rounded-full cursor-pointer transition-all checked:bg-red-500" 
-                />
-                <div className="absolute left-2 top-2 w-6 h-6 bg-white rounded-full transition-all peer-checked:left-12 pointer-events-none shadow-sm" />
-             </div>
-          </div>
-        </motion.section>
-
-        <div className="flex justify-end pt-8">
-          <button 
-            type="submit"
-            className="px-16 py-8 btn-accent rounded-[2rem] text-[11px] font-black uppercase tracking-[0.5em] flex items-center gap-4 transition-all shadow-2xl shadow-accent/20 group"
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+        {CONFIG_GROUPS.map((group, groupIndex) => (
+          <motion.section
+            key={group.title}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: groupIndex * 0.06 }}
+            className="rounded-[3rem] border border-zinc-100 bg-white p-8 shadow-xs space-y-6"
           >
-            <GeometricLantern variant="spark" className="w-6 h-6 group-hover:scale-110 transition-transform" /> Synchronize Matrix <ChevronRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-          </button>
-        </div>
-      </form>
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500">
+                <GeometricLantern variant="settings" className="w-4 h-4" />
+                {group.title}
+              </div>
+              <p className="text-sm font-bold leading-7 text-zinc-500">{group.description}</p>
+            </div>
+
+            <div className="space-y-3">
+              {group.entries.map((entry) => (
+                <Link
+                  key={entry.path}
+                  to={entry.path}
+                  className="group flex items-center gap-4 rounded-[2rem] border border-zinc-100 bg-zinc-50/70 px-5 py-5 transition-all hover:border-accent hover:bg-white"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.4rem] border border-zinc-100 bg-white text-zinc-400 transition-all group-hover:border-accent group-hover:bg-accent group-hover:text-white">
+                    <GeometricLantern variant={entry.variant} className="w-5 h-5" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="truncate text-sm font-black uppercase tracking-[0.18em] text-zinc-900">{entry.title}</h3>
+                      <span className="shrink-0 text-[9px] font-black uppercase tracking-[0.24em] text-zinc-300">{entry.badge}</span>
+                    </div>
+                    <p className="mt-2 text-sm font-bold leading-6 text-zinc-500">{entry.description}</p>
+                  </div>
+
+                  <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300 transition-all group-hover:translate-x-1 group-hover:text-accent" />
+                </Link>
+              ))}
+            </div>
+          </motion.section>
+        ))}
+      </div>
     </div>
   );
 };

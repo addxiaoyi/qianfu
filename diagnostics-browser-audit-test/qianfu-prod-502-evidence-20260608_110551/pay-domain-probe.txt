@@ -1,0 +1,11 @@
++ bash -lc node\ scripts/utils/domain-cert-probe.mjs\ --host\ \'pay.star-web.top\'\ --expect-host\ \'pay.star-web.top\'\ --main-site-host\ \'mc-u.top\'
+host=pay.star-web.top
+tls_status=wrong_principal
+tls_authorization_error=ERR_TLS_CERT_ALTNAME_INVALID
+cert_cn=mc-u.top
+cert_san=DNS:mc-u.top
+html_status=200
+canonical_url=https://mc-u.top/
+og_url=https://mc-u.top/
+looks_like_main_site=true
+root_marker_match=false

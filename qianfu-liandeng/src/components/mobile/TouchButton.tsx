@@ -14,10 +14,6 @@ interface TouchButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonEle
   onPressOut?: () => void;
 }
 
-interface TouchButtonState {
-  _isDragging: boolean;
-}
-
 const TouchButton = forwardRef<HTMLButtonElement, TouchButtonProps>(
   (
     {
@@ -51,7 +47,7 @@ const TouchButton = forwardRef<HTMLButtonElement, TouchButtonProps>(
     };
 
     return (
-      <motion.button
+      <motion.button type="button"
         ref={ref}
         whileTap={{ scale: 0.96 }}
         whileHover={{ scale: disabled ? 1 : 0.98 }}

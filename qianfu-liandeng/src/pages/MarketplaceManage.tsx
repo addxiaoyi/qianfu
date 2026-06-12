@@ -117,7 +117,7 @@ export default function MarketplaceManage() {
               <div className="flex gap-2 flex-wrap">
                 <Link to={`/marketplace/${item.id}`} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">查看</Link>
                 <Link to={`/marketplace/edit/${item.id}`} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">编辑</Link>
-                <button onClick={() => unpublish(item.id)} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold">下架</button>
+                <button type="button" onClick={() => unpublish(item.id)} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold">下架</button>
               </div>
             </div>
           ))}

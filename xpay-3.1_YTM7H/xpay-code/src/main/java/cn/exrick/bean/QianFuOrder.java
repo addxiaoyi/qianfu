@@ -36,6 +36,21 @@ public class QianFuOrder {
     @Column(name = "qianfu_order_id", length = 64)
     private String qianfuOrderId;
 
+    @Column(name = "tenant_key", length = 64)
+    private String tenantKey;
+
+    @Column(name = "callback_url", length = 512)
+    private String callbackUrl;
+
+    @Column(name = "metadata_json", columnDefinition = "TEXT")
+    private String metadataJson;
+
+    @Column(name = "callback_status", length = 32)
+    private String callbackStatus;
+
+    @Column(name = "callback_last_response", columnDefinition = "TEXT")
+    private String callbackLastResponse;
+
     @Column(name = "notify_count")
     private Integer notifyCount = 0;
 
@@ -146,6 +161,46 @@ public class QianFuOrder {
 
     public void setQianfuOrderId(String qianfuOrderId) {
         this.qianfuOrderId = qianfuOrderId;
+    }
+
+    public String getTenantKey() {
+        return tenantKey;
+    }
+
+    public void setTenantKey(String tenantKey) {
+        this.tenantKey = tenantKey;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
+
+    public String getMetadataJson() {
+        return metadataJson;
+    }
+
+    public void setMetadataJson(String metadataJson) {
+        this.metadataJson = metadataJson;
+    }
+
+    public String getCallbackStatus() {
+        return callbackStatus;
+    }
+
+    public void setCallbackStatus(String callbackStatus) {
+        this.callbackStatus = callbackStatus;
+    }
+
+    public String getCallbackLastResponse() {
+        return callbackLastResponse;
+    }
+
+    public void setCallbackLastResponse(String callbackLastResponse) {
+        this.callbackLastResponse = callbackLastResponse;
     }
 
     public Integer getNotifyCount() {

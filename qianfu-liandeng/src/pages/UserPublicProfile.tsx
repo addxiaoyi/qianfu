@@ -7,6 +7,19 @@ import { motion } from 'framer-motion';
 import GeometricLantern from '@/components/icons/GeometricLantern';
 import { useT } from '@/store/uiStore';
 import { isImageUrlSafe } from '@/utils/urlValidator';
+import PageSeo from '@/components/PageSeo';
+
+const stripHtml = (value: unknown) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const truncateText = (value: unknown, maxLength = 155) => {
+  const text = stripHtml(value);
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
+};
 
 const UserPublicProfile: React.FC = () => {
   const t = useT();
@@ -18,6 +31,23 @@ const UserPublicProfile: React.FC = () => {
 
   return (
     <StatusWrapper isLoading={isLoading} isError={isError}>
+      {profile && (
+        <PageSeo
+          title={`${profile.username || '玩家'} 的公开主页 - 千服联灯`}
+          description={truncateText(profile.bio || `${profile.username || '该玩家'} 在千服联灯发布和收藏 Minecraft 服务器内容。`)}
+          canonicalPath={`/user/${id}`}
+          image={isImageUrlSafe(profile.avatar_url) ? profile.avatar_url : undefined}
+          schema={{
+            '@context': 'https://schema.org',
+            '@type': 'ProfilePage',
+            mainEntity: {
+              '@type': 'Person',
+              name: profile.username || `用户 ${id}`,
+              description: truncateText(profile.bio || ''),
+            },
+          }}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-6 py-32 bg-white selection:bg-accent selection:text-white">
         {/* Header */}
         <div className="bg-black rounded-[4rem] p-16 text-white mb-24 relative overflow-hidden shadow-2xl shadow-black/20 group">

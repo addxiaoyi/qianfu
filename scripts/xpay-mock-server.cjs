@@ -162,7 +162,7 @@ app.get('/', (req, res) => {
                   <td><span class="status-${order.status}">${order.status === 'pending' ? '待支付' : '已完成'}</span></td>
                   <td>
                     ${order.status === 'pending' ? `<button class="btn btn-primary" onclick="simulateCallback('${id}')">模拟支付成功</button>` : '<span style="color: #9aa0a6;">-</span>'}
-                    <a href="/pay/${id}" target="_blank" style="margin-left: 12px; font-size: 0.85rem; color: #1a73e8; text-decoration: none;">打开支付页</a>
+                    <a href="/pay/${id}" target="_blank" rel="noopener noreferrer" style="margin-left: 12px; font-size: 0.85rem; color: #1a73e8; text-decoration: none;">打开支付页</a>
                   </td>
                 </tr>
               `).join('')}

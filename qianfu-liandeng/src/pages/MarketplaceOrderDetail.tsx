@@ -41,6 +41,8 @@ export default function MarketplaceOrderDetail() {
     return <div className="max-w-4xl mx-auto px-6 py-16 text-sm text-muted-foreground">{message || '订单加载中...'}</div>;
   }
 
+  const safeDeliveryUrl = order.deliveryUrl && isUrlSafe(order.deliveryUrl) ? sanitizeUrl(order.deliveryUrl) : '';
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 space-y-6">
       <Link to="/marketplace/favorites" className="inline-flex items-center gap-2 text-sm font-bold"><ArrowLeft className="w-4 h-4" />返回收藏</Link>
@@ -50,7 +52,7 @@ export default function MarketplaceOrderDetail() {
             <h1 className="text-3xl font-black">订单详情</h1>
             <p className="text-sm text-muted-foreground mt-2">查看支付、发货与履约日志。</p>
           </div>
-          {order.deliveryUrl && <a href={order.deliveryUrl} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm"><Download className="w-4 h-4" />下载资源</a>}
+          {safeDeliveryUrl && <a href={safeDeliveryUrl} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm"><Download className="w-4 h-4" />下载资源</a>}
         </div>
 
         <div className="grid md:grid-cols-3 gap-3">
@@ -60,8 +62,8 @@ export default function MarketplaceOrderDetail() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-3 pt-1">
-          <div className="rounded-2xl border border-border p-4 bg-muted/20 flex items-center gap-3"><Clock3 className="w-5 h-5" /><div><div className="text-xs text-muted-foreground">支付状态</div><div className="font-bold">{order.paymentStatus || 'PENDING'}</div></div></div>
-          <div className="rounded-2xl border border-border p-4 bg-muted/20 flex items-center gap-3"><CheckCircle2 className="w-5 h-5" /><div><div className="text-xs text-muted-foreground">发货状态</div><div className="font-bold">{order.fulfillmentStatus || 'PENDING'}</div></div></div>
+          <div className="rounded-2xl border border-border p-4 bg-muted/20 flex items-center gap-3"><Clock3 className="w-5 h-5" /><div><div className="text-xs text-muted-foreground">支付状态</div><div className="font-bold">{order.paymentStatus || '待支付'}</div></div></div>
+          <div className="rounded-2xl border border-border p-4 bg-muted/20 flex items-center gap-3"><CheckCircle2 className="w-5 h-5" /><div><div className="text-xs text-muted-foreground">发货状态</div><div className="font-bold">{order.fulfillmentStatus || '待发货'}</div></div></div>
         </div>
 
         <div className="space-y-4 pt-2">

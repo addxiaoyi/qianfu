@@ -9,6 +9,7 @@
     <title>StarMC | 千服支付配置</title>
     <meta name="description" content="StarMC 千服支付网关配置 - 管理千服支付渠道">
     <link rel="icon" type="image/png" href="favicon.ico">
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -293,6 +294,51 @@
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
             }
+        }
+        body {
+            font-family: "Geist", "Inter", system-ui, sans-serif;
+            background: linear-gradient(180deg, #fbfbf8 0%, #f6f6f3 100%);
+            color: #111111;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(17, 17, 17, 0.08);
+            box-shadow: 0 16px 40px rgba(17, 17, 17, 0.08);
+        }
+
+        .glass-panel-hover:hover {
+            border-color: rgba(17, 17, 17, 0.16);
+            box-shadow: 0 18px 42px rgba(17, 17, 17, 0.1);
+        }
+
+        .input-luxury {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(17, 17, 17, 0.1);
+            color: #111111;
+        }
+
+        .input-luxury:focus {
+            background: #ffffff;
+            border-color: rgba(17, 17, 17, 0.24);
+            box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.05);
+        }
+
+        .btn-primary {
+            background: #111111;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 14px 28px rgba(17, 17, 17, 0.16);
+        }
+
+        .switch-toggle.active {
+            background: #111111;
+        }
+
+        .toast-message {
+            background: rgba(17, 17, 17, 0.94);
         }
     </style>
 </head>

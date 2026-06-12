@@ -1,0 +1,55 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - generic [ref=e21]:
+      - generic [ref=e22]: 千服
+      - link [ref=e24] [cursor=pointer]:
+        - /url: "#/me/settings"
+        - img [ref=e25]
+    - generic [ref=e33]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: 支付
+        - generic [ref=e39]:
+          - generic [ref=e126]:
+            - img [ref=e127]
+            - text: 正在轮询订单状态
+          - generic [ref=e129]:
+            - img "QR Code"
+          - heading "微信支付" [level=2] [ref=e130]
+          - paragraph [ref=e131]: WECHAT PAY
+          - paragraph [ref=e132]: 请扫描二维码完成 ¥10 的订单支付
+          - generic [ref=e133]:
+            - generic [ref=e134]: 自动回调
+            - paragraph [ref=e135]: 当前通道支持自动异步回调，无需填写付款备注，支付成功后会自动更新订单状态。
+          - button "取消订单并返回" [ref=e136]
+      - generic [ref=e67]:
+        - link "苏ICP备2026025306号-2" [ref=e69] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
+        - generic [ref=e71]:
+          - link "首页" [ref=e72] [cursor=pointer]:
+            - /url: "#/mobile"
+            - img [ref=e74]
+            - generic [ref=e78]: 首页
+          - link "发现" [ref=e79] [cursor=pointer]:
+            - /url: "#/servers"
+            - img [ref=e81]
+            - generic [ref=e84]: 发现
+          - link "发布" [ref=e85] [cursor=pointer]:
+            - /url: "#/editor"
+            - img [ref=e87]
+            - generic [ref=e89]: 发布
+          - link "消息" [ref=e90] [cursor=pointer]:
+            - /url: "#/messages"
+            - img [ref=e92]
+            - generic [ref=e94]: 消息
+          - link "我的" [ref=e95] [cursor=pointer]:
+            - /url: "#/me"
+            - img [ref=e97]
+            - generic [ref=e100]: 我的

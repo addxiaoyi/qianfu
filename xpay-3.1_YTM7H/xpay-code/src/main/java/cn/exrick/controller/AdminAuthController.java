@@ -5,6 +5,8 @@ import cn.exrick.bean.dto.Result;
 import cn.exrick.common.utils.JwtUtil;
 import cn.exrick.common.utils.ResultUtil;
 import cn.exrick.service.AdminAuthService;
+import cn.exrick.service.LocalAdminService;
+import cn.exrick.service.XpayOfficialProviderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,12 @@ public class AdminAuthController {
 
     @Autowired
     private AdminAuthService adminAuthService;
+
+    @Autowired
+    private LocalAdminService localAdminService;
+
+    @Autowired
+    private XpayOfficialProviderService xpayOfficialProviderService;
 
     @GetMapping("/qr/generate")
     public Result<Map<String, Object>> generateQrCode() {
@@ -129,6 +137,7 @@ public class AdminAuthController {
             result.put("openid", openid);
             result.put("nickname", admin.getNickname());
             result.put("role", admin.getRole());
+            result.put("officialProviders", xpayOfficialProviderService.buildStatusSnapshot());
 
             return new ResultUtil<Map<String, Object>>().setData(result);
         } catch (Exception e) {
@@ -143,6 +152,28 @@ public class AdminAuthController {
         result.put("success", true);
         result.put("message", "已退出登录");
         return new ResultUtil<Map<String, Object>>().setData(result);
+    }
+
+    @PostMapping("/local/login")
+    public Result<Map<String, Object>> localLogin(@RequestBody Map<String, String> params) {
+        String username = params.get("username");
+        String password = params.get("password");
+        if (username == null || password == null) {
+            return new ResultUtil<Map<String, Object>>().setErrorMsg(400, "参数缺失");
+        }
+
+        AdminUser admin = localAdminService.authenticate(username, password);
+        if (admin == null || !Boolean.TRUE.equals(admin.getEnabled())) {
+            return new ResultUtil<Map<String, Object>>().setErrorMsg(401, "用户名或密码错误");
+        }
+
+        String token = JwtUtil.generateToken(admin.getOpenid(), admin.getRole());
+        Map<String, Object> result = new HashMap<>();
+        result.put("token", token);
+        result.put("openid", admin.getOpenid());
+        result.put("nickname", admin.getNickname());
+        result.put("role", admin.getRole());
+        return new ResultUtil<Map<String, Object>>().setData(result, "登录成功");
     }
 
     private String extractToken(HttpServletRequest request) {

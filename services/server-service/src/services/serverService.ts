@@ -6,7 +6,6 @@
 import { PrismaClient } from '@prisma/client';
 import { AppError, logger } from '@qianfu/shared';
 import { z } from 'zod';
-import axios from 'axios';
 
 // ============================================================================
 // 数据库
@@ -15,9 +14,6 @@ import axios from 'axios';
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 });
-
-// User Service 配置
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3070';
 
 // ============================================================================
 // 验证 Schema
@@ -60,8 +56,8 @@ export class ServerService {
    */
   async create(ownerId: string, data: z.infer<typeof createServerSchema>): Promise<any> {
     // 检查名称是否已存在
-    const existing = await prisma.server.findUnique({
-      where: { name: data.name },
+    const existing = await prisma.server.findFirst({
+      where: { name: data.name, deletedAt: null },
     });
 
     if (existing) {
@@ -88,8 +84,8 @@ export class ServerService {
    * 获取服务器 by ID
    */
   async getById(id: string): Promise<any | null> {
-    const server = await prisma.server.findUnique({
-      where: { id },
+    const server = await prisma.server.findFirst({
+      where: { id, deletedAt: null },
       include: {
         instances: true,
         players: {
@@ -108,7 +104,7 @@ export class ServerService {
    * 更新服务器
    */
   async update(id: string, ownerId: string, data: z.infer<typeof updateServerSchema>): Promise<any> {
-    const server = await prisma.server.findUnique({ where: { id } });
+    const server = await prisma.server.findFirst({ where: { id, deletedAt: null } });
 
     if (!server) {
       throw AppError.notFound('Server not found');
@@ -120,7 +116,7 @@ export class ServerService {
 
     // 检查名称冲突
     if (data.name && data.name !== server.name) {
-      const existing = await prisma.server.findUnique({ where: { name: data.name } });
+      const existing = await prisma.server.findFirst({ where: { name: data.name, deletedAt: null } });
       if (existing) {
         throw AppError.conflict('Server name already taken');
       }
@@ -145,7 +141,7 @@ export class ServerService {
    * 删除服务器（软删除）
    */
   async delete(id: string, ownerId: string): Promise<void> {
-    const server = await prisma.server.findUnique({ where: { id } });
+    const server = await prisma.server.findFirst({ where: { id, deletedAt: null } });
 
     if (!server) {
       throw AppError.notFound('Server not found');
@@ -157,7 +153,12 @@ export class ServerService {
 
     await prisma.server.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: {
+        deletedAt: new Date(),
+        name: `${server.name}__deleted__${server.id}`,
+        status: 'offline',
+        currentPlayers: 0,
+      },
     });
 
     logger.info(`Server deleted: ${id}`);
@@ -205,8 +206,8 @@ export class ServerService {
    * 启动服务器实例
    */
   async startInstance(serverId: string, ownerId: string): Promise<any> {
-    const server = await prisma.server.findUnique({
-      where: { id: serverId },
+    const server = await prisma.server.findFirst({
+      where: { id: serverId, deletedAt: null },
       include: { instances: true },
     });
 
@@ -243,14 +244,29 @@ export class ServerService {
 
     // 模拟启动完成（实际应该调用游戏服务器进程管理）
     setTimeout(async () => {
-      await prisma.serverInstance.update({
-        where: { id: instance.id },
-        data: { status: 'running' },
-      });
-      await prisma.server.update({
-        where: { id: serverId },
-        data: { status: 'online' },
-      });
+      try {
+        const activeServer = await prisma.server.findFirst({
+          where: { id: serverId, deletedAt: null },
+          select: { id: true },
+        });
+        if (!activeServer) {
+          await prisma.serverInstance.update({
+            where: { id: instance.id },
+            data: { status: 'stopped', stoppedAt: new Date() },
+          });
+          return;
+        }
+        await prisma.serverInstance.update({
+          where: { id: instance.id },
+          data: { status: 'running' },
+        });
+        await prisma.server.updateMany({
+          where: { id: serverId, deletedAt: null },
+          data: { status: 'online' },
+        });
+      } catch (error) {
+        logger.error('Failed to finalize server start', { serverId, instanceId: instance.id, error });
+      }
     }, 2000);
 
     return {
@@ -265,8 +281,8 @@ export class ServerService {
    * 停止服务器实例
    */
   async stopInstance(serverId: string, ownerId: string): Promise<any> {
-    const server = await prisma.server.findUnique({
-      where: { id: serverId },
+    const server = await prisma.server.findFirst({
+      where: { id: serverId, deletedAt: null },
       include: { instances: true },
     });
 
@@ -302,6 +318,15 @@ export class ServerService {
    * 获取服务器玩家列表
    */
   async getPlayers(serverId: string): Promise<any[]> {
+    const server = await prisma.server.findFirst({
+      where: { id: serverId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!server) {
+      throw AppError.notFound('Server not found');
+    }
+
     const players = await prisma.player.findMany({
       where: {
         serverId,
@@ -322,6 +347,15 @@ export class ServerService {
    * 添加玩家到服务器
    */
   async addPlayer(serverId: string, playerId: string, username?: string): Promise<void> {
+    const server = await prisma.server.findFirst({
+      where: { id: serverId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!server) {
+      throw AppError.notFound('Server not found');
+    }
+
     await prisma.player.create({
       data: {
         serverId,
@@ -330,8 +364,8 @@ export class ServerService {
       },
     });
 
-    await prisma.server.update({
-      where: { id: serverId },
+    await prisma.server.updateMany({
+      where: { id: serverId, deletedAt: null },
       data: { currentPlayers: { increment: 1 } },
     });
 
@@ -342,15 +376,26 @@ export class ServerService {
    * 移除玩家（离开服务器）
    */
   async removePlayer(serverId: string, playerId: string): Promise<void> {
-    await prisma.player.updateMany({
+    const server = await prisma.server.findFirst({
+      where: { id: serverId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!server) {
+      throw AppError.notFound('Server not found');
+    }
+
+    const updatedPlayers = await prisma.player.updateMany({
       where: { serverId, playerId, leftAt: null },
       data: { leftAt: new Date() },
     });
 
-    await prisma.server.update({
-      where: { id: serverId },
-      data: { currentPlayers: { decrement: 1 } },
-    });
+    if (updatedPlayers.count > 0) {
+      await prisma.server.updateMany({
+        where: { id: serverId, deletedAt: null },
+        data: { currentPlayers: { decrement: 1 } },
+      });
+    }
 
     logger.info(`Player ${playerId} left server ${serverId}`);
   }

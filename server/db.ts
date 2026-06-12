@@ -1,9 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { PrismaClient } from '../prisma/generated/client/index.js';
-import type { Prisma, User } from '../prisma/generated/client/index.js';
+import type { Prisma, PrismaClient as PrismaClientType, User } from '../prisma/generated/client/index.js';
 import { logger } from './utils/logger';
+import { getDatabaseUrl, getPrimaryDbProvider } from './utils/dbProvider';
+import { resolvePrimaryPrismaClient } from './utils/prismaClientResolver';
+
+const PrismaClient = resolvePrimaryPrismaClient() as typeof PrismaClientType;
 
 // Re-export Prisma namespace and User type for use in other modules
 export type { Prisma, User };
@@ -14,19 +17,16 @@ const prisma = new PrismaClient({
   errorFormat: 'minimal',
   datasources: {
     db: {
-      url: process.env.DATABASE_URL || 'file:./prisma/dev.db?connection_limit=1'
+      url: getDatabaseUrl() || 'file:./prisma/dev.db?connection_limit=1'
     }
   }
 });
 
-// SQLite WAL mode optimization
+// SQLite-only engine tuning. Skip these PRAGMAs on PostgreSQL.
 async function optimizeDB() {
-  // Only run optimization for SQLite
-  const dbUrl = process.env.DATABASE_URL || '';
-  if (!dbUrl.startsWith('file:') && !dbUrl.includes('.db')) return;
+  if (getPrimaryDbProvider() !== 'sqlite') return;
 
   try {
-    // Use $queryRaw instead of $executeRawUnsafe for PRAGMA statements that return values
     await prisma.$queryRawUnsafe('PRAGMA journal_mode=WAL;');
     await prisma.$queryRawUnsafe('PRAGMA synchronous=NORMAL;');
     await prisma.$queryRawUnsafe('PRAGMA cache_size=10000;');

@@ -7,15 +7,27 @@ import { useAuthStore } from '@/store/authStore';
 import { toast } from '@/hooks/use-toast';
 import LanternLogo from '@/components/LanternLogo';
 import GeometricLantern from '@/components/icons/GeometricLantern';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/api/request';
+
+const ICP_LINK = 'https://beian.miit.gov.cn/';
+const ICP_LABEL = '苏ICP备2026025306号-2';
 
 const AdminSidebar: React.FC = React.memo(() => {
   const { pathname } = useLocation();
   const t = useT();
   const logout = useAuthStore(state => state.logout);
   const navigate = useNavigate();
+  const { data: globalStats } = useQuery({
+    queryKey: ['admin-sidebar-global-stats'],
+    queryFn: () => api.get<{ onlineServers: number; totalServers: number }>('/stats'),
+    staleTime: 30_000,
+  });
 
   const sidebarItems: { key: TranslationKey; path: string; variant: any; tag: string }[] = [
     { key: 'admin.index', path: '/admin', variant: 'spark', tag: 'CORE' },
+    { key: 'common.settings', path: '/admin-settings', variant: 'settings', tag: 'CFG' },
+    { key: 'admin.mail', path: '/admin-mail', variant: 'data', tag: 'MAIL' },
     { key: 'admin.users', path: '/admin-users', variant: 'user', tag: 'AUTH' },
     { key: 'admin.review', path: '/admin-review', variant: 'security', tag: 'NODE' },
     { key: 'admin.tickets', path: '/admin-tickets', variant: 'activity', tag: 'HELP' },
@@ -90,12 +102,12 @@ const AdminSidebar: React.FC = React.memo(() => {
       <div className="mt-auto pt-8 border-t border-zinc-50 space-y-6">
         <div className="flex items-center justify-between px-4">
            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Latency</span>
-              <span className="text-[10px] font-black font-mono text-green-500 italic">2.4ms</span>
+              <span className="text-[9px] font-black text-zinc-300 uppercase tracking-widest">Online</span>
+              <span className="text-[10px] font-black font-mono text-green-500 italic">{globalStats?.onlineServers ?? 0}/{globalStats?.totalServers ?? 0}</span>
            </div>
            <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-100" />
         </div>
-        <button 
+        <button type="button" 
           onClick={() => {
             logout();
             toast({ title: 'Logged out', description: 'Session cleared successfully.' });
@@ -108,6 +120,16 @@ const AdminSidebar: React.FC = React.memo(() => {
              {t('admin.logout')}
           </div>
         </button>
+        <div className="px-4 text-center">
+          <a
+            href={ICP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-semibold text-zinc-400 transition-colors hover:text-black"
+          >
+            {ICP_LABEL}
+          </a>
+        </div>
       </div>
     </aside>
   );

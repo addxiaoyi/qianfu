@@ -1,0 +1,1 @@
+{"version":3,"file":"mailScheduleService.d.ts","sourceRoot":"","sources":["../../../server/services/mailScheduleService.ts"],"names":[],"mappings":"AAqFA,qBAAa,mBAAmB;IAC9B,OAAO,CAAC,QAAQ,CAA+B;IAC/C,OAAO,CAAC,OAAO,CAAS;IAExB,KAAK,CAAC,UAAU,SAAS;IAUzB,IAAI;IAOE,IAAI;CAuBX;AAED,eAAO,MAAM,mBAAmB,qBAA4B,CAAC"}

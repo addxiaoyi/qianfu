@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { api, ApiError } from '@/api/request';
+import { api, ApiError, setLocalAuthToken } from '@/api/request';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -10,32 +10,34 @@ import { Loader2, ChevronRight, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import GeometricLantern from '@/components/icons/GeometricLantern';
 import { useT, type TranslationKey } from '@/store/uiStore';
-
-const GITHUB_OAUTH_URL = import.meta.env.VITE_GITHUB_OAUTH_URL?.trim();
+import { beginGitHubOAuthLogin, fetchOAuthStatus, type OAuthStatusPayload } from '@/auth/githubOAuth';
+import { normalizeUser } from '@/utils/user';
 
 const Login: React.FC = () => {
   const t = useT();
   const [loading, setLoading] = useState(false);
   const [activeStory, setActiveStory] = useState(0);
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const [oauthStatus, setOauthStatus] = useState<OAuthStatusPayload | null>(null);
   const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
 
   const STORIES: { id: string; badge: string; titleKey: TranslationKey; descKey: TranslationKey }[] = [
     {
       id: 'redstone',
-      badge: 'NODE_LOGIC / OMEGA',
+      badge: '玩法经验 / REDSTONE',
       titleKey: 'auth.story.1.title',
       descKey: 'auth.story.1.desc',
     },
     {
       id: 'villager',
-      badge: 'ECON_ENGINE / SIGMA',
+      badge: '服务器运营 / TRADE',
       titleKey: 'auth.story.2.title',
       descKey: 'auth.story.2.desc',
     },
     {
       id: 'nether',
-      badge: 'SPACE_COMP / DELTA',
+      badge: '世界联通 / NETHER',
       titleKey: 'auth.story.3.title',
       descKey: 'auth.story.3.desc',
     },
@@ -67,30 +69,40 @@ const Login: React.FC = () => {
       setActiveStory((prev) => (prev + 1) % STORIES.length);
     }, 10000);
     return () => clearInterval(timer);
+  }, [STORIES.length]);
+
+  useEffect(() => {
+    void fetchOAuthStatus()
+      .then(setOauthStatus)
+      .catch(() => {
+        setOauthStatus(null);
+      });
   }, []);
 
   const handleGitHubLogin = () => {
-    if (!GITHUB_OAUTH_URL) {
-      toast({
-        variant: 'destructive',
-        title: 'GitHub 登录未配置',
-        description: '请先配置 VITE_GITHUB_OAUTH_URL 后再使用 GitHub 登录。',
-      });
-      return;
-    }
-
-    try {
-      new URL(GITHUB_OAUTH_URL);
-    } catch {
-      toast({
-        variant: 'destructive',
-        title: 'GitHub 登录地址无效',
-        description: `VITE_GITHUB_OAUTH_URL 不是有效地址：${GITHUB_OAUTH_URL}`,
-      });
-      return;
-    }
-
-    window.location.assign(GITHUB_OAUTH_URL);
+    void (async () => {
+      setOauthLoading(true);
+      try {
+        const status = oauthStatus || (await fetchOAuthStatus());
+        if (!status.providers.github.backendEnabled) {
+          toast({
+            variant: 'destructive',
+            title: 'GitHub 登录未配置',
+            description: '服务器端 GitHub OAuth 还未启用，请先完成后端 provider 配置。',
+          });
+          return;
+        }
+        await beginGitHubOAuthLogin(status);
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'GitHub 登录初始化失败',
+          description: error instanceof Error ? error.message : 'OAuth bootstrap failed',
+        });
+      } finally {
+        setOauthLoading(false);
+      }
+    })();
   };
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -102,7 +114,14 @@ const Login: React.FC = () => {
       };
 
       const result = await api.post<any>('/auth/login', payload, { skipCsrf: true });
-      const user = (result as any)?.user ?? result;
+      const user = normalizeUser((result as any)?.user ?? result);
+      const token = (result as any)?.token;
+      if (token) {
+        setLocalAuthToken(token);
+      }
+      if (!user) {
+        throw new Error('登录响应缺少用户信息');
+      }
 
       setUser(user);
       toast({
@@ -157,7 +176,7 @@ const Login: React.FC = () => {
              </div>
              <div className="flex flex-col -space-y-1">
                 <span className="font-black tracking-tighter text-2xl sm:text-3xl text-white uppercase italic">{t('admin.title')}.</span>
-                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] italic leading-none">全球网络矩阵</span>
+                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] italic leading-none">Minecraft 服务器平台</span>
              </div>
           </Link>
 
@@ -177,7 +196,7 @@ const Login: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                         <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic">同步中</span>
+                    <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic">轮播中</span>
                       </div>
                    </div>
                    <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-none text-white uppercase italic break-words">
@@ -190,8 +209,9 @@ const Login: React.FC = () => {
              </AnimatePresence>
 
              <div className="flex gap-3">
-                {STORIES.map((story, i) => (
-                  <button 
+                 {STORIES.map((story, i) => (
+                   <button 
+                    type="button"
                     key={story.id} 
                     onClick={() => setActiveStory(i)}
                     className={`h-1.5 rounded-full transition-all duration-1000 ${i === activeStory ? 'w-24 bg-accent shadow-accent' : 'w-6 bg-zinc-900 hover:bg-zinc-800'}`} 
@@ -206,12 +226,12 @@ const Login: React.FC = () => {
               <div className="flex items-center justify-between">
                  <div className="flex items-center gap-4">
                     <GeometricLantern variant="security" className="w-5 h-5 text-zinc-400 group-hover:text-accent transition-colors" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white italic leading-none">安全协议 v4.0</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white italic leading-none">登录安全保障</span>
                  </div>
                  <GeometricLantern variant="data" className="w-4 h-4 text-zinc-800" />
               </div>
               <p className="text-[12px] text-zinc-500 font-medium leading-relaxed italic max-w-sm">
-                所有身份验证均经过多层熵校验。您的凭据将被加密并分发至分布式安全节点进行共识验证。
+                账号登录、验证码和会话都经过加密校验，异常登录会被平台风控拦截。
               </p>
            </div>
         </div>
@@ -223,18 +243,18 @@ const Login: React.FC = () => {
       </aside>
 
       {/* Form Side: Industrial Minimalist */}
-      <main className="flex-grow flex items-center justify-center p-12 md:p-24 lg:p-40 relative overflow-y-auto">
+      <main className="flex-grow flex items-center justify-center p-5 sm:p-8 md:p-24 lg:p-40 relative overflow-y-auto">
         <div className="absolute top-0 right-0 p-24 opacity-[0.02] pointer-events-none lg:block hidden">
            <GeometricLantern variant="spark" className="w-96 h-96 rotate-12" />
         </div>
         
-        <div className="w-full max-w-lg space-y-20 relative z-10 py-12">
+        <div className="w-full max-w-lg space-y-12 sm:space-y-16 lg:space-y-20 relative z-10 py-6 sm:py-12">
           <header className="space-y-6">
             <div className="w-16 h-16 bg-black text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl lg:hidden mb-12 animate-float">
                <GeometricLantern variant="spark" className="w-8 h-8 fill-current" />
             </div>
             <div className="flex items-center gap-4">
-               <div className="px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-sm text-[10px] font-black uppercase tracking-[0.3em] italic">握手初始化</div>
+               <div className="px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-sm text-[10px] font-black uppercase tracking-[0.3em] italic">登录入口</div>
                <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-100" />
             </div>
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter uppercase italic leading-none break-words">{t('auth.login.title')}.</h1>
@@ -245,10 +265,11 @@ const Login: React.FC = () => {
             <button
               type="button"
               onClick={handleGitHubLogin}
+              disabled={oauthLoading}
               className="w-full mt-8 py-5 rounded-[1.5rem] bg-zinc-900 text-white font-black uppercase tracking-[0.35em] text-[10px] hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <Shield className="w-4 h-4" />
-              使用 GitHub 登录
+              {oauthLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+              {oauthLoading ? '初始化 GitHub 登录…' : '使用 GitHub 登录'}
             </button>
 
           </header>
@@ -261,6 +282,7 @@ const Login: React.FC = () => {
                      <GeometricLantern variant="user" className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
                      <input
                        {...register('identifier')}
+                       autoComplete="username"
                        autoFocus
                        className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent rounded-[2.5rem] focus:bg-white focus:border-accent transition-all duration-500 outline-hidden font-black text-lg italic tracking-tight shadow-xs"
                        placeholder={t('auth.form.username.placeholder')}
@@ -285,6 +307,7 @@ const Login: React.FC = () => {
                      <input
                        {...register('password')}
                        type="password"
+                       autoComplete="current-password"
                        className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent rounded-[2.5rem] focus:bg-white focus:border-accent transition-all duration-500 outline-hidden font-black text-lg italic tracking-tight shadow-xs"
                        placeholder={t('auth.form.password.placeholder')}
                      />

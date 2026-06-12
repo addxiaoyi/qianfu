@@ -11624,6 +11624,7 @@ export namespace Prisma {
     owner_id: number | null
     activity: number | null
     reviewed_by: number | null
+    listing_price_paid: number | null
     like_count: number | null
     comment_count: number | null
   }
@@ -11633,6 +11634,7 @@ export namespace Prisma {
     owner_id: number | null
     activity: number | null
     reviewed_by: number | null
+    listing_price_paid: number | null
     like_count: number | null
     comment_count: number | null
   }
@@ -11656,6 +11658,10 @@ export namespace Prisma {
     review_notes: string | null
     reviewed_by: number | null
     reviewed_at: Date | null
+    listing_plan: string | null
+    listing_started_at: Date | null
+    listing_expires_at: Date | null
+    listing_price_paid: number | null
     created_at: Date | null
     updated_at: Date | null
     platform: string | null
@@ -11686,6 +11692,10 @@ export namespace Prisma {
     review_notes: string | null
     reviewed_by: number | null
     reviewed_at: Date | null
+    listing_plan: string | null
+    listing_started_at: Date | null
+    listing_expires_at: Date | null
+    listing_price_paid: number | null
     created_at: Date | null
     updated_at: Date | null
     platform: string | null
@@ -11716,6 +11726,10 @@ export namespace Prisma {
     review_notes: number
     reviewed_by: number
     reviewed_at: number
+    listing_plan: number
+    listing_started_at: number
+    listing_expires_at: number
+    listing_price_paid: number
     created_at: number
     updated_at: number
     platform: number
@@ -11734,6 +11748,7 @@ export namespace Prisma {
     owner_id?: true
     activity?: true
     reviewed_by?: true
+    listing_price_paid?: true
     like_count?: true
     comment_count?: true
   }
@@ -11743,6 +11758,7 @@ export namespace Prisma {
     owner_id?: true
     activity?: true
     reviewed_by?: true
+    listing_price_paid?: true
     like_count?: true
     comment_count?: true
   }
@@ -11766,6 +11782,10 @@ export namespace Prisma {
     review_notes?: true
     reviewed_by?: true
     reviewed_at?: true
+    listing_plan?: true
+    listing_started_at?: true
+    listing_expires_at?: true
+    listing_price_paid?: true
     created_at?: true
     updated_at?: true
     platform?: true
@@ -11796,6 +11816,10 @@ export namespace Prisma {
     review_notes?: true
     reviewed_by?: true
     reviewed_at?: true
+    listing_plan?: true
+    listing_started_at?: true
+    listing_expires_at?: true
+    listing_price_paid?: true
     created_at?: true
     updated_at?: true
     platform?: true
@@ -11826,6 +11850,10 @@ export namespace Prisma {
     review_notes?: true
     reviewed_by?: true
     reviewed_at?: true
+    listing_plan?: true
+    listing_started_at?: true
+    listing_expires_at?: true
+    listing_price_paid?: true
     created_at?: true
     updated_at?: true
     platform?: true
@@ -11943,6 +11971,10 @@ export namespace Prisma {
     review_notes: string | null
     reviewed_by: number | null
     reviewed_at: Date | null
+    listing_plan: string | null
+    listing_started_at: Date | null
+    listing_expires_at: Date | null
+    listing_price_paid: number | null
     created_at: Date
     updated_at: Date
     platform: string | null
@@ -11992,6 +12024,10 @@ export namespace Prisma {
     review_notes?: boolean
     reviewed_by?: boolean
     reviewed_at?: boolean
+    listing_plan?: boolean
+    listing_started_at?: boolean
+    listing_expires_at?: boolean
+    listing_price_paid?: boolean
     created_at?: boolean
     updated_at?: boolean
     platform?: boolean
@@ -12030,6 +12066,10 @@ export namespace Prisma {
     review_notes?: boolean
     reviewed_by?: boolean
     reviewed_at?: boolean
+    listing_plan?: boolean
+    listing_started_at?: boolean
+    listing_expires_at?: boolean
+    listing_price_paid?: boolean
     created_at?: boolean
     updated_at?: boolean
     platform?: boolean
@@ -12062,6 +12102,10 @@ export namespace Prisma {
     review_notes?: boolean
     reviewed_by?: boolean
     reviewed_at?: boolean
+    listing_plan?: boolean
+    listing_started_at?: boolean
+    listing_expires_at?: boolean
+    listing_price_paid?: boolean
     created_at?: boolean
     updated_at?: boolean
     platform?: boolean
@@ -12118,6 +12162,10 @@ export namespace Prisma {
       review_notes: string | null
       reviewed_by: number | null
       reviewed_at: Date | null
+      listing_plan: string | null
+      listing_started_at: Date | null
+      listing_expires_at: Date | null
+      listing_price_paid: number | null
       created_at: Date
       updated_at: Date
       /**
@@ -12560,6 +12608,10 @@ export namespace Prisma {
     readonly review_notes: FieldRef<"Server", 'String'>
     readonly reviewed_by: FieldRef<"Server", 'Int'>
     readonly reviewed_at: FieldRef<"Server", 'DateTime'>
+    readonly listing_plan: FieldRef<"Server", 'String'>
+    readonly listing_started_at: FieldRef<"Server", 'DateTime'>
+    readonly listing_expires_at: FieldRef<"Server", 'DateTime'>
+    readonly listing_price_paid: FieldRef<"Server", 'Int'>
     readonly created_at: FieldRef<"Server", 'DateTime'>
     readonly updated_at: FieldRef<"Server", 'DateTime'>
     readonly platform: FieldRef<"Server", 'String'>
@@ -45538,6 +45590,10 @@ export namespace Prisma {
     review_notes: 'review_notes',
     reviewed_by: 'reviewed_by',
     reviewed_at: 'reviewed_at',
+    listing_plan: 'listing_plan',
+    listing_started_at: 'listing_started_at',
+    listing_expires_at: 'listing_expires_at',
+    listing_price_paid: 'listing_price_paid',
     created_at: 'created_at',
     updated_at: 'updated_at',
     platform: 'platform',
@@ -46751,6 +46807,10 @@ export namespace Prisma {
     review_notes?: StringNullableFilter<"Server"> | string | null
     reviewed_by?: IntNullableFilter<"Server"> | number | null
     reviewed_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_plan?: StringNullableFilter<"Server"> | string | null
+    listing_started_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_expires_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_price_paid?: IntNullableFilter<"Server"> | number | null
     created_at?: DateTimeFilter<"Server"> | Date | string
     updated_at?: DateTimeFilter<"Server"> | Date | string
     platform?: StringNullableFilter<"Server"> | string | null
@@ -46788,6 +46848,10 @@ export namespace Prisma {
     review_notes?: SortOrderInput | SortOrder
     reviewed_by?: SortOrderInput | SortOrder
     reviewed_at?: SortOrderInput | SortOrder
+    listing_plan?: SortOrderInput | SortOrder
+    listing_started_at?: SortOrderInput | SortOrder
+    listing_expires_at?: SortOrderInput | SortOrder
+    listing_price_paid?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     platform?: SortOrderInput | SortOrder
@@ -46828,6 +46892,10 @@ export namespace Prisma {
     review_notes?: StringNullableFilter<"Server"> | string | null
     reviewed_by?: IntNullableFilter<"Server"> | number | null
     reviewed_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_plan?: StringNullableFilter<"Server"> | string | null
+    listing_started_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_expires_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_price_paid?: IntNullableFilter<"Server"> | number | null
     created_at?: DateTimeFilter<"Server"> | Date | string
     updated_at?: DateTimeFilter<"Server"> | Date | string
     platform?: StringNullableFilter<"Server"> | string | null
@@ -46865,6 +46933,10 @@ export namespace Prisma {
     review_notes?: SortOrderInput | SortOrder
     reviewed_by?: SortOrderInput | SortOrder
     reviewed_at?: SortOrderInput | SortOrder
+    listing_plan?: SortOrderInput | SortOrder
+    listing_started_at?: SortOrderInput | SortOrder
+    listing_expires_at?: SortOrderInput | SortOrder
+    listing_price_paid?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     platform?: SortOrderInput | SortOrder
@@ -46903,6 +46975,10 @@ export namespace Prisma {
     review_notes?: StringNullableWithAggregatesFilter<"Server"> | string | null
     reviewed_by?: IntNullableWithAggregatesFilter<"Server"> | number | null
     reviewed_at?: DateTimeNullableWithAggregatesFilter<"Server"> | Date | string | null
+    listing_plan?: StringNullableWithAggregatesFilter<"Server"> | string | null
+    listing_started_at?: DateTimeNullableWithAggregatesFilter<"Server"> | Date | string | null
+    listing_expires_at?: DateTimeNullableWithAggregatesFilter<"Server"> | Date | string | null
+    listing_price_paid?: IntNullableWithAggregatesFilter<"Server"> | number | null
     created_at?: DateTimeWithAggregatesFilter<"Server"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"Server"> | Date | string
     platform?: StringNullableWithAggregatesFilter<"Server"> | string | null
@@ -50270,6 +50346,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -50307,6 +50387,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -50339,6 +50423,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50376,6 +50464,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50411,6 +50503,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -50438,6 +50534,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -50468,6 +50568,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -54131,6 +54235,10 @@ export namespace Prisma {
     review_notes?: SortOrder
     reviewed_by?: SortOrder
     reviewed_at?: SortOrder
+    listing_plan?: SortOrder
+    listing_started_at?: SortOrder
+    listing_expires_at?: SortOrder
+    listing_price_paid?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     platform?: SortOrder
@@ -54147,6 +54255,7 @@ export namespace Prisma {
     owner_id?: SortOrder
     activity?: SortOrder
     reviewed_by?: SortOrder
+    listing_price_paid?: SortOrder
     like_count?: SortOrder
     comment_count?: SortOrder
   }
@@ -54170,6 +54279,10 @@ export namespace Prisma {
     review_notes?: SortOrder
     reviewed_by?: SortOrder
     reviewed_at?: SortOrder
+    listing_plan?: SortOrder
+    listing_started_at?: SortOrder
+    listing_expires_at?: SortOrder
+    listing_price_paid?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     platform?: SortOrder
@@ -54200,6 +54313,10 @@ export namespace Prisma {
     review_notes?: SortOrder
     reviewed_by?: SortOrder
     reviewed_at?: SortOrder
+    listing_plan?: SortOrder
+    listing_started_at?: SortOrder
+    listing_expires_at?: SortOrder
+    listing_price_paid?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     platform?: SortOrder
@@ -54216,6 +54333,7 @@ export namespace Prisma {
     owner_id?: SortOrder
     activity?: SortOrder
     reviewed_by?: SortOrder
+    listing_price_paid?: SortOrder
     like_count?: SortOrder
     comment_count?: SortOrder
   }
@@ -58788,6 +58906,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -58823,6 +58945,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -58920,6 +59046,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -58955,6 +59085,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -59763,6 +59897,10 @@ export namespace Prisma {
     review_notes?: StringNullableFilter<"Server"> | string | null
     reviewed_by?: IntNullableFilter<"Server"> | number | null
     reviewed_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_plan?: StringNullableFilter<"Server"> | string | null
+    listing_started_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_expires_at?: DateTimeNullableFilter<"Server"> | Date | string | null
+    listing_price_paid?: IntNullableFilter<"Server"> | number | null
     created_at?: DateTimeFilter<"Server"> | Date | string
     updated_at?: DateTimeFilter<"Server"> | Date | string
     platform?: StringNullableFilter<"Server"> | string | null
@@ -62449,6 +62587,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -62485,6 +62627,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -62532,6 +62678,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62568,6 +62718,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62599,6 +62753,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -62635,6 +62793,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -62802,6 +62964,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62838,6 +63004,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62995,6 +63165,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63031,6 +63205,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63198,6 +63376,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63234,6 +63416,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63391,6 +63577,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63427,6 +63617,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63474,6 +63668,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63510,6 +63708,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63541,6 +63743,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63577,6 +63783,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -63744,6 +63954,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63780,6 +63994,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70191,6 +70409,10 @@ export namespace Prisma {
     review_notes?: string | null
     reviewed_by?: number | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -70240,6 +70462,10 @@ export namespace Prisma {
     review_status?: string
     review_notes?: string | null
     reviewed_at?: Date | string | null
+    listing_plan?: string | null
+    listing_started_at?: Date | string | null
+    listing_expires_at?: Date | string | null
+    listing_price_paid?: number | null
     created_at?: Date | string
     updated_at?: Date | string
     platform?: string | null
@@ -70523,6 +70749,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70558,6 +70788,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70592,6 +70826,10 @@ export namespace Prisma {
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_by?: NullableIntFieldUpdateOperationsInput | number | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70677,6 +70915,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70712,6 +70954,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null
@@ -70746,6 +70992,10 @@ export namespace Prisma {
     review_status?: StringFieldUpdateOperationsInput | string
     review_notes?: NullableStringFieldUpdateOperationsInput | string | null
     reviewed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_plan?: NullableStringFieldUpdateOperationsInput | string | null
+    listing_started_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    listing_price_paid?: NullableIntFieldUpdateOperationsInput | number | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     platform?: NullableStringFieldUpdateOperationsInput | string | null

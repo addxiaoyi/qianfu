@@ -3,6 +3,30 @@ import { AppError, ErrorCode } from '../utils/errors';
 import { logAction } from '../services/auditService';
 import { AuthRequest } from './auth';
 
+function escapeHtml(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return char;
+    }
+  });
+}
+
+function isSafeRelativeRedirectUrl(value: string | undefined): value is string {
+  if (!value) return false;
+  return /^\/(?!\/)/.test(value) && !/[\\\r\n]/.test(value);
+}
+
 // Port 5555 error handler middleware
 export const port5555ErrorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
   // Check if request is related to port 5555
@@ -40,17 +64,17 @@ export const port5555ErrorHandler = (error: any, req: Request, res: Response, ne
   switch (errorCode) {
     case ErrorCode.UNAUTHORIZED:
       message = 'Authentication required for port 5555 management';
-      redirectUrl = '/#/login';
+      redirectUrl = '/login';
       break;
       
     case ErrorCode.FORBIDDEN:
       message = 'Access denied for port 5555 management';
-      redirectUrl = '/#/profile';
+      redirectUrl = '/me';
       break;
       
     case ErrorCode.SESSION_EXPIRED:
       message = 'Session expired, please login again';
-      redirectUrl = '/#/login';
+      redirectUrl = '/login';
       break;
       
     case ErrorCode.RATE_LIMIT_EXCEEDED:
@@ -103,6 +127,12 @@ export const port5555ErrorHandler = (error: any, req: Request, res: Response, ne
 
   // Return HTML error page
   res.set('Content-Type', 'text/html; charset=utf-8');
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+  const safeRedirectUrl = isSafeRelativeRedirectUrl(redirectUrl) ? redirectUrl : undefined;
+  const escapedMessage = escapeHtml(message);
+  const escapedTitle = escapeHtml(getErrorTitle(statusCode));
+  const escapedRedirectUrl = escapeHtml(safeRedirectUrl);
   
   const html = `
 <!DOCTYPE html>
@@ -200,41 +230,19 @@ export const port5555ErrorHandler = (error: any, req: Request, res: Response, ne
 <body>
     <div class="error-container">
         <div class="error-icon">${getErrorIconSvg(statusCode)}</div>
-        <h1 class="error-title">${getErrorTitle(statusCode)}</h1>
-        <p class="error-message">${message}</p>
+        <h1 class="error-title">${escapedTitle}</h1>
+        <p class="error-message">${escapedMessage}</p>
         
         <div class="error-actions">
             <a href="/" class="btn btn-primary">Home</a>
-            <a href="/#/profile" class="btn btn-secondary">Profile</a>
-            ${redirectUrl ? `<a href="${redirectUrl}" class="btn btn-primary">Login Now</a>` : ''}
+            <a href="/me" class="btn btn-secondary">Profile</a>
+            ${safeRedirectUrl ? `<a href="${escapedRedirectUrl}" class="btn btn-primary">Login Now</a>` : ''}
         </div>
         
-        ${redirectUrl ? `
-        <div class="countdown" id="countdown">
-            Redirecting in <span id="seconds">3</span>s...
+        ${safeRedirectUrl ? `
+        <div class="countdown">
+            Use the highlighted action above to continue safely.
         </div>
-        <script>
-            let seconds = 3;
-            const countdownEl = document.getElementById('countdown');
-            const secondsEl = document.getElementById('seconds');
-            
-            const timer = setInterval(() => {
-                seconds--;
-                secondsEl.textContent = seconds;
-                
-                if (seconds <= 0) {
-                    clearInterval(timer);
-                    window.location.href = '${redirectUrl}';
-                }
-            }, 1000);
-            
-            document.querySelectorAll('.btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    clearInterval(timer);
-                    countdownEl.style.display = 'none';
-                });
-            });
-        </script>
         ` : ''}
     </div>
 </body>

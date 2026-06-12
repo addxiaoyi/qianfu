@@ -1,0 +1,543 @@
+{
+  "timestamp": "2026-06-08T08:58:29.416Z",
+  "baseUrl": "http://127.0.0.1:4185",
+  "payUrl": "http://127.0.0.1:4185",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185",
+  "plannedTotal": 12,
+  "completed": 12,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 5000,
+    "domReadyTimeoutMs": 2000,
+    "routeReadyTimeoutMs": 6000,
+    "interactionTimeoutMs": 4000,
+    "stableWaitMs": 100,
+    "waitUntil": "commit"
+  },
+  "total": 12,
+  "failed": 6,
+  "failedRoutes": [
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4185/login",
+      "finalUrl": "http://127.0.0.1:4185/login",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 6000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4185/register",
+      "finalUrl": "http://127.0.0.1:4185/register",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 6000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "console_errors=2",
+        "error_responses=2",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4185/forgot-password",
+      "finalUrl": "http://127.0.0.1:4185/forgot-password",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4185/#/search",
+      "finalUrl": "http://127.0.0.1:4185/search",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "http://127.0.0.1:4185/#/resources",
+      "finalUrl": "http://127.0.0.1:4185/resources",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4185/",
+      "finalUrl": "http://127.0.0.1:4185/",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 6000ms exceeded.",
+        "console_errors=5",
+        "error_responses=5",
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 公开 API 状态 当前公开接口不可用，首页正在以降级模式展示静态内容，实时节点与同步指标暂时..."
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [],
+  "routeNotReadyRoutes": [
+    "login-history",
+    "register-history",
+    "pay-root"
+  ],
+  "emptyBodyRoutes": [],
+  "resourceFailureRoutes": [
+    "register-history",
+    "forgot-history",
+    "search-hash",
+    "resources-hash",
+    "pay-root"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    },
+    {
+      "label": "search-hash",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    }
+  ],
+  "commonErrorResponses": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4185/api/health",
+      "count": 5
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+      "count": 5
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4185/api/v1/servers/stats",
+      "count": 3
+    }
+  ],
+  "payRoot": {
+    "finalUrl": "http://127.0.0.1:4185/",
+    "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+    "canonicalHref": "https://mc-u.top/",
+    "ogUrl": "https://mc-u.top/",
+    "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 公开 API 状态 当前公开接口不可用，首页正在以降级模式展示静态内容，实时节点与同步指标暂时...",
+    "certificateErrorDetected": false,
+    "bodyMismatch": "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 公开 API 状态 当前公开接口不可用，首页正在以降级模式展示静态内容，实时节点与同步指标暂时..."
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "http://127.0.0.1:4185/",
+      "finalUrl": "http://127.0.0.1:4185/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 平台状态 检测中 数据同步 等待同步 站点摘要 MINECRAFT 服务器发现、发布与支持 千...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\home-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "servers-history",
+      "url": "http://127.0.0.1:4185/servers",
+      "finalUrl": "http://127.0.0.1:4185/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 公开索引检测中 公开目录检测中 发现服务器 正在检查公开目录状态并同步最新服务器数据。 全部 生存 创造 极限 小游戏 角色扮演 公开索引 MINECRAFT 服务器公开列表 这里汇总已公开的服务器名称、分类、标签、版本、在线状态和简介，方便玩家按关键词和玩法筛选目标服务器。 列表状态:...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\servers-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "search-history",
+      "url": "http://127.0.0.1:4185/search",
+      "finalUrl": "http://127.0.0.1:4185/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 通用发现 / 搜索核心 探索 网络世界。 通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG 纯净 空岛 科技 魔法 版本节点 1.20.x 1.19.x 1.18.x 1.16.x 1...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\search-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "resources-history",
+      "url": "http://127.0.0.1:4185/resources",
+      "finalUrl": "http://127.0.0.1:4185/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\resources-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "rules-history",
+      "url": "http://127.0.0.1:4185/rules",
+      "finalUrl": "http://127.0.0.1:4185/rules",
+      "documentStatus": 200,
+      "title": "等级与经验规则 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/rules",
+      "ogUrl": "https://mc-u.top/rules",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\rules-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4185/login",
+      "finalUrl": "http://127.0.0.1:4185/login",
+      "documentStatus": 200,
+      "title": "登录 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\login-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 6000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4185/register",
+      "finalUrl": "http://127.0.0.1:4185/register",
+      "documentStatus": 200,
+      "title": "注册 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/register",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 后端当前不可用，正在使用降级模式加载页面。 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "warning",
+          "text": "[auth] Backend unavailable at /api, auth state loaded in offline mode."
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4185/api/health",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\register-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 6000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "console_errors=2",
+        "error_responses=2",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4185/forgot-password",
+      "finalUrl": "http://127.0.0.1:4185/forgot-password",
+      "documentStatus": 200,
+      "title": "找回密码 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/forgot-password",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 千服联灯. MINECRAFT 服务器平台 SECURITY / RECOVERY 轮播中 忘记密码？ \"请输入您的邮箱地址，我们将发送验证码以重置您的密码。\" 账号找回与重置 重置密码前需要先完成邮箱验证码校验，避免他人绕过账号安全直接修改密码。 1 IDENTIFY 2 VERIFY...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "warning",
+          "text": "[auth] Backend unavailable at /api, auth state loaded in offline mode."
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4185/api/health",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4185/#/search",
+      "finalUrl": "http://127.0.0.1:4185/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 通用发现 / 搜索核心 探索 网络世界。 通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG 纯净 空岛 科技 魔法 版本节点 1.20.x 1.19.x 1.18.x 1.16.x 1...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "warning",
+          "text": "[auth] Backend unavailable at /api, auth state loaded in offline mode."
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4185/api/health",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "http://127.0.0.1:4185/#/servers",
+      "finalUrl": "http://127.0.0.1:4185/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 公开索引检测中 公开目录检测中 发现服务器 正在检查公开目录状态并同步最新服务器数据。 全部 生存 创造 极限 小游戏 角色扮演 公开索引 MINECRAFT 服务器公开列表 这里汇总已公开的服务器名称、分类、标签、版本、在线状态和简介，方便玩家按关键词和玩法筛选目标服务器。 列表状态:...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\servers-hash.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "resources-hash",
+      "url": "http://127.0.0.1:4185/#/resources",
+      "finalUrl": "http://127.0.0.1:4185/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 RESOURCE CENTER 资源中心 整理常用的官方链接、社区论坛、技术百科与实用工具，并聚合玩家店铺与商品。 AI READY SUMMARY MINECRAFT 工具、社区与店铺聚合页 千服联灯资源中心整理 Minecraft 官方网站、社区论坛、百科、启动器和常用工具，也聚合玩...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4185/api/health",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2",
+        "error_responses=2"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4185/",
+      "finalUrl": "http://127.0.0.1:4185/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 公开 API 状态 当前公开接口不可用，首页正在以降级模式展示静态内容，实时节点与同步指标暂时...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "warning",
+          "text": "[auth] Backend unavailable at /api, auth state loaded in offline mode."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4185/api/health",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/servers/stats",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/servers/stats",
+          "status": 404,
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:4185/api/v1/servers/stats",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-classification-check-4185\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 6000ms exceeded.",
+        "console_errors=5",
+        "error_responses=5",
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 协议: LIANDENG_V4.0_CORE 发现下一个世界. 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。 浏览服务器 查看推广方案 公开 API 状态 当前公开接口不可用，首页正在以降级模式展示静态内容，实时节点与同步指标暂时..."
+      ]
+    }
+  ]
+}

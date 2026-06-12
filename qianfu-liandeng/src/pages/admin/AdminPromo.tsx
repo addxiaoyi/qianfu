@@ -74,7 +74,7 @@ const AdminPromo: React.FC = () => {
                 <div className="w-3 h-3 rounded-full bg-accent animate-pulse shadow-accent/20" />
                 推广任务操作建议
               </h3>
-              <button className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-all flex items-center gap-3 italic">
+              <button type="button" className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-all flex items-center gap-3 italic">
                 查看接口 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -145,7 +145,7 @@ const AdminPromo: React.FC = () => {
                   <span className="text-[10px] font-black font-mono text-blue-500 italic">{data?.tasks ?? 0}</span>
                 </div>
               </div>
-              <button className="w-full py-8 btn-accent rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl shadow-accent/20 transition-all duration-500 active:scale-95">
+              <button type="button" className="w-full py-8 btn-accent rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl shadow-accent/20 transition-all duration-500 active:scale-95">
                 新建推广任务
               </button>
             </div>

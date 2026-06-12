@@ -173,10 +173,15 @@ src/components/
 
 ---
 
-### M-14：`server-service` 和 `user-service` 中 `_getUserFromUserService` 被前缀标记为未使用
+### M-14：`_getUserFromUserService` 遗留项核查（已核实为过期 backlog）
 
-**文件**：`services/server-service/src/services/serverService.ts`  
-**问题**：已用 `_` 前缀绕过 ESLint，但实际上该函数有业务价值，应要么实现并使用，要么删除。
+**状态**：2026-05-13 已核查。当前仓库源码中已不存在 `server-service` / `user-service` 的 `_getUserFromUserService`。  
+**结论**：这是历史遗留记录，非当前待办；无需“删除还是启用”的代码处理。  
+**证据**：
+- `services/server-service/src/services/serverService.ts` 当前无该函数
+- `services/user-service/src/services/userService.ts` 当前无该函数
+- 全仓搜索仅 `docs/IMPROVEMENT-BACKLOG.md` 命中该名称
+**后续**：如果未来重新引入跨服务用户查询，应直接实现明确命名的方法，并补调用链与测试，不再使用 `_` 前缀规避 ESLint。
 
 ---
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { authenticate, hasPermission } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getLlmsTxt, getRobotsTxt, getSitemapXml } from '../controllers/seoController';
 
 const __filenameResolved =
   typeof import.meta.url !== 'undefined'
@@ -21,22 +22,68 @@ const __dirnameResolved = __filenameResolved
     : '';
 
 const projectRoot = path.resolve(__dirnameResolved, '../../');
+const PUBLIC_CMS_PATH_PATTERN = /^\/[a-zA-Z0-9/_.,~@-]*$/;
+const INLINE_UPLOAD_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+
+const resolveFrontendOrigin = () => {
+  const raw = process.env.FRONTEND_URL?.trim();
+  if (!raw) return null;
+  try {
+    return new URL(raw).origin;
+  } catch {
+    logger.warn('[FallbackMiddleware] Invalid FRONTEND_URL, skipping redirect fallback');
+    return null;
+  }
+};
+
+const publicCmsGuard: express.RequestHandler = (req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return res.status(405).json({ error: 'Method not allowed on public CMS proxy' });
+  }
+
+  let decodedPath: string;
+  try {
+    decodedPath = decodeURIComponent(req.path);
+  } catch {
+    return res.status(400).json({ error: 'Invalid public CMS path encoding' });
+  }
+  if (
+    req.originalUrl.length > 2048 ||
+    !PUBLIC_CMS_PATH_PATTERN.test(decodedPath) ||
+    decodedPath.includes('..') ||
+    decodedPath.includes('//')
+  ) {
+    return res.status(400).json({ error: 'Invalid public CMS path' });
+  }
+
+  return next();
+};
 
 export function registerProxyRoutes(app: Application) {
   app.use(
     '/api/public/cms',
+    publicCmsGuard,
     createProxyMiddleware({
       target: 'http://localhost:3030',
       changeOrigin: true,
+      xfwd: false,
+      timeout: 8000,
+      proxyTimeout: 8000,
       pathRewrite: {
         '^/': '/api/',
       },
       on: {
-        proxyReq: (proxyReq: any, req: any, res: any) => {
-          if (req.method !== 'GET') {
-            return res.status(403).json({ error: 'Method not allowed on public proxy' });
-          }
+        proxyReq: (proxyReq: any, req: any) => {
+          proxyReq.removeHeader('cookie');
+          proxyReq.removeHeader('authorization');
+          proxyReq.setHeader('Accept', 'application/json, text/plain;q=0.9, */*;q=0.8');
           logger.info(`[Public Proxy] Forwarding ${req.method} ${req.url} -> ${proxyReq.path}`);
+        },
+        error: (err: Error, _req: any, res: any) => {
+          logger.warn(`[Public Proxy] CMS proxy failed: ${err.message}`);
+          if (!res.headersSent) {
+            res.status(502).json({ error: 'Public CMS service unavailable' });
+          }
         },
       },
     })
@@ -49,6 +96,9 @@ export function registerProxyRoutes(app: Application) {
     createProxyMiddleware({
       target: 'http://localhost:3030',
       changeOrigin: true,
+      xfwd: false,
+      timeout: 15000,
+      proxyTimeout: 15000,
       pathRewrite: {
         '^/': '/api/',
       },
@@ -71,8 +121,27 @@ export function registerProxyRoutes(app: Application) {
 }
 
 export function registerStaticAndFallback(app: Application) {
+  app.get('/robots.txt', getRobotsTxt);
+  app.get('/llms.txt', getLlmsTxt);
+  app.get('/sitemap.xml', getSitemapXml);
+
   const uploadsDir = path.resolve(projectRoot, 'uploads');
-  app.use('/uploads', express.static(uploadsDir));
+  app.use('/uploads', express.static(uploadsDir, {
+    dotfiles: 'deny',
+    fallthrough: false,
+    index: false,
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+      if (!INLINE_UPLOAD_EXTENSIONS.has(ext)) {
+        res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+      }
+      if (!INLINE_UPLOAD_EXTENSIONS.has(ext)) {
+        res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath).replace(/"/g, '')}"`);
+      }
+    },
+  }));
 
   const tinyDir = path.resolve(projectRoot, 'node_modules/tinymce');
   app.use(
@@ -100,7 +169,12 @@ export function registerStaticAndFallback(app: Application) {
     if (!isProd && process.env.FRONTEND_URL) {
       const hasExtension = path.extname(req.path) !== '';
       if (!hasExtension) {
-        return res.redirect(process.env.FRONTEND_URL + req.url);
+        const frontendOrigin = resolveFrontendOrigin();
+        if (!frontendOrigin) {
+          return next();
+        }
+        const target = `${frontendOrigin}${req.url}`;
+        return res.redirect(target);
       }
     }
 

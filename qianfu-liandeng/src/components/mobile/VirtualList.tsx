@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { cn } from '../../utils/cn';
 
 interface VirtualListProps<T> {
@@ -52,7 +52,12 @@ function VirtualList<T>({
   }, []);
 
   return (
-    <div className={cn('overflow-auto', className)} style={{ height, WebkitOverflowScrolling: 'touch' }}>
+    <div
+      ref={containerRef}
+      className={cn('overflow-auto', className)}
+      style={{ height, WebkitOverflowScrolling: 'touch' }}
+      onScroll={handleScroll}
+    >
       <div style={{ height: totalHeight, position: 'relative' }}>
         <div
           style={{

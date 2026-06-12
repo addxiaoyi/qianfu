@@ -1,146 +1,157 @@
-import { useState, useRef, useEffect } from 'react';
-import MobileLayout from './MobileLayout';
-import MobileWrapperPage from './MobileWrapperPage';
+import { useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import { Send, ShieldCheck, User, AlertCircle } from 'lucide-react';
+import { api } from '../../api/request';
+import { toast } from '../../hooks/use-toast';
 import { cn } from '../../utils/cn';
+import { formatDateTime } from '../../utils/serverView';
 
 interface Message {
-  id: string;
-  sender: 'user' | 'agent';
+  id: number | string;
   content: string;
-  timestamp: string;
+  created_at?: string;
+  time?: string;
+  sender?: {
+    username?: string;
+    role?: string;
+  };
+  role?: string;
+  is_ai?: boolean;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    sender: 'user',
-    content: '我的服务器连接不上，能帮忙看看吗？',
-    timestamp: '2026-05-08 09:30',
-  },
-  {
-    id: '2',
-    sender: 'agent',
-    content: '您好，请问您的服务器 ID 或 UUID 是什么？我会帮您查看日志。',
-    timestamp: '2026-05-08 09:32',
-  },
-  {
-    id: '3',
-    sender: 'user',
-    content: 'UUID 是 a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    timestamp: '2026-05-08 09:35',
-  },
-  {
-    id: '4',
-    sender: 'agent',
-    content: '已收到，正在查看相关日志... 找到了问题，您的服务器端口被防火墙拦截了，我来帮您处理。',
-    timestamp: '2026-05-08 09:40',
-  },
-];
+function isStaffMessage(msg: Message) {
+  const role = String(msg.sender?.role || msg.role || '').toUpperCase();
+  return msg.is_ai || role === 'ADMIN' || role === 'STAFF';
+}
 
 function MessageItem({ msg }: { msg: Message }) {
+  const staff = isStaffMessage(msg);
   return (
-    <div
-      className={cn('flex', msg.sender === 'user' ? 'justify-end' : 'justify-start')}
-    >
+    <div className={cn('flex gap-2', staff ? 'justify-start' : 'justify-end')}>
+      {staff && (
+        <div className="mt-1 w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-4 h-4" />
+        </div>
+      )}
       <div
         className={cn(
           'max-w-[80%] rounded-2xl px-4 py-3',
-          msg.sender === 'user'
-            ? 'bg-zinc-900 text-white rounded-br-sm'
-            : 'bg-white text-zinc-900 border border-zinc-200 rounded-bl-sm',
+          staff
+            ? 'bg-white text-zinc-900 border border-zinc-200 rounded-bl-sm'
+            : 'bg-zinc-900 text-white rounded-br-sm',
         )}
       >
-        <p className="text-sm leading-relaxed">{msg.content}</p>
-        <p
-          className={cn(
-            'text-[10px] mt-1',
-            msg.sender === 'user' ? 'text-zinc-400' : 'text-zinc-400',
-          )}
-        >
-          {msg.timestamp}
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+        <p className="text-[10px] mt-1 text-zinc-400">
+          {formatDateTime(msg.created_at || msg.time)}
         </p>
       </div>
+      {!staff && (
+        <div className="mt-1 w-8 h-8 rounded-full bg-zinc-100 text-zinc-500 flex items-center justify-center shrink-0">
+          <User className="w-4 h-4" />
+        </div>
+      )}
     </div>
   );
 }
 
 export default function MobileTicketDetail() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const { id } = useParams();
+  const queryClient = useQueryClient();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = () => {
-    if (!input.trim()) return;
-    const now = new Date();
-    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      sender: 'user',
-      content: input.trim(),
-      timestamp,
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput('');
+  const { data: ticket, isLoading, isError, refetch } = useQuery({
+    queryKey: ['ticket', id, 'mobile'],
+    queryFn: () => api.get<any>(`/tickets/${id}`),
+    enabled: !!id,
+  });
 
-    // Simulate agent reply
-    setTimeout(() => {
-      const reply: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: 'agent',
-        content: '收到您的消息，工作人员正在处理中，请稍等。',
-        timestamp,
-      };
-      setMessages((prev) => [...prev, reply]);
-    }, 1500);
+  const messages: Message[] = Array.isArray(ticket?.messages) ? ticket.messages : [];
+
+  const replyMutation = useMutation({
+    mutationFn: (content: string) => api.post(`/tickets/${id}/messages`, { content }),
+    onSuccess: () => {
+      setInput('');
+      queryClient.invalidateQueries({ queryKey: ['ticket', id, 'mobile'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets', 'mobile'] });
+      toast({ title: '回复已发送' });
+    },
+  });
+
+  const handleSubmit = () => {
+    const content = input.trim();
+    if (!content || replyMutation.isPending) return;
+    replyMutation.mutate(content);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSubmit();
     }
   };
 
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages.length]);
+
+  if (isLoading) {
+    return (
+      <div className="px-4 py-4 space-y-3">
+        {[1, 2, 3, 4].map((item) => <div key={item} className="h-20 rounded-2xl bg-zinc-100 animate-pulse" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center px-6">
+        <AlertCircle className="w-12 h-12 text-red-300" />
+        <p className="text-sm font-bold text-zinc-500">工单详情加载失败</p>
+        <button type="button" onClick={() => refetch()} className="px-5 py-3 rounded-xl bg-black text-white text-xs font-black">重试</button>
+      </div>
+    );
+  }
 
   return (
-    <MobileWrapperPage title="工单详情">
-      <div className="flex flex-col h-[calc(100vh-80px)]">
-        {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {messages.map((msg) => (
-            <MessageItem key={msg.id} msg={msg} />
-          ))}
-        </div>
+    <div className="flex flex-col h-[calc(100svh-132px)] bg-zinc-50">
+      <div className="px-4 py-3 border-b border-zinc-100 bg-white">
+        <h2 className="text-base font-black line-clamp-1">{ticket?.title || ticket?.subject || `工单 #${id}`}</h2>
+        <p className="text-[10px] font-bold text-zinc-400 mt-1">状态：{ticket?.status || 'UNKNOWN'}</p>
+      </div>
 
-        {/* Input */}
-        <div className="border-t border-zinc-200 bg-white px-4 py-3">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="输入消息..."
-              className="flex-1 min-h-[44px] px-4 py-2 rounded-full border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-300"
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim()}
-              className="w-11 h-11 flex items-center justify-center rounded-full bg-zinc-900 text-white disabled:opacity-40 transition-opacity"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-          </div>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="py-16 text-center text-sm font-bold text-zinc-400">暂无消息记录</div>
+        ) : (
+          messages.map((msg) => <MessageItem key={msg.id} msg={msg} />)
+        )}
+      </div>
+
+      <div className="border-t border-zinc-200 bg-white px-4 py-3">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="输入消息..."
+            className="flex-1 min-h-[44px] px-4 py-2 rounded-full border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-300"
+          />
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!input.trim() || replyMutation.isPending}
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-zinc-900 text-white disabled:opacity-40 transition-opacity"
+          >
+            <Send className="w-5 h-5" />
+          </button>
         </div>
       </div>
-    </MobileWrapperPage>
+    </div>
   );
 }

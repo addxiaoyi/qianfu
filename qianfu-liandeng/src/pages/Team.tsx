@@ -80,14 +80,14 @@ const Team: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-3">
-                <button 
+                <button type="button" 
                   onClick={() => window.open('https://wpa.qq.com/msgrd?v=3&uin=873082710&site=qq&menu=yes', '_blank', 'noopener,noreferrer')}
                   className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-all"
                   title="Contact via QQ"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>
-                <button className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-all">
+                <button type="button" className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-all">
                   <Zap className="w-4 h-4" />
                 </button>
                 <div className="flex-grow" />
@@ -143,13 +143,13 @@ const Team: React.FC = () => {
                 欢迎加入我们的技术团队或运营小组。
               </p>
               <div className="flex gap-4 pt-4 flex-wrap">
-                 <button
+                 <button type="button"
                    onClick={() => window.open('https://wpa.qq.com/msgrd?v=3&uin=873082710&site=qq&menu=yes', '_blank', 'noopener,noreferrer')}
                    className="px-8 py-3 bg-black text-white font-bold rounded-lg text-sm hover:bg-zinc-800 transition-colors"
                  >
                     提交申请
                  </button>
-                 <button
+                 <button type="button"
                    onClick={() => document.getElementById('community-rules')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                    className="px-8 py-3 border border-border font-bold rounded-lg text-sm hover:bg-muted transition-colors"
                  >

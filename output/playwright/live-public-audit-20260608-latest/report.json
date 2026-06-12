@@ -1,0 +1,459 @@
+{
+  "timestamp": "2026-06-08T07:09:50.115Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest",
+  "total": 12,
+  "failed": 12,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "title_mismatch=千服联灯 · 首页",
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": null,
+      "findings": [
+        "certificate_error_detected",
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [
+    "home-history",
+    "search-history",
+    "resources-history",
+    "search-hash"
+  ],
+  "certificateErrorRoutes": [
+    "pay-root"
+  ],
+  "interactionFailures": [
+    "search-hash"
+  ],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    },
+    {
+      "label": "search-hash",
+      "ok": false,
+      "detail": "search_input_missing"
+    }
+  ],
+  "commonErrorResponses": [
+    {
+      "status": 502,
+      "url": "https://mc-u.top/api/health",
+      "count": 3
+    }
+  ],
+  "payRoot": {
+    "finalUrl": "https://pay.star-web.top/",
+    "title": "",
+    "canonicalHref": null,
+    "ogUrl": null,
+    "textSnippet": "",
+    "certificateErrorDetected": true,
+    "bodyMismatch": ""
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\home-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 通用发现 / 搜索核心 探索 网络世界。 通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG 纯净 空岛 科技 魔法 版本节点 1.20.x 1.19.x 1.18.x 1.16.x 1...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\search-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 RESOURCE CENTER 资源中心 整理常用的官方链接、社区论坛、技术百科与实用工具，并聚合玩家店铺与商品。 AI READY SUMMARY MINECRAFT 工具、社区与店铺聚合页 千服联灯资源中心整理 Minecraft 官方网站、社区论坛、百科、启动器和常用工具，也聚合玩...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "status": 502,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "title_mismatch=千服联灯 · 首页"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\login-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\register-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 · 首页",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "title_mismatch=千服联灯 · 首页",
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-20260608-latest\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "certificate_error_detected",
+        "page.goto: Timeout 30000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ]
+}

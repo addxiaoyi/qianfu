@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-05-26T14:54:30.030Z",
+  "baseUrl": "https://mc-u.top",
+  "total": 4,
+  "failed": 0,
+  "failedChecks": [],
+  "checks": [
+    {
+      "step": "mobile-ticket-input",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/tickets/new",
+      "afterUrl": "https://mc-u.top/tickets/new",
+      "tokenAlive": true,
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\interaction\\tickets-new-input.png"
+    },
+    {
+      "step": "mobile-profile-input",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/me/edit",
+      "afterUrl": "https://mc-u.top/me/edit",
+      "tokenAlive": true,
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\interaction\\profile-edit-input.png"
+    },
+    {
+      "step": "mobile-messages-input",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/messages",
+      "afterUrl": "https://mc-u.top/messages",
+      "tokenAlive": true,
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\interaction\\messages-search-input.png"
+    },
+    {
+      "step": "mobile-editor-input",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/editor",
+      "afterUrl": "https://mc-u.top/editor",
+      "tokenAlive": true,
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\interaction\\editor-input.png"
+    }
+  ]
+}

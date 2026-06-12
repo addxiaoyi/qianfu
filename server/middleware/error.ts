@@ -18,7 +18,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
   };
   let statusCode = appError.statusCode || 500;
   let message = appError.message || 'Internal Server Error';
-  let code = appError.errorCode || ErrorCode.INTERNAL_ERROR;
+  let code = appError.errorCode || appError.code || ErrorCode.INTERNAL_ERROR;
   let details: unknown = appError.details || null;
 
   if (appError.name === 'ValidationError') {
@@ -31,9 +31,29 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
     message = 'Invalid CSRF token';
     code = ErrorCode.FORBIDDEN;
   }
+
+  if (
+    statusCode >= 500 &&
+    code === ErrorCode.INTERNAL_ERROR &&
+    typeof message === 'string' &&
+    (
+      message.includes('create order failed') ||
+      message.includes('QiuPay create order failed') ||
+      message.includes('Tpay create order failed') ||
+      message.includes('HuPiJiao create order failed') ||
+      message.includes('Creem create checkout failed') ||
+      message.includes('XPay tenant create order failed')
+    )
+  ) {
+    code = ErrorCode.PAYMENT_FAILED;
+  }
   
   const isProduction = process.env.NODE_ENV === 'production';
-  const displayMessage = isProduction && statusCode >= 500
+  const preserveBusinessFailureMessage =
+    code === ErrorCode.PAYMENT_FAILED ||
+    code === ErrorCode.SERVICE_UNAVAILABLE ||
+    code === ErrorCode.GATEWAY_TIMEOUT;
+  const displayMessage = isProduction && statusCode >= 500 && !preserveBusinessFailureMessage
     ? 'An unexpected error occurred'
     : message;
 

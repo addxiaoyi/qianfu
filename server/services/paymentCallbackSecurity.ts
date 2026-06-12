@@ -132,6 +132,27 @@ export const buildXpayNotifyReplayKey = (params: {
     params.sign.toLowerCase(),
   ])}`;
 
+export const buildXpayTenantNotifyReplayKey = (params: {
+  tenantKey: string;
+  orderId: string;
+  outOrderId?: string;
+  amount: string | number;
+  tradeNo?: string;
+  timestamp: string;
+  nonce: string;
+  sign: string;
+}): string =>
+  `payment:notify:replay:xpay-tenant:${hashReplayFingerprint([
+    params.tenantKey,
+    params.orderId,
+    params.outOrderId,
+    params.amount,
+    params.tradeNo,
+    params.timestamp,
+    params.nonce,
+    params.sign,
+  ])}`;
+
 export const buildPayProNotifyReplayKey = (params: {
   orderNo: string;
   payNum: string;
@@ -165,4 +186,49 @@ export const buildQianFuNotifyReplayKey = (params: {
     params.status,
     params.payTime,
     params.sign?.toLowerCase(),
+  ])}`;
+
+export const buildTpayNotifyReplayKey = (params: {
+  orderNo: string;
+  xddpayOrder: string;
+  money: string | number;
+  result: string;
+  sign: string;
+}): string =>
+  `payment:notify:replay:tpay:${hashReplayFingerprint([
+    params.orderNo,
+    params.xddpayOrder,
+    params.money,
+    params.result,
+    params.sign.toUpperCase(),
+  ])}`;
+
+export const buildQiuPayNotifyReplayKey = (params: {
+  outTradeNo: string;
+  tradeNo: string;
+  money: string | number;
+  tradeStatus: string;
+  sign: string;
+}): string =>
+  `payment:notify:replay:qiupay:${hashReplayFingerprint([
+    params.outTradeNo,
+    params.tradeNo,
+    params.money,
+    params.tradeStatus,
+    params.sign.toLowerCase(),
+  ])}`;
+
+export const buildHupijiaoNotifyReplayKey = (params: {
+  tradeOrderId: string;
+  transactionId: string;
+  totalFee: string | number;
+  status: string;
+  hash: string;
+}): string =>
+  `payment:notify:replay:hupijiao:${hashReplayFingerprint([
+    params.tradeOrderId,
+    params.transactionId,
+    params.totalFee,
+    params.status,
+    params.hash.toLowerCase(),
   ])}`;

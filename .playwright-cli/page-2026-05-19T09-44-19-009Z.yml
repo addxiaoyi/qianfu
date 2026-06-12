@@ -1,0 +1,67 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - generic [ref=e21]:
+      - generic [ref=e22]: 千服
+      - link [ref=e24] [cursor=pointer]:
+        - /url: "#/me/settings"
+        - img [ref=e25]
+    - generic [ref=e33]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: 仪表盘
+        - generic [ref=e139]:
+          - generic [ref=e140]:
+            - generic [ref=e141]:
+              - generic [ref=e142]: "0"
+              - generic [ref=e143]: 在线服务器
+            - generic [ref=e144]:
+              - generic [ref=e145]: "10"
+              - generic [ref=e146]: 注册用户
+            - generic [ref=e147]:
+              - generic [ref=e148]: "0"
+              - generic [ref=e149]: 我的未结工单
+            - generic [ref=e150]:
+              - generic [ref=e151]: 0%
+              - generic [ref=e152]: 在线率
+          - generic [ref=e153]:
+            - heading "快速操作" [level=3] [ref=e154]
+            - generic [ref=e155]:
+              - link "T 查看工单列表" [ref=e156] [cursor=pointer]:
+                - /url: "#/tickets"
+                - generic [ref=e157]: T
+                - generic [ref=e158]: 查看工单列表
+              - link "S 服务器列表" [ref=e159] [cursor=pointer]:
+                - /url: "#/servers"
+                - generic [ref=e160]: S
+                - generic [ref=e161]: 服务器列表
+      - generic [ref=e67]:
+        - link "苏ICP备2026025306号-2" [ref=e69] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
+        - generic [ref=e71]:
+          - link "首页" [ref=e72] [cursor=pointer]:
+            - /url: "#/mobile"
+            - img [ref=e74]
+            - generic [ref=e78]: 首页
+          - link "发现" [ref=e79] [cursor=pointer]:
+            - /url: "#/servers"
+            - img [ref=e81]
+            - generic [ref=e84]: 发现
+          - link "发布" [ref=e85] [cursor=pointer]:
+            - /url: "#/editor"
+            - img [ref=e87]
+            - generic [ref=e89]: 发布
+          - link "消息" [ref=e90] [cursor=pointer]:
+            - /url: "#/messages"
+            - img [ref=e92]
+            - generic [ref=e94]: 消息
+          - link "我的" [ref=e95] [cursor=pointer]:
+            - /url: "#/me"
+            - img [ref=e97]
+            - generic [ref=e100]: 我的

@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-06-09T07:02:45.067Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"ok\":true,\"service\":\"starmc-api\",\"persist\":{\"ok\":true,\"backend\":\"json-file\",\"postgresPlayerState\":true,\"postgresUserProfile\":true,\"postgresSubmission\":true,\"postgresStoreKv\":true,\"lastSaveAt\":\"2026-0...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "bodyPreview": "{\"ok\":true,\"status\":\"ready\"}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/index-CHZmvcH-.js",
+    "localBundle": "/assets/index-CHZmvcH-.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "true",
+    "manifestError": "",
+    "manifestDistHash": "3062911fd997413f5aa818e2e0aeed049d166fb1a63634fca18f575edb80e007",
+    "diagnosis": "ok"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/html",
+      "bodyPreview": "<!doctype html><html><head><meta charset=\"utf-8\"><title>mail.0st.top</title></head><body>mail.0st.top</body></html>",
+      "error": ""
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/html",
+      "bodyPreview": "<!doctype html><html><head><meta charset=\"utf-8\"><title>mail.0st.top</title></head><body>mail.0st.top</body></html>",
+      "error": ""
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/html",
+      "bodyPreview": "<!doctype html><html><head><meta charset=\"utf-8\"><title>mail.0st.top</title></head><body>mail.0st.top</body></html>",
+      "error": ""
+    },
+    "probeOk": true,
+    "probeError": "",
+    "tlsStatus": "wrong_principal",
+    "certCn": "mail.0st.top",
+    "certSan": "DNS:mail.0st.top",
+    "htmlStatus": "200",
+    "looksLikeMainSite": "false",
+    "rootMarkerMatch": "false",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "wrong_certificate_principal"
+  },
+  "findings": [
+    "支付域证书主体不匹配：CN=mail.0st.top SAN=DNS:mail.0st.top。"
+  ],
+  "recommendedActions": [
+    "支付域下一步：重新签发或绑定 pay.star-web.top 证书，并用 openssl s_client -servername pay.star-web.top 验证 SAN。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260609-150231.json"
+}

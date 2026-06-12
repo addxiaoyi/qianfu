@@ -1,6 +1,7 @@
 import type { PrismaClient } from '../../prisma/generated/client';
 import prisma from '../db';
 import { logger } from '../utils/logger';
+import { getPrimaryDbProvider } from '../utils/dbProvider';
 
 function assertSqlIdent(name: string): string {
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
@@ -187,6 +188,11 @@ export function buildWhereClause<T>(
 }
 
 export async function optimizeDatabaseIndexes() {
+  if (getPrimaryDbProvider() !== 'sqlite') {
+    logger.info('[DB Optimizer] Skipping SQLite-specific index optimizer on non-SQLite provider');
+    return [];
+  }
+
   const tableIndexes = [
     { table: 'Server', columns: ['name'], indexName: 'idx_server_name_search' },
     { table: 'Server', columns: ['activity', 'updated_at'], indexName: 'idx_server_activity_updated' },
@@ -265,6 +271,9 @@ export function explainQuery(query: string): string {
 }
 
 export async function getIndexes(tableName: string): Promise<{ name: string; sql: string }[]> {
+  if (getPrimaryDbProvider() !== 'sqlite') {
+    return [];
+  }
   try {
     const result = await prisma.$queryRaw<{ name: string; sql: string }[]>`
       SELECT name, sql FROM sqlite_master 
@@ -279,6 +288,10 @@ export async function getIndexes(tableName: string): Promise<{ name: string; sql
 
 export async function analyzeTable(tableName: string): Promise<void> {
   const t = assertSqlIdent(tableName);
+  if (getPrimaryDbProvider() !== 'sqlite') {
+    await prisma.$executeRawUnsafe(`ANALYZE "${t}"`);
+    return;
+  }
   await prisma.$executeRawUnsafe(`ANALYZE ${t}`);
 }
 

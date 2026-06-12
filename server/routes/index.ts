@@ -25,6 +25,10 @@ import moderationAdminRoutes from './moderationAdmin';
 import qianfuRoutes from '../core/controller/QianFuController';
 import promoRoutes from './promo';
 import adminConfigRoutes from '../core/controller/AdminConfigController';
+import paymentProjectRoutes from './paymentProjects';
+import paymentXpayBridgeRoutes from './paymentXpayBridge';
+import paymentPersonalQrRoutes from './paymentPersonalQr';
+import mailConfigRoutes from './mailConfig';
 import apiKeyRoutes from './apiKey';
 import { backwardCompatRedirect } from '../middleware/apiVersioning';
 import { API_PREFIX, API_VERSION_PREFIX } from '../constants/api';
@@ -39,14 +43,18 @@ const V1 = API_VERSION_PREFIX;
  * backwardCompatRedirect 中间件确保 /api/* 旧请求仍能正常访问。
  */
 export function registerApiRoutes(app: Application) {
+  // Landing page still calls legacy stats endpoints such as /api/servers/stats.
+  // Mount them before the v1 routers so they do not fall through to /servers/:id.
+  app.use(API_PREFIX, statsRoutes);
+
   // 向后兼容：将 /api/* 旧路径 rewrite 到 /api/v1/*
   app.use(API_PREFIX, backwardCompatRedirect);
 
   // ---- v1 路由 ----
   app.use(`${V1}`, authRoutes);
+  app.use(`${V1}`, statsRoutes);
   app.use(`${V1}`, serversRoutes);
   app.use(`${V1}`, metricsRoutes);
-  app.use(`${V1}`, statsRoutes);
   app.use(`${V1}`, visitRoutes);
   app.use(`${V1}`, uploadRoutes);
   app.use(`${V1}`, assetsRoutes);
@@ -55,6 +63,10 @@ export function registerApiRoutes(app: Application) {
   app.use(`${V1}`, eventsRoutes);
   app.use(`${V1}/admin`, userManagementRoutes);
   app.use(`${V1}/admin`, adminConfigRoutes);
+  app.use(`${V1}/admin/mail-config`, mailConfigRoutes);
+  app.use(`${V1}/admin/payment-projects`, paymentProjectRoutes);
+  app.use(`${V1}/payment/xpay-bridge`, paymentXpayBridgeRoutes);
+  app.use(`${V1}/payment/personal-qr`, paymentPersonalQrRoutes);
   app.use(`${V1}/promo`, promoRoutes);
   app.use(`${V1}/port5555`, port5555Routes);
   app.use(`${V1}/review`, reviewRoutes);
@@ -69,6 +81,7 @@ export function registerApiRoutes(app: Application) {
   app.use(`${V1}/notifications`, notificationRoutes);
   app.use(`${V1}/preferences`, preferencesRoutes);
   app.use(`${V1}/admin/moderation`, moderationAdminRoutes);
+  app.use(`${V1}/api-keys`, apiKeyRoutes);
 
   // ---- 未来版本路由在此添加 ----
   // app.use('/api/v2', v2Routes);

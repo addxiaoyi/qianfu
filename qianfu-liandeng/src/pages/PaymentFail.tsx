@@ -37,7 +37,7 @@ const PaymentFail: React.FC = () => {
         </p>
 
         <div className="space-y-4">
-          <button 
+          <button type="button" 
             onClick={() => navigate('/payment')}
             className="w-full py-6 btn-accent rounded-2xl font-black text-[12px] uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-accent/20 italic"
           >
@@ -51,7 +51,7 @@ const PaymentFail: React.FC = () => {
           </Link>
         </div>
 
-        <button 
+        <button type="button" 
           onClick={() => navigate(-1)}
           className="mt-12 text-[10px] font-black text-zinc-300 hover:text-accent flex items-center justify-center gap-3 mx-auto transition-all uppercase tracking-widest italic"
         >

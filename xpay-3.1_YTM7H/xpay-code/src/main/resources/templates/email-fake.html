@@ -3,655 +3,130 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
-    <title>XPay个人收款支付系统</title>
+    <title>XPay 订单通知</title>
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css" />
     <style type="text/css">
-        .ReadMsgBody { width: 100%; background-color: #ffffff; }
-        .ExternalClass { width: 100%; background-color: #ffffff; }
-        .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height: 100%; }
-        html { width: 100%; }
-        body { -webkit-text-size-adjust: none; -ms-text-size-adjust: none; margin: 0; padding: 0; }
-        table { border-spacing: 0; border-collapse: collapse; table-layout: fixed; margin:0 auto; }
-        table table table { table-layout: auto; }
-        img { display: block !important; }
-        table td { border-collapse: collapse; }
-        .yshortcuts a { border-bottom: none !important; }
-        a { color: #ff646a; text-decoration: none; }
-        .textbutton a { font-family: 'open sans', arial, sans-serif !important; color: #ffffff !important; }
-        .footer-link a { color: #7f8c8d !important; }
+        body { margin: 0; padding: 0; background: #f5f1e8; color: #121212; font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+        table { border-collapse: collapse; border-spacing: 0; }
+        img { border: 0; display: block; }
+        a { color: #121212; text-decoration: none; }
+        .shell { width: 100%; padding: 32px 12px; background: radial-gradient(circle at top, rgba(190,163,115,0.18), transparent 44%), #f5f1e8; }
+        .card { width: 100%; max-width: 720px; background: #fffdf8; border: 1px solid #d7cfbf; border-radius: 32px; overflow: hidden; box-shadow: 0 22px 60px rgba(18, 18, 18, 0.08); }
+        .hero { padding: 36px 42px 24px; background: linear-gradient(135deg, #f9f4ea 0%, #efe5d3 100%); border-bottom: 1px solid #e3d9c6; }
+        .eyebrow { font-size: 12px; letter-spacing: 0.34em; text-transform: uppercase; color: #7b6f5e; }
+        .title { padding-top: 16px; font-size: 34px; line-height: 1.15; font-weight: 700; letter-spacing: 0.04em; font-style: italic; }
+        .subtitle { padding-top: 12px; font-size: 14px; line-height: 1.8; color: #544b40; }
+        .section { padding: 28px 42px 0; }
+        .section-title { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: #8a7d6c; padding-bottom: 14px; }
+        .panel { width: 100%; background: #fbf8f1; border: 1px solid #e6dccb; border-radius: 22px; overflow: hidden; }
+        .row-label { width: 180px; padding: 16px 20px; font-size: 13px; font-weight: 700; color: #5f5448; border-bottom: 1px solid #ece3d4; }
+        .row-value { padding: 16px 20px; font-size: 14px; color: #141414; border-bottom: 1px solid #ece3d4; }
+        .last .row-label, .last .row-value { border-bottom: none; }
+        .actions { padding: 28px 42px 8px; }
+        .action { display: inline-block; margin: 0 12px 12px 0; padding: 14px 20px; border-radius: 999px; border: 1px solid #121212; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: #121212; color: #f7f3ea !important; }
+        .action.alt { background: transparent; color: #121212 !important; }
+        .notes { padding: 18px 42px 12px; font-size: 13px; line-height: 1.9; color: #5f5448; }
+        .footer { padding: 22px 42px 40px; font-size: 12px; line-height: 1.9; color: #756857; }
+        @media only screen and (max-width: 640px) {
+            .hero, .section, .actions, .notes, .footer { padding-left: 20px !important; padding-right: 20px !important; }
+            .title { font-size: 28px !important; }
+            .row-label, .row-value { display: block; width: auto !important; }
+        }
     </style>
 </head>
-
 <body>
-<table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#ffffff">
-
-    <!-- header -->
-
+<table class="shell" width="100%" cellpadding="0" cellspacing="0" border="0">
     <tr>
         <td align="center">
-            <table bgcolor="#f8f8f8" width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
-                <tr align="center" valign="top">
-                    <td>
-                        <table width="600" border="0" align="center" cellpadding="0" cellspacing="0">
+            <table class="card" width="720" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td class="hero">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td width="208" align="center" valign="top" bgcolor="#607e9d">
-                                    <table width="158" border="0" align="center" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td height="50"></td>
-                                        </tr>
-                                        <!-- logo -->
-                                        <tr>
-                                            <td align="center" style="line-height:0px;">
-                                                <img style="display:block;font-size:0px; border:0px; line-height:0px;" src="https://i.loli.net/2018/10/10/5bbddd6bcf412.png" width="130" height="26" alt="logo" />
-                                            </td>
-                                        </tr>
-                                        <!-- end logo -->
-
-                                        <tr>
-                                            <td height="40"></td>
-                                        </tr>
-
-                                        <!-- Compane Name -->
-                                        <tr>
-                                            <td style="font-family: 'Open Sans', Arial, sans-serif; font-size:16px; color:#FFFFFF; line-height:26px; font-weight: bold;">个人收款支付系统</td>
-                                        </tr>
-                                        <!-- end Compane Name -->
-
-                                        <tr>
-                                            <td height="5"></td>
-                                        </tr>
-
-                                        <!-- address -->
-                                        <tr>
-                                            <td style="font-family: 'Open Sans', Arial, sans-serif; font-size:13px; color:#FFFFFF; line-height:26px;">
-                                                免费开源
-                                                <br />
-                                                无需任何第三方SDK
-                                            </td>
-                                        </tr>
-                                        <!-- end address -->
-
-                                        <tr>
-                                            <td height="25"></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td width="392" align="center" valign="top">
-                                    <table width="342" border="0" align="center" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td height="50"></td>
-                                        </tr>
-
-                                        <!-- title -->
-                                        <tr>
-                                            <td align="right" style="font-family: 'Open Sans', Arial, sans-serif; font-size:38px; color:#3b3b3b; line-height:26px;">支付审核通知</td>
-                                        </tr>
-                                        <!-- end title -->
-
-                                        <tr>
-                                            <td height="25"></td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right">
-                                                <table align="right" width="50" border="0" cellpadding="0" cellspacing="0">
-                                                    <tr>
-                                                        <td bgcolor="#ff646a" height="3" style="line-height:0px; font-size:0px;">&nbsp;</td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td height="15"></td>
-                                        </tr>
-                                        <!-- Compane Name -->
-                                        <tr>
-                                            <td align="right" style="font-family: 'Open Sans', Arial, sans-serif; font-size:16px; color:#3b3b3b; line-height:26px; font-weight: bold;">Exrick Presents</td>
-                                        </tr>
-                                        <!-- end Compane Name -->
-
-                                        <tr>
-                                            <td height="5"></td>
-                                        </tr>
-
-                                        <!-- address -->
-                                        <tr>
-                                            <td align="right" style="font-family: 'Open Sans', Arial, sans-serif; font-size:13px; color:#7f8c8d; line-height:26px;">
-                                                作者博客：<a href="http://blog.exrick.cn">http://blog.exrick.cn</a>
-                                                <br />
-                                                Github：<a href="https://github.com/Exrick">https://github.com/Exrick</a>
-                                                <br />
-                                                QQ交流群 :
-                                                <span style="color:#3b3b3b"> <strong>475743731</strong>
-													</span>
-                                            </td>
-                                        </tr>
-                                        <!-- end address -->
-
-                                        <tr>
-                                            <td height="25"></td>
-                                        </tr>
-                                    </table>
+                                <td align="left" class="eyebrow">QianFu Liandeng / XPay</td>
+                            </tr>
+                            <tr>
+                                <td class="title">支付审核通知</td>
+                            </tr>
+                            <tr>
+                                <td class="subtitle">
+                                    尊敬的假管理，您收到了来自 <span th:text="${title}"></span> 的订单，请及时处理。
                                 </td>
                             </tr>
                         </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="section">
+                        <div class="section-title">Order Snapshot</div>
+                        <table class="panel" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td class="row-label">用户昵称</td>
+                                <td class="row-value"><span th:text="${nickName}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">捐赠金额</td>
+                                <td class="row-value">
+                                    <span th:if="${payType} eq 'UnionPay'">原价：</span><span th:text="${money}"></span>
+                                    <span th:if="${payType} eq 'UnionPay'"> 优惠价格：<span th:text="${money}-${payNum}*0.1"></span></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">支付方式</td>
+                                <td class="row-value"><span th:text="${payType}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">购买数量</td>
+                                <td class="row-value"><span th:text="${payNum}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">手机号</td>
+                                <td class="row-value"><span th:text="${mobile}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">自定义参数</td>
+                                <td class="row-value"><span th:text="${custom}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">留言</td>
+                                <td class="row-value"><span th:text="${info}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">邮箱</td>
+                                <td class="row-value"><span th:text="${email}"></span></td>
+                            </tr>
+                            <tr>
+                                <td class="row-label">支付时间</td>
+                                <td class="row-value"><span th:text="${time}"></span></td>
+                            </tr>
+                            <tr class="last">
+                                <td class="row-label">设备信息</td>
+                                <td class="row-value"><span th:text="${device}"></span></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="actions">
+                        <a class="action" th:href="${passNotShowUrl}">通过但不展示</a>
+                        <a class="action alt" th:href="${editUrl}">查看或编辑订单</a>
+                        <a class="action alt" th:href="${delUrl}">删除支付数据</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="notes">
+                        该通知保留原有假管理审核入口，仅重构邮件视觉样式，不更改业务逻辑与变量绑定。
+                    </td>
+                </tr>
+                <tr>
+                    <td class="footer">
+                        作者博客：<a href="http://blog.exrick.cn">blog.exrick.cn</a><br />
+                        Github：<a href="https://github.com/Exrick">github.com/Exrick</a>
                     </td>
                 </tr>
             </table>
         </td>
     </tr>
-
-    <!-- end header -->
-
-    <!-- title -->
-
-    <tr>
-        <td align="center">
-            <table align="center" width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:3px solid #bcbcbc;">
-                        <table align="center" width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="20"></td>
-                            </tr>
-
-                            <!-- header -->
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="100%" align="left" valign="top" style="font-size:13px; color:#3b3b3b; line-height:26px; text-transform:uppercase;">
-                                                尊敬的假管理您好，您收到了来自<span th:text="${title}"></span>订单，请您及时处理：
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <!-- end header -->
-                            <tr>
-                                <td height="10"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-
-    <!-- end title -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">用户昵称</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${nickName}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">捐赠金额</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">
-                                                <span th:if=" ${payType} eq 'UnionPay'">原价：</span><span th:text="${money}"></span>
-                                                <span th:if=" ${payType} eq 'UnionPay'">优惠价格：<span th:text="${money}-${payNum}*0.1"></span></span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">支付方式</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${payType}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">支付标识号</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${payNum}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">是否为移动端(true是false否)</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${mobile}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">是否自定义金额输入</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${custom}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">留言</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${info}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">通知邮箱</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${email}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">支付时间</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${time}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- list -->
-    <tr>
-        <td align="center">
-            <table width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="border-bottom:1px solid #ecf0f1;">
-                        <table width="550" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <td height="15"></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                        <tr>
-                                            <td width="250" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;">用户支付设备信息</td>
-                                            <td width="300" align="left" valign="top" style="font-family: 'Open Sans', Arial, sans-serif; font-size:14px; color:#3b3b3b; line-height:26px;  font-weight: bold;"><span th:text="${device}"></span></td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="5"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td height="5"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end list -->
-
-    <!-- total -->
-    <tr>
-        <td align="center">
-            <table align="center" width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" height="0" style="border-bottom:3px solid #3b3b3b;"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end total -->
-
-    <!-- note -->
-    <tr>
-        <td align="center">
-            <table align="center" width="600" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td height="20"></td>
-                </tr>
-
-                <!-- content -->
-                <tr>
-                    <td style="font-size:13px; color:#7f8c8d; line-height:26px;">
-                        由于您是假管理，无法获得所有操作权限，且以下操作任点其一后皆失效(1小时内有效)：
-                    </td>
-                </tr>
-                <!-- end content -->
-                <tr>
-                    <td height="20"></td>
-                </tr>
-                <tr>
-                    <td height="15"></td>
-                </tr>
-
-                <tr>
-                    <td align="center">
-                        <!--button-->
-                        <table width="80%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#53bee6" class="textbutton" style="border-radius:5px;border-bottom:3px solid #e6e6e6">
-                            <tr>
-                                <td height="40" align="center" style="font-size:16px;color:#FFFFFF;line-height: 28px;padding-left: 15px;padding-right: 15px;">
-                                    <a th:href="${passNotShowUrl}" style="display: block;">通过但不加入捐赠名单</a>
-                                </td>
-                            </tr>
-                        </table>
-                        <!--end button-->
-                    </td>
-                </tr>
-
-                <tr>
-                    <td height="15"></td>
-                </tr>
-
-                <tr>
-                    <td align="center">
-                        <!--button-->
-                        <table width="80%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#bec3c7" class="textbutton" style="border-radius:5px;border-bottom:3px solid #e6e6e6">
-                            <tr>
-                                <td height="40" align="center" style="font-size:16px;color:#FFFFFF;line-height: 28px;padding-left: 15px;padding-right: 15px;">
-                                    <a th:href="${editUrl}" style="display: block;">查看/编辑订单支付数据</a>
-                                </td>
-                            </tr>
-                        </table>
-                        <!--end button-->
-                    </td>
-                </tr>
-
-                <tr>
-                    <td height="15"></td>
-                </tr>
-
-                <tr>
-                    <td align="center">
-                        <!--button-->
-                        <table width="80%" border="0" align="center" cellpadding="0" cellspacing="0" bgcolor="#d9534f" class="textbutton" style="border-radius:5px;border-bottom:3px solid #e6e6e6">
-                            <tr>
-                                <td height="40" align="center" style="font-size:16px;color:#FFFFFF;line-height: 28px;padding-left: 15px;padding-right: 15px;">
-                                    <a th:href="${delUrl}" style="display: block;">删除该支付数据</a>
-                                </td>
-                            </tr>
-                        </table>
-                        <!--end button-->
-                    </td>
-                </tr>
-
-                <tr>
-                    <td height="15" style="border-bottom:3px solid #bcbcbc;"></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end note -->
-
-    <!-- footer -->
-    <tr>
-        <td align="center">
-            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td height="15" align="center" valign="top" style="border-bottom:10px solid #ecf0f1;">
-                        <table width="600" border="0" align="center" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td height="25"></td>
-                            </tr>
-                            <tr>
-                                <td align="center" valign="top">
-                                    <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td width="13" align="center" style="line-height:0px;">
-                                                <img style="display:block;font-size:0px; border:0px; line-height:0px;" src="https://i.loli.net/2018/07/18/5b4f3a79dc324.png" width="14" height="11" alt="img" />
-                                            </td>
-                                            <td width="10"></td>
-                                            <td class="footer-link" width="120" align="left" style="font-family: 'Open Sans', Arial, sans-serif; font-size:13px; color:#3b3b3b; line-height:26px;">1012139570@qq.com</td>
-                                            <td class="footer-link" width="300" align="right" style="font-family: 'Open Sans', Arial, sans-serif; font-size:13px; color:#3b3b3b; line-height:26px;">
-                                                <a href="http://blog.exrick.cn ">Exrick</a>
-                                                <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
-                                                <a href="https://github.com/Exrick">作者更多开源项目</a>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td height="25"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <!-- end footer -->
-
 </table>
 </body>
 </html>

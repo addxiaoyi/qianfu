@@ -1,0 +1,1 @@
+{"version":3,"file":"responseHandler.d.ts","sourceRoot":"","sources":["../../../server/middleware/responseHandler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAG1D;;;GAGG;AACH,eAAO,MAAM,sBAAsB,GAAI,KAAK,OAAO,EAAE,KAAK,QAAQ,EAAE,MAAM,YAAY,SAYrF,CAAC"}

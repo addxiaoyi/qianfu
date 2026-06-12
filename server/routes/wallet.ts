@@ -49,6 +49,15 @@ const generateRandomRedeemCode = (length = 10): string => {
   return out;
 };
 
+const toIsoString = (value: unknown): string | null => {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string' || typeof value === 'number') {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  }
+  return null;
+};
+
 // Get Wallet Balance
 router.get('/', async (req, res, next) => {
   try {
@@ -126,7 +135,8 @@ router.get('/transactions', async (req, res, next) => {
         type: t.type,
         status: t.status,
         description: t.description,
-        created_at: t.created_at,
+        created_at: toIsoString(t.created_at),
+        createdAt: toIsoString(t.created_at),
         // Metadata might contain sensitive info like payment IDs or method details
         metadata: parsedMetadata,
         non_withdrawable: isNonWithdrawable,

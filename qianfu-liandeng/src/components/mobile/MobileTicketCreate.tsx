@@ -1,22 +1,41 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { api } from '../../api/request';
+import { toast } from '../../hooks/use-toast';
+import { cn } from '../../utils/cn';
+
+const categories = [
+  { value: 'technical', label: '技术支持', priority: 'HIGH' },
+  { value: 'billing', label: '账单问题', priority: 'HIGH' },
+  { value: 'server', label: '服务器相关', priority: 'MEDIUM' },
+  { value: 'account', label: '账号问题', priority: 'MEDIUM' },
+  { value: 'other', label: '其他', priority: 'LOW' },
+] as const;
 
 export default function MobileTicketCreate() {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [content, setContent] = useState("");
+  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState<(typeof categories)[number]>(categories[0]);
+  const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const categories = [
-    { value: "technical", label: "技术支持" },
-    { value: "billing", label: "账单问题" },
-    { value: "server", label: "服务器相关" },
-    { value: "account", label: "账号问题" },
-    { value: "other", label: "其他" },
-  ];
+  const canSubmit = title.trim().length >= 2 && content.trim().length >= 5 && !submitting;
 
-  const handleSubmit = () => {
-    if (!title.trim() || !category || !content.trim()) return;
-    // TODO: 提交工单
-    console.log("提交工单", { title, category, content });
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setSubmitting(true);
+    try {
+      const ticket = await api.post<any>('/tickets', {
+        title: title.trim(),
+        description: `[${category.label}]\n${content.trim()}`,
+        priority: category.priority,
+      });
+      toast({ title: '工单已提交' });
+      navigate(`/tickets/${ticket?.id || ''}`.replace(/\/$/, ''));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -38,12 +57,14 @@ export default function MobileTicketCreate() {
           {categories.map((cat) => (
             <button
               key={cat.value}
-              onClick={() => setCategory(cat.value)}
-              className={`h-12 rounded-xl border text-sm font-medium transition-colors ${
-                category === cat.value
-                  ? "bg-zinc-900 text-white border-zinc-900"
-                  : "bg-white text-zinc-700 border-zinc-200"
-              }`}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={cn(
+                'h-12 rounded-xl border text-sm font-medium transition-colors',
+                category.value === cat.value
+                  ? 'bg-zinc-900 text-white border-zinc-900'
+                  : 'bg-white text-zinc-700 border-zinc-200',
+              )}
             >
               {cat.label}
             </button>
@@ -63,10 +84,12 @@ export default function MobileTicketCreate() {
       </div>
 
       <button
+        type="button"
         onClick={handleSubmit}
-        disabled={!title.trim() || !category || !content.trim()}
-        className="w-full h-14 bg-zinc-900 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition-opacity"
+        disabled={!canSubmit}
+        className="w-full h-14 bg-zinc-900 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
       >
+        {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
         提交工单
       </button>
     </div>

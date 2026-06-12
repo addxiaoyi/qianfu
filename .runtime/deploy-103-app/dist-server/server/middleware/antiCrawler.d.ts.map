@@ -1,0 +1,1 @@
+{"version":3,"file":"antiCrawler.d.ts","sourceRoot":"","sources":["../../../server/middleware/antiCrawler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAgC1D,eAAO,MAAM,WAAW,GAAU,KAAK,OAAO,EAAE,KAAK,QAAQ,EAAE,MAAM,YAAY,uDAmEhF,CAAC;AAEF,eAAO,MAAM,cAAc,GAAU,IAAI,MAAM,kBAE9C,CAAC"}

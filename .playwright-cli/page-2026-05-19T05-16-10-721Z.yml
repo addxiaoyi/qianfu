@@ -1,0 +1,16 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - generic [ref=e512]:
+      - generic [ref=e513]: 千服
+      - link [ref=e515] [cursor=pointer]:
+        - /url: "#/me/settings"
+        - img [ref=e516]
+    - paragraph [ref=e526]: INITIALIZING_SESSION...

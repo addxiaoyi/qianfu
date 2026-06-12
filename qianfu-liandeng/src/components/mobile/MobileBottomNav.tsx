@@ -1,32 +1,24 @@
 import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Compass, PlusSquare, MessageSquare, User } from 'lucide-react';
+import { Compass, Home, MessageCircle, PlusCircle, UserRound, type LucideIcon } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 
 interface NavItem {
   name: string;
   path: string;
-  icon: React.ElementType;
-  activeIcon: React.ElementType;
+  Icon: LucideIcon;
+  activePaths?: string[];
   requiresAuth?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { name: '首页', path: '/mobile', icon: Home, activeIcon: Home, requiresAuth: false },
-  { name: '发现', path: '/servers', icon: Compass, activeIcon: Compass, requiresAuth: false },
-  { name: '发布', path: '/editor', icon: PlusSquare, activeIcon: PlusSquare, requiresAuth: true },
-  { name: '消息', path: '/messages', icon: MessageSquare, activeIcon: MessageSquare, requiresAuth: true },
-  { name: '我的', path: '/me', icon: User, activeIcon: User, requiresAuth: true },
+  { name: '首页', path: '/mobile', Icon: Home, requiresAuth: false },
+  { name: '发现', path: '/servers', Icon: Compass, activePaths: ['/servers', '/search'], requiresAuth: false },
+  { name: '发布', path: '/editor', Icon: PlusCircle, requiresAuth: true },
+  { name: '消息', path: '/messages', Icon: MessageCircle, activePaths: ['/messages', '/tickets'], requiresAuth: true },
+  { name: '我的', path: '/me', Icon: UserRound, activePaths: ['/me', '/dashboard'], requiresAuth: true },
 ];
-
-/** Check if user is logged in (mock implementation). */
-function isLoggedIn(): boolean {
-  try {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  } catch {
-    return false;
-  }
-}
 
 interface MobileBottomNavProps {
   className?: string;
@@ -35,10 +27,16 @@ interface MobileBottomNavProps {
 const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ className = '' }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  const matchesPath = (path: string, currentPath: string) =>
+    currentPath === path || currentPath.startsWith(`${path}/`);
 
   const getActiveIndex = (): number => {
     for (let i = 0; i < navItems.length; i++) {
-      if (location.pathname === navItems[i].path || location.pathname.startsWith(navItems[i].path + '/')) {
+      const item = navItems[i];
+      const activePaths = item.activePaths || [item.path];
+      if (activePaths.some((path) => matchesPath(path, location.pathname))) {
         return i;
       }
     }
@@ -47,44 +45,42 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ className = '' }) => 
 
   const handleNavClick = useCallback(
     (item: NavItem, e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (item.requiresAuth && !isLoggedIn()) {
+      if (item.requiresAuth && !isAuthenticated) {
         e.preventDefault();
         navigate('/login', { replace: true });
         return;
       }
     },
-    [navigate],
+    [isAuthenticated, navigate],
   );
 
   const activeIndex = getActiveIndex();
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 z-50 md:hidden ${className}`}>
-      {/* Glow effect */}
-      <div className="absolute inset-x-0 -top-10 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-
-      <div className="flex items-center justify-around px-2 py-2 bg-white/90 backdrop-blur-xl border-t border-gray-100 safe-area-bottom">
+    <nav className={`w-full md:hidden ${className}`} aria-label="底部导航">
+      <div className="flex items-center justify-around bg-white/95 px-2 py-1.5 backdrop-blur-xl safe-area-bottom">
         {navItems.map((item, index) => {
           const isActive = index === activeIndex;
-          const Icon = isActive ? item.activeIcon : item.icon;
+          const Icon = item.Icon;
 
           return (
             <Link
               key={item.name}
               to={item.path}
               onClick={(e) => handleNavClick(item, e)}
-              className="flex flex-col items-center justify-center w-14 h-12 gap-1"
+              className="flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-2xl"
+              aria-current={isActive ? 'page' : undefined}
             >
               <motion.div
                 animate={isActive ? { scale: 1.1 } : { scale: 1 }}
                 transition={{ duration: 0.2 }}
-                className={`relative`}
+                className="relative"
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-black' : 'text-gray-400'}`} />
+                <Icon className={`h-5 w-5 ${isActive ? 'text-black' : 'text-gray-400'}`} strokeWidth={isActive ? 2.6 : 2.1} />
                 {isActive && (
                   <motion.div
                     layoutId="bottomNavIndicator"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-black rounded-full"
+                    className="absolute -bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-black"
                   />
                 )}
               </motion.div>
@@ -95,7 +91,7 @@ const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ className = '' }) => 
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 

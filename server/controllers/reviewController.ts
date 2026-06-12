@@ -18,7 +18,6 @@ import { sanitize } from '../services/sanitize';
 import { hookService, MotiaHook } from '../services/hookService';
 
 import { clearPublicServersCache } from '../services/publicServerCache';
-import { parseJsonArray } from '../utils/jsonField';
 import {
   sendBatchResponse,
   sendDetailResponse,
@@ -118,7 +117,7 @@ export const reviewServer = async (req: AuthRequest, res: Response, next: NextFu
       throw new AppError('Cannot review your own server', 403, ErrorCode.FORBIDDEN);
     }
 
-    const updatedServer = await localPrisma.$transaction(async (tx) => {
+    const updatedServer = await localPrisma.$transaction(async (tx: any) => {
       const currentServer = await tx.server.findUnique({
         where: { id: serverIdInt }
       });
@@ -289,7 +288,7 @@ export const batchReview = async (req: AuthRequest, res: Response, next: NextFun
     const results = await Promise.allSettled(
       serverIds.map(async (serverId: number) => {
         try {
-          const result = await localPrisma.$transaction(async (tx) => {
+          const result = await localPrisma.$transaction(async (tx: any) => {
             const server = await tx.server.findUnique({
               where: { id: serverId }
             });

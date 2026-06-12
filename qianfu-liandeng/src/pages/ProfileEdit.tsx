@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ChevronLeft } from 'lucide-react';
 import { useT } from '@/store/uiStore';
-import GeometricLantern from '@/components/icons/GeometricLantern';
-
 const profileSchema = z.object({
   username: z.string().min(3, '用户名至少3位'),
   email: z.string().email('无效的邮箱'),
@@ -24,7 +22,6 @@ const passwordSchema = z.object({
 });
 
 const sectionTitleClass = 'text-xs font-black font-mono uppercase tracking-[0.4em] text-muted-foreground flex items-center gap-4 italic';
-const inputClass = 'matrix-input';
 
 type ProfileValues = z.infer<typeof profileSchema>;
 type PasswordValues = z.infer<typeof passwordSchema>;
@@ -50,7 +47,7 @@ const ProfileEdit: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
-      toast({ title: t('common.success'), description: 'Identity Matrix Synchronized.' });
+      toast({ title: t('common.success'), description: '账号资料已更新。' });
     } catch (err: any) {
       toast({ variant: 'destructive', title: t('common.error'), description: err.message });
     } finally {
@@ -66,7 +63,7 @@ const ProfileEdit: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
-      toast({ title: t('common.success'), description: 'Security Ciphers Updated.' });
+      toast({ title: t('common.success'), description: '登录密码已更新。' });
       passwordForm.reset();
     } catch (err: any) {
       toast({ variant: 'destructive', title: t('common.error'), description: err.message });
@@ -79,12 +76,13 @@ const ProfileEdit: React.FC = () => {
     <div className="max-w-4xl mx-auto px-6 py-24 selection:bg-accent selection:text-white">
       <header className="mb-20">
         <button 
+          type="button"
           onClick={() => navigate(-1)}
           className="w-10 h-10 border border-zinc-100 rounded-xl flex items-center justify-center hover:bg-black hover:text-white transition-all group mb-8"
         >
           <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
         </button>
-        <div className="matrix-badge mb-6">Security_Terminal / Identity_Control</div>
+        <div className="matrix-badge mb-6">Account Center / Security</div>
         <h1 className="text-7xl font-black tracking-tighter uppercase italic leading-none mb-6">
            {t('profile.edit.title')}
         </h1>

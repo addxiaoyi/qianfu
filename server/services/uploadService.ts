@@ -13,6 +13,20 @@ const MAX_FILE_SIZE = UPLOAD_CONFIG.maxFileSize;
 const ALLOWED_IMAGE_MIME_TYPES = UPLOAD_CONFIG.allowedImageMimeTypes;
 const ALLOWED_ASSET_MIME_TYPES = UPLOAD_CONFIG.allowedAssetMimeTypes;
 const MAX_IMAGE_DIMENSION = UPLOAD_CONFIG.maxImageDimension;
+const ASSET_EXTENSION_MIME_ALLOWLIST: Record<string, string[]> = {
+  '.png': ['image/png'],
+  '.jpg': ['image/jpeg'],
+  '.jpeg': ['image/jpeg'],
+  '.gif': ['image/gif'],
+  '.webp': ['image/webp'],
+  '.zip': ['application/zip', 'application/x-zip-compressed'],
+  '.jar': ['application/java-archive', 'application/zip', 'application/x-zip-compressed'],
+  '.json': ['application/json', 'text/plain'],
+  '.txt': ['text/plain'],
+  '.md': ['text/plain', 'text/markdown'],
+  '.schem': ['application/octet-stream', 'application/gzip', 'application/nbt', 'application/x-nbt', 'application/x-schematic'],
+  '.schematic': ['application/octet-stream', 'application/gzip', 'application/nbt', 'application/x-nbt', 'application/x-schematic'],
+};
 
 import { ModerationService } from './moderationService';
 
@@ -75,8 +89,12 @@ export class UploadService {
     if (['.json'].includes(ext)) return 'application/json';
     if (['.txt', '.md'].includes(ext)) return 'text/plain';
     if (['.schem', '.schematic'].includes(ext)) return 'application/octet-stream';
-    const type = buffer.length > 0 ? null : null;
-    return type || 'application/octet-stream';
+    return 'application/octet-stream';
+  }
+
+  private static isAssetMimeCompatible(ext: string, mime: string): boolean {
+    const compatibleMimes = ASSET_EXTENSION_MIME_ALLOWLIST[ext];
+    return Boolean(compatibleMimes?.includes(mime));
   }
 
   static async processAndSaveImage(buffer: Buffer, originalFilename: string, userId?: number): Promise<UploadResult> {
@@ -143,11 +161,14 @@ export class UploadService {
     const type = await fileTypeFromBuffer(buffer);
     const finalMime = type?.mime || this.detectAssetMime(buffer, originalFilename);
     const ext = path.extname(originalFilename).toLowerCase();
-    if (ext && !UPLOAD_CONFIG.allowedAssetExtensions.includes(ext)) {
+    if (!ext || !UPLOAD_CONFIG.allowedAssetExtensions.includes(ext)) {
       throw new Error(`Unsupported asset extension: ${ext}`);
     }
-    if (!UPLOAD_CONFIG.allowedAssetMimeTypes.includes(finalMime)) {
+    if (!ALLOWED_ASSET_MIME_TYPES.includes(finalMime)) {
       throw new Error(`Unsupported asset mime type: ${finalMime}`);
+    }
+    if (!this.isAssetMimeCompatible(ext, finalMime)) {
+      throw new Error(`Security Alert: File extension ${ext} does not match detected content type ${finalMime}`);
     }
 
     this.ensureUploadsDir();

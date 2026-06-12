@@ -125,7 +125,8 @@ export const deleteApiKey = async (req: AuthRequest, res: Response, next: NextFu
       throw new AppError('Unauthorized', 401, ErrorCode.UNAUTHORIZED);
     }
 
-    const id = parseInt(req.query.id as string);
+    const rawId = req.params.id;
+    const id = parseInt(String(rawId), 10);
     if (isNaN(id)) {
       throw new AppError('Valid key ID is required', 400, ErrorCode.VALIDATION_ERROR);
     }

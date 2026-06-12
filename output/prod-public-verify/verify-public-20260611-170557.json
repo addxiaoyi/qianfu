@@ -1,0 +1,10 @@
+﻿{
+    "ok":  false,
+    "kind":  "reachability_preflight",
+    "base_url":  "https://mc-u.top",
+    "host":  "mc-u.top",
+    "port":  443,
+    "timeout_ms":  8000,
+    "timestamp":  "2026-06-11T09:06:06.2486398Z",
+    "message":  "TCP connection failed before public verification steps."
+}

@@ -1,9 +1,11 @@
 import { backupDatabase } from '../../scripts/backup-db';
 import { logger } from '../utils/logger';
+import { getPrimaryDbProvider } from '../utils/dbProvider';
 
 class BackupService {
   private interval: NodeJS.Timeout | null = null;
   private readonly BACKUP_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+  private readonly runInitialBackupOnStart = process.env.RUN_STARTUP_BACKUP === 'true';
 
   /**
    * Start automated backup service
@@ -12,11 +14,15 @@ class BackupService {
     if (this.interval) return;
 
     logger.info('[BackupService] Starting automated backup service...');
-    
-    // Initial backup on start
-    backupDatabase().catch((err: any) => {
-      logger.error(`[BackupService] Initial backup failed: ${err}`);
-    });
+    logger.info(`[BackupService] Active database provider: ${getPrimaryDbProvider()}`);
+
+    if (this.runInitialBackupOnStart) {
+      backupDatabase().catch((err: any) => {
+        logger.error(`[BackupService] Initial backup failed: ${err}`);
+      });
+    } else {
+      logger.info('[BackupService] Startup backup skipped. Set RUN_STARTUP_BACKUP=true to enable immediate backup on boot.');
+    }
 
     // Schedule subsequent backups
     this.interval = setInterval(() => {

@@ -1,5 +1,6 @@
 import type { Application } from 'express';
 import { logger } from '../utils/logger';
+import { getTrustedRedirectHosts, isTrustedHost } from '../utils/securityConfig';
 
 export function registerApiAccessLog(app: Application) {
   app.use((req, _res, next) => {
@@ -7,6 +8,9 @@ export function registerApiAccessLog(app: Application) {
       const isPublicRoute =
         req.path.startsWith('/api/public/servers') ||
         req.path.startsWith('/api/csrf-token') ||
+        req.path.startsWith('/api/v1/csrf-token') ||
+        req.path.startsWith('/api/auth/csrf-token') ||
+        req.path.startsWith('/api/v1/auth/csrf-token') ||
         req.path.startsWith('/api/health');
 
       if (process.env.NODE_ENV !== 'production' || !isPublicRoute) {
@@ -31,7 +35,16 @@ export function registerHttpsRedirect(app: Application) {
   app.use((req, res, next) => {
     const forceHttps = process.env.FORCE_HTTPS === 'true';
     if (forceHttps && !req.secure) {
-      const httpsUrl = `https://${req.headers.host}${req.url}`;
+      const host = String(req.headers.host || '').trim();
+      if (!host || !isTrustedHost(host)) {
+        logger.warn('[HTTPS Redirect] blocked untrusted host header', {
+          host,
+          trustedHosts: Array.from(getTrustedRedirectHosts()),
+          path: req.url,
+        });
+        return res.status(400).send('Invalid Host header');
+      }
+      const httpsUrl = `https://${host}${req.url}`;
       return res.redirect(301, httpsUrl);
     }
     return next();

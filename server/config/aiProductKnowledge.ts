@@ -28,8 +28,8 @@ Response format:
 /** 与品牌、路由相关的静态知识（注入系统提示） */
 export const AI_PRODUCT_STATIC = `
 产品：千服联灯（MotiaCraft）— Minecraft 服务器列表与社区（列表、详情、投稿、审核、工单、支付/钱包、成长等级）。
-- 桌面为 Hash SPA；移动端常用 #/mobile 前缀。
-- 常用路由：列表 #/ 或 #/servers；详情 #/servers/{id}；个人 #/me；工单 #/tickets；支付 #/payment；等级规则 #/level-rules 与 #/mobile/level-rules（公开）。
+- 桌面与移动端均已向真实路径迁移，旧 hash 链接仍兼容。
+- 常用路由：列表 / 或 /servers；详情 /servers/{id}；个人 /me；工单 /tickets；支付 /payment；等级规则 /level-rules 与 /mobile/level-rules（公开）。
 - 成长：最高 100 级；点赞/评论/签到加经验；权限与角色、等级合并计算。
 `.trim();
 

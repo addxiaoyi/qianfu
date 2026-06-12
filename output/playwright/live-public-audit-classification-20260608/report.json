@@ -1,0 +1,502 @@
+{
+  "timestamp": "2026-06-08T09:16:50.994Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608",
+  "plannedTotal": 12,
+  "completed": 12,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 12000,
+    "domReadyTimeoutMs": 5000,
+    "routeReadyTimeoutMs": 8000,
+    "interactionTimeoutMs": 5000,
+    "stableWaitMs": 300,
+    "waitUntil": "commit"
+  },
+  "total": 12,
+  "failed": 12,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/#/search",
+      "documentStatus": 200,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/#/resources",
+      "documentStatus": 200,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=资源"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [
+    "search-history",
+    "search-hash",
+    "resources-hash"
+  ],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [
+    "home-history",
+    "servers-history",
+    "resources-history",
+    "rules-history",
+    "login-history",
+    "register-history",
+    "forgot-history",
+    "servers-hash",
+    "pay-root"
+  ],
+  "routeNotReadyRoutes": [
+    "search-history",
+    "search-hash",
+    "resources-hash"
+  ],
+  "emptyBodyRoutes": [
+    "search-history",
+    "search-hash",
+    "resources-hash"
+  ],
+  "resourceFailureRoutes": [
+    "pay-root"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [
+    "search-history",
+    "search-hash"
+  ],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": false,
+      "detail": "search_input_missing"
+    },
+    {
+      "label": "search-hash",
+      "ok": false,
+      "detail": "search_input_missing"
+    }
+  ],
+  "commonErrorResponses": [],
+  "payRoot": {
+    "finalUrl": "about:blank",
+    "title": "Loading https://pay.star-web.top/",
+    "canonicalHref": null,
+    "ogUrl": null,
+    "textSnippet": "",
+    "certificateErrorDetected": false,
+    "bodyMismatch": ""
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\home-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/servers",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\search-history.png",
+      "ok": false,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/resources",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/rules",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/login",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\login-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/register",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\register-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/forgot-password",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/#/search",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/#/resources",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=资源"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://pay.star-web.top/",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://pay.star-web.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CERT_COMMON_NAME_INVALID"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-classification-20260608\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    }
+  ]
+}

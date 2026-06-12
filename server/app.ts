@@ -9,6 +9,7 @@ dotenv.config();
 initSuperTokens();
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
 
 // 使用分层中间件架构

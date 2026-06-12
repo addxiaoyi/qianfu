@@ -106,6 +106,16 @@ const ResourceCenter: React.FC = () => {
           </div>
         </header>
 
+        <section className="mb-12 rounded-[2rem] border border-border bg-card p-5 sm:p-6 md:p-8 shadow-sm">
+          <div className="max-w-4xl space-y-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.45em] italic text-accent">AI READY SUMMARY</div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight uppercase italic">Minecraft 工具、社区与店铺聚合页</h2>
+            <p className="text-sm sm:text-base text-muted-foreground font-medium leading-7">
+              千服联灯资源中心整理 Minecraft 官方网站、社区论坛、百科、启动器和常用工具，也聚合玩家店铺与商品，适合玩家和服主快速找到可靠入口。
+            </p>
+          </div>
+        </section>
+
         <div className="space-y-10 sm:space-y-12">
           <section className="rounded-[2rem] border border-border bg-card p-5 sm:p-6 md:p-8 shadow-sm">
             <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
@@ -118,7 +128,7 @@ const ResourceCenter: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 {(['featured', 'sales', 'rating', 'latest'] as const).map((sortKey) => (
-                  <button
+                  <button type="button"
                     key={sortKey}
                     onClick={() => setMarketSort(sortKey)}
                     className={`rounded-full px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.22em] transition-all ${
@@ -185,7 +195,7 @@ const ResourceCenter: React.FC = () => {
             <aside className="w-full lg:w-48 shrink-0">
               <div className="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
                 {CATEGORIES.map((cat) => (
-                  <button
+                  <button type="button"
                     key={cat.id}
                     onClick={() => setActiveCat(cat.id)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${

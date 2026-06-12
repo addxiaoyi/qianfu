@@ -77,7 +77,9 @@ const isRateLimited = (status: number, code?: string) =>
 const DEFAULT_TIMEOUT = 15000;
 const DEFAULT_API_BASE = '/api';
 const CSRF_TOKEN_KEY = 'qf_csrf_token';
+const LOCAL_AUTH_TOKEN_KEY = 'qf_local_auth_token';
 const BACKEND_FALLBACKS = ['http://localhost:3000', 'http://localhost:3001'];
+let localAuthTokenMemory: string | null = null;
 
 const getApiBase = () => import.meta.env.VITE_API_URL || DEFAULT_API_BASE;
 
@@ -90,16 +92,52 @@ const normalizePath = (url: string) => {
 
 let csrfTokenPromise: Promise<string | null> | null = null;
 
+function getSessionStorage() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function getLocalStorage() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function getCsrfStorage() {
+  return getSessionStorage() || getLocalStorage();
+}
+
+function readCookieValue(name: string) {
+  if (typeof document === 'undefined') return null;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = document.cookie.match(new RegExp(`(?:^|; )${escaped}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function getCsrfToken() {
   if (typeof window === 'undefined') return null;
-  const cached = window.localStorage.getItem(CSRF_TOKEN_KEY);
+  const cookieToken = readCookieValue('csrf_token');
+  if (cookieToken) {
+    getCsrfStorage()?.setItem(CSRF_TOKEN_KEY, cookieToken);
+    return cookieToken;
+  }
+  const cached = getCsrfStorage()?.getItem(CSRF_TOKEN_KEY);
   if (cached) return cached;
   if (!csrfTokenPromise) {
     csrfTokenPromise = (async () => {
       const csrfPath = normalizePath('/csrf-token');
       const candidateUrls = [
         csrfPath,
-        ...BACKEND_FALLBACKS.map((base) => `${base.replace(/\/$/, '')}${csrfPath.startsWith('/') ? '' : '/'}${csrfPath}`),
+        ...(import.meta.env.DEV
+          ? BACKEND_FALLBACKS.map((base) => `${base.replace(/\/$/, '')}${csrfPath.startsWith('/') ? '' : '/'}${csrfPath}`)
+          : []),
       ];
 
       for (const candidate of candidateUrls) {
@@ -109,7 +147,7 @@ async function getCsrfToken() {
           const json = await res.json().catch(() => null);
           const token = json?.data?.csrfToken || json?.csrfToken || null;
           if (token) {
-            window.localStorage.setItem(CSRF_TOKEN_KEY, token);
+            getCsrfStorage()?.setItem(CSRF_TOKEN_KEY, token);
             return token;
           }
         } catch {
@@ -127,7 +165,24 @@ async function getCsrfToken() {
 
 export async function invalidateCsrfToken() {
   if (typeof window !== 'undefined') {
-    window.localStorage.removeItem(CSRF_TOKEN_KEY);
+    getSessionStorage()?.removeItem(CSRF_TOKEN_KEY);
+    getLocalStorage()?.removeItem(CSRF_TOKEN_KEY);
+  }
+}
+
+export function getLocalAuthToken() {
+  if (typeof window !== 'undefined') {
+    getSessionStorage()?.removeItem(LOCAL_AUTH_TOKEN_KEY);
+    getLocalStorage()?.removeItem(LOCAL_AUTH_TOKEN_KEY);
+  }
+  return localAuthTokenMemory;
+}
+
+export function setLocalAuthToken(token: string | null) {
+  localAuthTokenMemory = token;
+  if (typeof window !== 'undefined') {
+    getSessionStorage()?.removeItem(LOCAL_AUTH_TOKEN_KEY);
+    getLocalStorage()?.removeItem(LOCAL_AUTH_TOKEN_KEY);
   }
 }
 
@@ -165,7 +220,10 @@ export async function request<T = any>(
 
   const headers = new Headers(fetchOptions.headers || {});
   if (useAuth && !headers.has('Authorization')) {
-    // SuperTokens works with cookies, so we don't need to manually inject auth headers
+    const localAuthToken = getLocalAuthToken();
+    if (localAuthToken) {
+      headers.set('Authorization', `Bearer ${localAuthToken}`);
+    }
   }
 
   const method = (fetchOptions.method || 'GET').toUpperCase();
@@ -188,6 +246,20 @@ export async function request<T = any>(
   const id = setTimeout(() => controller.abort(), timeout);
 
   try {
+    if (typeof window !== 'undefined') {
+      const parsedRequestUrl = new URL(requestUrl, window.location.origin);
+      const allowedOrigins = new Set([window.location.origin]);
+      const apiBase = getApiBase();
+      if (/^https?:\/\//i.test(apiBase)) {
+        allowedOrigins.add(new URL(apiBase).origin);
+      }
+      if (!allowedOrigins.has(parsedRequestUrl.origin)) {
+        throw new ApiError('Blocked cross-origin API request', 400, {
+          error: { code: 'UNTRUSTED_API_ORIGIN' },
+        });
+      }
+    }
+
     const response = await fetch(requestUrl, {
       ...fetchOptions,
       headers,

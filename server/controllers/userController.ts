@@ -33,7 +33,7 @@ export const getProfile = async (req: AuthRequest, res: Response, next: NextFunc
       preferences: parseJsonObject(user.preferences, {}),
     };
 
-    return sendSuccess(res, toSafeUser(userWithParsedPermissions, { mask: false }));
+    return sendSuccess(res, toSafeUser(userWithParsedPermissions, { mask: false }), 'Success', 200, undefined, { mask: false });
   } catch (error) {
     next(error);
   }
@@ -119,7 +119,7 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
 
     await logDataChange(userId, 'UPDATE_PROFILE', `user_${userId}`, req, existingUser, updatedUser);
 
-    return sendSuccess(res, toSafeUser(updatedUser, { mask: false }), 'Success');
+    return sendSuccess(res, toSafeUser(updatedUser, { mask: false }), 'Success', 200, undefined, { mask: false });
   } catch (error) {
     next(error);
   }

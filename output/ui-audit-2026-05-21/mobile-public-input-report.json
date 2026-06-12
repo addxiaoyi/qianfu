@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-05-26T13:26:14.994Z",
+  "baseUrl": "https://mc-u.top",
+  "total": 2,
+  "failed": 0,
+  "failedChecks": [],
+  "checks": [
+    {
+      "step": "mobile-login-input-public",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/login",
+      "afterUrl": "https://mc-u.top/login",
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\public-input\\login-input.png"
+    },
+    {
+      "step": "mobile-forgot-input-public",
+      "ok": true,
+      "beforeUrl": "https://mc-u.top/forgot-password",
+      "afterUrl": "https://mc-u.top/forgot-password",
+      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\public-input\\forgot-input.png"
+    }
+  ]
+}

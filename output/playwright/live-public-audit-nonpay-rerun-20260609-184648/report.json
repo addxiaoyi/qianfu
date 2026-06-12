@@ -1,0 +1,641 @@
+{
+  "timestamp": "2026-06-09T10:48:16.812Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648",
+  "plannedTotal": 11,
+  "completed": 11,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 15000,
+    "domReadyTimeoutMs": 5000,
+    "routeReadyTimeoutMs": 8000,
+    "interactionTimeoutMs": 3000,
+    "stableWaitMs": 1000,
+    "waitUntil": "commit",
+    "concurrency": 3
+  },
+  "total": 11,
+  "failed": 6,
+  "failedRoutes": [
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "request_failures=9",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=资源"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "findings": [
+        "request_failures=9"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "empty_body",
+        "request_failures=9",
+        "form_inputs=0",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').first()\u001b[22m",
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/#/search",
+      "documentStatus": 200,
+      "findings": [
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=搜索"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [
+    "resources-history",
+    "register-history",
+    "search-hash"
+  ],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [],
+  "routeNotReadyRoutes": [
+    "resources-history",
+    "login-history",
+    "register-history",
+    "forgot-history"
+  ],
+  "stableWaitWarningRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history",
+    "resources-history",
+    "rules-history",
+    "login-history",
+    "register-history",
+    "forgot-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash"
+  ],
+  "emptyBodyRoutes": [
+    "resources-history",
+    "register-history",
+    "search-hash"
+  ],
+  "resourceFailureRoutes": [
+    "resources-history",
+    "rules-history",
+    "register-history"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    },
+    {
+      "label": "search-hash",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    }
+  ],
+  "commonErrorResponses": [],
+  "allowedAuthProbeResponses": 2,
+  "payRoot": null,
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\home-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\servers-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 ()"
+        }
+      ],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [
+        {
+          "url": "https://mc-u.top/api/v1/profile",
+          "status": 401,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\search-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_late=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/assets/vendor-react-Cn8h483O.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/rolldown-runtime-BYbx6iT9.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/user-BMa_tH4B.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-state-D5qF3lll.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-motion-Dih4TSIy.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-editor-DNVlarzY.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-BeHZzuik.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-VWc3NT95.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-CIUYiekq.css",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "errorText": "net::ERR_ABORTED"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "request_failures=9",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=资源"
+      ],
+      "warnings": [
+        "navigation_retries=1",
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "title": "等级与经验规则 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/rules",
+      "ogUrl": "https://mc-u.top/rules",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/assets/vendor-react-Cn8h483O.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/rolldown-runtime-BYbx6iT9.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/user-BMa_tH4B.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-state-D5qF3lll.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-motion-Dih4TSIy.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-editor-DNVlarzY.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-BeHZzuik.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-VWc3NT95.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-CIUYiekq.css",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "errorText": "net::ERR_ABORTED"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "request_failures=9"
+      ],
+      "warnings": [
+        "navigation_retries=1",
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "title": "登录 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\login-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "form_inputs=0"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/assets/vendor-react-Cn8h483O.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/rolldown-runtime-BYbx6iT9.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/user-BMa_tH4B.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-state-D5qF3lll.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-motion-Dih4TSIy.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-editor-DNVlarzY.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-BeHZzuik.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/vendor-VWc3NT95.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_ABORTED"
+        },
+        {
+          "url": "https://mc-u.top/assets/index-CIUYiekq.css",
+          "method": "GET",
+          "resourceType": "stylesheet",
+          "errorText": "net::ERR_ABORTED"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\register-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').nth(1)\u001b[22m",
+        "empty_body",
+        "request_failures=9",
+        "form_inputs=0",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台"
+      ],
+      "warnings": [
+        "navigation_retries=1",
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "title": "找回密码 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/forgot-password",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input, textarea, select').first()\u001b[22m",
+        "form_inputs=0"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/#/search",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 ()"
+        }
+      ],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [
+        {
+          "url": "https://mc-u.top/api/v1/profile",
+          "status": 401,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=搜索"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_late=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/#/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\servers-hash.png",
+      "ok": true,
+      "findings": [],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/#/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-nonpay-rerun-20260609-184648\\resources-hash.png",
+      "ok": true,
+      "findings": [],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    }
+  ]
+}

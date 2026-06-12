@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <title>XPay支付宝收银台</title>
+        <link rel="stylesheet" href="/assets/css/liandeng-theme.css">
         <script src="https://gw.alipayobjects.com/as/g/h5-lib/alipayjsapi/3.1.1/alipayjsapi.min.js"></script>
         <!-- 主文件 -->
         <link rel="stylesheet" href="https://gw.alipayobjects.com/as/g/antui/antui/10.1.32/dpl/antui.css"/>
@@ -16,6 +17,24 @@
         <script src="https://gw.alipayobjects.com/as/g/antui/antui/10.1.32/antui.js"></script>
     </head>
     <style>
+        body {
+            background: linear-gradient(180deg, #fbfbf8 0%, #f6f6f3 100%);
+            font-family: "Geist", "Inter", system-ui, sans-serif;
+            color: #111111;
+        }
+        .am-message.result,
+        .am-notice,
+        .am-dialog {
+            border-radius: 24px;
+        }
+        .am-button.blue {
+            background: #111111 !important;
+            border-color: #111111 !important;
+        }
+        .am-button.white {
+            color: #111111 !important;
+            border-color: rgba(17,17,17,0.16) !important;
+        }
         .am-notice .am-notice-content {
             -webkit-flex: 1;
             overflow: hidden;

@@ -12,6 +12,7 @@ import {
   sameUtcCalendarDay,
   XP_CHECKIN,
 } from '../services/userLevelService';
+import { getPrimaryDbProvider } from '../utils/dbProvider';
 
 type CheckinHistoryRow = {
   id: number;
@@ -30,27 +31,80 @@ let checkinTableEnsured = false;
 async function ensureCheckinHistoryTable() {
   if (checkinTableEnsured) return;
 
-  await prisma.$executeRawUnsafe(`
-    CREATE TABLE IF NOT EXISTS checkin_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      checkin_date TEXT NOT NULL,
-      timezone TEXT,
-      base_reward REAL NOT NULL,
-      bonus_reward REAL NOT NULL DEFAULT 0,
-      total_reward REAL NOT NULL,
-      streak_days INTEGER NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(user_id, checkin_date)
-    )
-  `);
+  if (getPrimaryDbProvider() === 'mysql') {
+    checkinTableEnsured = true;
+    return;
+  }
 
-  await prisma.$executeRawUnsafe(
-    'CREATE INDEX IF NOT EXISTS idx_checkin_history_user_created ON checkin_history(user_id, created_at DESC)'
-  );
-  await prisma.$executeRawUnsafe(
-    'CREATE INDEX IF NOT EXISTS idx_checkin_history_user_date ON checkin_history(user_id, checkin_date DESC)'
-  );
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1 FROM checkin_history LIMIT 1');
+    checkinTableEnsured = true;
+    return;
+  } catch {
+    // Table missing or not queryable yet; continue with provider-specific bootstrap.
+  }
+
+  if (getPrimaryDbProvider() === 'postgresql') {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS checkin_history (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        checkin_date TEXT NOT NULL,
+        timezone TEXT,
+        base_reward DOUBLE PRECISION NOT NULL,
+        bonus_reward DOUBLE PRECISION NOT NULL DEFAULT 0,
+        total_reward DOUBLE PRECISION NOT NULL,
+        streak_days INTEGER NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, checkin_date)
+      )
+    `);
+  } else if (getPrimaryDbProvider() === 'mysql') {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS checkin_history (
+        id INTEGER PRIMARY KEY AUTO_INCREMENT,
+        user_id INTEGER NOT NULL,
+        checkin_date VARCHAR(32) NOT NULL,
+        timezone VARCHAR(128),
+        base_reward DOUBLE NOT NULL,
+        bonus_reward DOUBLE NOT NULL DEFAULT 0,
+        total_reward DOUBLE NOT NULL,
+        streak_days INTEGER NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_user_checkin_date (user_id, checkin_date)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX idx_checkin_history_user_created
+      ON checkin_history(user_id, created_at DESC)
+    `).catch(() => {});
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX idx_checkin_history_user_date
+      ON checkin_history(user_id, checkin_date DESC)
+    `).catch(() => {});
+  } else {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS checkin_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        checkin_date TEXT NOT NULL,
+        timezone TEXT,
+        base_reward REAL NOT NULL,
+        bonus_reward REAL NOT NULL DEFAULT 0,
+        total_reward REAL NOT NULL,
+        streak_days INTEGER NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, checkin_date)
+      )
+    `);
+    await prisma.$executeRawUnsafe(
+      'CREATE INDEX IF NOT EXISTS idx_checkin_history_user_created ON checkin_history(user_id, created_at DESC)'
+    );
+    await prisma.$executeRawUnsafe(
+      'CREATE INDEX IF NOT EXISTS idx_checkin_history_user_date ON checkin_history(user_id, checkin_date DESC)'
+    );
+  }
 
   checkinTableEnsured = true;
 }
@@ -90,10 +144,13 @@ function getStreakBonus(streakDays: number): number {
 
 async function getCurrentStreak(userId: number): Promise<number> {
   await ensureCheckinHistoryTable();
-  const rows = await prisma.$queryRawUnsafe<Array<Pick<CheckinHistoryRow, 'streak_days'>>>(
-    'SELECT streak_days FROM checkin_history WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 1',
-    userId
-  );
+  const rows = await prisma.$queryRaw<Array<Pick<CheckinHistoryRow, 'streak_days'>>>`
+    SELECT streak_days
+    FROM checkin_history
+    WHERE user_id = ${userId}
+    ORDER BY checkin_date DESC
+    LIMIT 1
+  `;
   return rows[0]?.streak_days ?? 0;
 }
 
@@ -109,24 +166,35 @@ export const getCheckinStatus = async (req: AuthRequest, res: Response, next: Ne
     const todayKey = getCalendarDayKey(now, tz);
 
     const [todayRows, latestRows, recentRows] = await Promise.all([
-      prisma.$queryRawUnsafe<Array<Pick<CheckinHistoryRow, 'id'>>>(
-        'SELECT id FROM checkin_history WHERE user_id = ? AND checkin_date = ? LIMIT 1',
-        userId,
-        todayKey
-      ),
-      prisma.$queryRawUnsafe<Array<Pick<CheckinHistoryRow, 'streak_days'>>>(
-        'SELECT streak_days FROM checkin_history WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 1',
-        userId
-      ),
-      prisma.$queryRawUnsafe<Array<Pick<CheckinHistoryRow, 'checkin_date'>>>(
-        'SELECT checkin_date FROM checkin_history WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 30',
-        userId
-      ),
+      prisma.$queryRaw<Array<Pick<CheckinHistoryRow, 'id'>>>`
+        SELECT id
+        FROM checkin_history
+        WHERE user_id = ${userId} AND checkin_date = ${todayKey}
+        LIMIT 1
+      `,
+      prisma.$queryRaw<Array<Pick<CheckinHistoryRow, 'streak_days'>>>`
+        SELECT streak_days
+        FROM checkin_history
+        WHERE user_id = ${userId}
+        ORDER BY checkin_date DESC
+        LIMIT 1
+      `,
+      prisma.$queryRaw<Array<Pick<CheckinHistoryRow, 'checkin_date'>>>`
+        SELECT checkin_date
+        FROM checkin_history
+        WHERE user_id = ${userId}
+        ORDER BY checkin_date DESC
+        LIMIT 30
+      `,
     ]);
 
+    const checkedInToday = todayRows.length > 0;
+
     return sendSuccess(res, {
-      todaySigned: todayRows.length > 0,
+      checkedInToday,
+      todaySigned: checkedInToday,
       streakDays: latestRows[0]?.streak_days ?? 0,
+      rewardXp: XP_CHECKIN,
       recentCheckinDates: recentRows.map(r => r.checkin_date),
       todayKey,
       timezone: tz ?? 'UTC',
@@ -159,11 +227,12 @@ export const postCheckin = async (req: AuthRequest, res: Response, next: NextFun
         : sameUtcCalendarDay(row.last_checkin_at, now)
       : false;
 
-    const todayRecordRows = await prisma.$queryRawUnsafe<Array<CheckinHistoryRow>>(
-      'SELECT * FROM checkin_history WHERE user_id = ? AND checkin_date = ? LIMIT 1',
-      userId,
-      todayKey
-    );
+    const todayRecordRows = await prisma.$queryRaw<Array<CheckinHistoryRow>>`
+      SELECT *
+      FROM checkin_history
+      WHERE user_id = ${userId} AND checkin_date = ${todayKey}
+      LIMIT 1
+    `;
     const todayRecord = todayRecordRows[0];
 
     if (hasCheckedInByUser || todayRecord) {
@@ -171,40 +240,56 @@ export const postCheckin = async (req: AuthRequest, res: Response, next: NextFun
       const streakDays = todayRecord?.streak_days ?? (await getCurrentStreak(userId));
       return sendSuccess(res, {
         ok: false,
+        checkedInToday: true,
         alreadyCheckedIn: true,
+        gainedXp: 0,
+        rewardXp: XP_CHECKIN,
         totalXp: row.experience_points,
         streakDays,
         level: prog.level,
         xp_into_level: prog.xpIntoLevel,
         xp_for_next_level: prog.xpForNext,
         level_progress: prog.progress,
+        checkinAt: row.last_checkin_at?.toISOString?.() ?? null,
       });
     }
 
     const baseReward = weightedRandomAmount(0.01, 1.0, 2.2);
 
     const txResult = await prisma.$transaction(async (tx) => {
-      const latestRows = await tx.$queryRawUnsafe<Array<Pick<CheckinHistoryRow, 'checkin_date' | 'streak_days'>>>(
-        'SELECT checkin_date, streak_days FROM checkin_history WHERE user_id = ? ORDER BY checkin_date DESC LIMIT 1',
-        userId
-      );
+      const latestRows = await tx.$queryRaw<Array<Pick<CheckinHistoryRow, 'checkin_date' | 'streak_days'>>>`
+        SELECT checkin_date, streak_days
+        FROM checkin_history
+        WHERE user_id = ${userId}
+        ORDER BY checkin_date DESC
+        LIMIT 1
+      `;
 
       const latest = latestRows[0];
       const streakDays = latest && dayDiff(latest.checkin_date, todayKey) === 1 ? latest.streak_days + 1 : 1;
       const bonusReward = getStreakBonus(streakDays);
       const totalReward = Math.round((baseReward + bonusReward) * 100) / 100;
 
-      await tx.$executeRawUnsafe(
-        `INSERT INTO checkin_history (user_id, checkin_date, timezone, base_reward, bonus_reward, total_reward, streak_days)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        userId,
-        todayKey,
-        clientTz ?? null,
-        baseReward,
-        bonusReward,
-        totalReward,
-        streakDays
-      );
+      await tx.$executeRaw`
+        INSERT INTO checkin_history (
+          user_id,
+          checkin_date,
+          timezone,
+          base_reward,
+          bonus_reward,
+          total_reward,
+          streak_days
+        )
+        VALUES (
+          ${userId},
+          ${todayKey},
+          ${clientTz ?? null},
+          ${baseReward},
+          ${bonusReward},
+          ${totalReward},
+          ${streakDays}
+        )
+      `;
 
       const updated = await tx.user.update({
         where: { id: userId },
@@ -267,6 +352,9 @@ export const postCheckin = async (req: AuthRequest, res: Response, next: NextFun
       xp_for_next_level: progress.xpForNext,
       level_progress: progress.progress,
       level_is_max: progress.isMax,
+      checkedInToday: true,
+      rewardXp: XP_CHECKIN,
+      checkinAt: txResult.updated.last_checkin_at?.toISOString?.() ?? now.toISOString(),
     });
   } catch (e) {
     next(e);

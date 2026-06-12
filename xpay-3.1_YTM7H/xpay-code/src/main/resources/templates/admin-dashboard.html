@@ -3,275 +3,647 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理后台 - StarMC支付网关</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        body {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .nav-item {
-            transition: all 0.3s ease;
-        }
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .nav-item.active {
-            background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), transparent);
-            border-left: 3px solid #8b5cf6;
-        }
-    </style>
+    <title>管理后台 - StarMC XPay</title>
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css">
 </head>
-<body class="flex">
-    <aside class="w-64 glass-panel min-h-screen fixed left-0 top-0 z-50">
-        <div class="p-6">
-            <div class="flex items-center gap-3 mb-8">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                    <i data-lucide="shield" class="w-5 h-5 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-white font-bold">管理后台</h1>
-                    <p class="text-white/50 text-xs">StarMC支付网关</p>
-                </div>
-            </div>
-
-            <nav class="space-y-2">
-                <a href="#dashboard" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-white">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span>概览</span>
-                </a>
-                <a href="/settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                    <span>基础设置</span>
-                </a>
-                <a href="/qianfu-settings" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
-                    <i data-lucide="credit-card" class="w-5 h-5"></i>
-                    <span>千服配置</span>
-                </a>
-                <a href="#orders" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
-                    <i data-lucide="list" class="w-5 h-5"></i>
-                    <span>订单管理</span>
-                </a>
-                <a href="#admins" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-white/70 hover:text-white">
-                    <i data-lucide="users" class="w-5 h-5"></i>
-                    <span>管理员</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-            <div class="glass-panel rounded-xl p-4">
-                <div class="flex items-center gap-3">
-                    <img id="adminAvatar" src="" alt="Avatar" class="w-10 h-10 rounded-full bg-white/10">
-                    <div class="flex-1 min-w-0">
-                        <p id="adminName" class="text-white text-sm font-medium truncate">管理员</p>
-                        <p class="text-white/50 text-xs">超级管理员</p>
+<body class="liandeng-body">
+    <div class="ld-shell">
+        <div class="ld-page">
+            <header class="ld-topbar">
+                <div class="ld-brand">
+                    <div class="ld-brand-mark">XP</div>
+                    <div class="ld-brand-copy">
+                        <h1>XPay Admin</h1>
+                        <div class="ld-kicker">Multi Tenant Control</div>
                     </div>
-                    <button onclick="logout()" class="text-white/50 hover:text-white transition-colors">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
                 </div>
-            </div>
-        </div>
-    </aside>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <span id="currentTime" class="ld-meta"></span>
+                    <a href="/" class="ld-button-secondary">返回前台</a>
+                    <button type="button" class="ld-button-secondary" onclick="logout()">退出登录</button>
+                </div>
+            </header>
 
-    <main class="flex-1 ml-64 p-8">
-        <header class="flex items-center justify-between mb-8">
-            <div>
-                <h2 class="text-2xl font-bold text-white">仪表盘</h2>
-                <p class="text-white/50">欢迎回来，查看今日数据概览</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <span id="currentTime" class="text-white/50 text-sm"></span>
-                <a href="/" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm">
-                    返回前台
-                </a>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="glass-panel rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                        <i data-lucide="dollar-sign" class="w-6 h-6 text-blue-400"></i>
+            <div class="ld-grid ld-grid-sidebar">
+                <aside class="ld-card">
+                    <div class="ld-sidebar">
+                        <a href="#overview" class="ld-side-link is-active">概览</a>
+                        <a href="#tenant-create" class="ld-side-link">创建租户</a>
+                        <a href="#tenant-list" class="ld-side-link">租户列表</a>
+                        <a href="#admin-tools" class="ld-side-link">管理员工具</a>
+                        <a href="#callback-debug" class="ld-side-link">回调调试</a>
                     </div>
-                    <span class="text-green-400 text-sm">+12.5%</span>
-                </div>
-                <h3 class="text-white/50 text-sm mb-1">今日收入</h3>
-                <p class="text-2xl font-bold text-white">¥12,580</p>
-            </div>
 
-            <div class="glass-panel rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
-                        <i data-lucide="shopping-cart" class="w-6 h-6 text-violet-400"></i>
-                    </div>
-                    <span class="text-green-400 text-sm">+8.2%</span>
-                </div>
-                <h3 class="text-white/50 text-sm mb-1">今日订单</h3>
-                <p class="text-2xl font-bold text-white">156</p>
-            </div>
-
-            <div class="glass-panel rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>
-                    </div>
-                    <span class="text-white/50 text-sm">98.5%</span>
-                </div>
-                <h3 class="text-white/50 text-sm mb-1">支付成功率</h3>
-                <p class="text-2xl font-bold text-white">99.2%</p>
-            </div>
-
-            <div class="glass-panel rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                        <i data-lucide="users" class="w-6 h-6 text-orange-400"></i>
-                    </div>
-                    <span class="text-green-400 text-sm">+23</span>
-                </div>
-                <h3 class="text-white/50 text-sm mb-1">新增用户</h3>
-                <p class="text-2xl font-bold text-white">89</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="glass-panel rounded-2xl p-6">
-                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
-                    <i data-lucide="activity" class="w-5 h-5 text-violet-400"></i>
-                    最近交易
-                </h3>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <i data-lucide="check" class="w-5 h-5 text-green-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white text-sm">订单 #20240321001</p>
-                                <p class="text-white/50 text-xs">支付宝支付</p>
+                    <div class="ld-panel" style="margin-top:22px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="ld-brand-mark" style="width:44px; height:44px; border-radius:14px;">AD</div>
+                            <div style="min-width:0;">
+                                <div id="adminName" style="font-weight:700;">管理员</div>
+                                <div id="adminRole" class="ld-meta">-</div>
                             </div>
                         </div>
-                        <span class="text-green-400 font-medium">+¥100.00</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                <i data-lucide="check" class="w-5 h-5 text-green-400"></i>
+                        <div class="ld-list" style="margin-top:16px;">
+                            <div class="ld-list-item">
+                                <div>
+                                    <div class="ld-meta">当前模式</div>
+                                    <div style="font-weight:700;">独立 XPay 控制台</div>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-white text-sm">订单 #20240321002</p>
-                                <p class="text-white/50 text-xs">微信支付</p>
-                            </div>
-                        </div>
-                        <span class="text-green-400 font-medium">+¥50.00</span>
-                    </div>
-                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                                <i data-lucide="clock" class="w-5 h-5 text-yellow-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white text-sm">订单 #20240321003</p>
-                                <p class="text-white/50 text-xs">千服支付 - 处理中</p>
+                            <div class="ld-list-item">
+                                <div>
+                                    <div class="ld-meta">开放接口</div>
+                                    <div style="font-weight:700;">/open/tenants/*</div>
+                                </div>
                             </div>
                         </div>
-                        <span class="text-white/50 font-medium">¥200.00</span>
                     </div>
-                </div>
-            </div>
+                </aside>
 
-            <div class="glass-panel rounded-2xl p-6">
-                <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
-                    <i data-lucide="bell" class="w-5 h-5 text-violet-400"></i>
-                    系统通知
-                </h3>
-                <div class="space-y-3">
-                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-blue-400">
-                        <p class="text-white text-sm">系统更新完成</p>
-                        <p class="text-white/50 text-xs mt-1">v3.1.0 版本已成功部署</p>
-                    </div>
-                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-green-400">
-                        <p class="text-white text-sm">支付通道正常</p>
-                        <p class="text-white/50 text-xs mt-1">所有支付渠道运行正常</p>
-                    </div>
-                    <div class="p-3 bg-white/5 rounded-xl border-l-2 border-yellow-400">
-                        <p class="text-white text-sm">待处理退款</p>
-                        <p class="text-white/50 text-xs mt-1">有 3 笔退款申请待审核</p>
-                    </div>
-                </div>
+                <main style="display:flex; flex-direction:column; gap:24px;">
+                    <section class="ld-card ld-card-soft" id="overview">
+                        <p class="ld-kicker">Control Surface</p>
+                        <h2 class="ld-hero-title" style="font-size: clamp(2.1rem, 4vw, 4.3rem); max-width:none; margin:12px 0 18px;">Tenant Payment Hub</h2>
+                        <p class="ld-copy">这个后台直接连现有多租户接口，可以创建项目租户、配置支付方式、轮换回调密钥和访问令牌，并查看最近一次业务回调落点。</p>
+                    </section>
+
+                    <section class="ld-stat-grid">
+                        <div class="ld-stat">
+                            <div class="ld-meta">租户总数</div>
+                            <div class="ld-stat-value" id="statTenants">0</div>
+                            <div class="ld-stat-trend">所有项目</div>
+                        </div>
+                        <div class="ld-stat">
+                            <div class="ld-meta">启用租户</div>
+                            <div class="ld-stat-value" id="statEnabled">0</div>
+                            <div class="ld-stat-trend">状态 1</div>
+                        </div>
+                        <div class="ld-stat">
+                            <div class="ld-meta">支付方式数</div>
+                            <div class="ld-stat-value" id="statMethods">0</div>
+                            <div class="ld-stat-trend">已配置通道</div>
+                        </div>
+                        <div class="ld-stat">
+                            <div class="ld-meta">最近回调</div>
+                            <div class="ld-stat-value" id="statCallback">-</div>
+                            <div class="ld-stat-trend">调试回显</div>
+                        </div>
+                    </section>
+
+                    <section class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap:24px;">
+                        <section class="ld-card">
+                            <p class="ld-kicker">Official Provider</p>
+                            <h3 class="ld-card-title">支付宝官方 API</h3>
+                            <div class="ld-list" style="margin-top: 14px;">
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">启用状态</div>
+                                    <div class="ld-chip" id="officialAlipayEnabled">-</div>
+                                </div>
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">配置完整</div>
+                                    <div class="ld-chip" id="officialAlipayConfigured">-</div>
+                                </div>
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">回调验签</div>
+                                    <div class="ld-chip" id="officialAlipayVerify">-</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="ld-card">
+                            <p class="ld-kicker">Official Provider</p>
+                            <h3 class="ld-card-title">微信官方 API</h3>
+                            <div class="ld-list" style="margin-top: 14px;">
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">启用状态</div>
+                                    <div class="ld-chip" id="officialWechatEnabled">-</div>
+                                </div>
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">配置完整</div>
+                                    <div class="ld-chip" id="officialWechatConfigured">-</div>
+                                </div>
+                                <div class="ld-list-item">
+                                    <div style="font-weight:700;">回调验签</div>
+                                    <div class="ld-chip" id="officialWechatVerify">-</div>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                    <section class="ld-grid" style="grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.75fr);">
+                        <section class="ld-card" id="tenant-create">
+                            <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px;">
+                                <div>
+                                    <p class="ld-kicker">Create Tenant</p>
+                                    <h3 class="ld-card-title">创建项目租户</h3>
+                                </div>
+                                <button type="button" class="ld-button-secondary" onclick="resetCreateForm()">重置</button>
+                            </div>
+
+                            <form id="tenantCreateForm" class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+                                <label class="ld-field">
+                                    <span class="ld-meta">tenantKey</span>
+                                    <input class="ld-input" name="tenantKey" placeholder="starmc-main" required>
+                                </label>
+                                <label class="ld-field">
+                                    <span class="ld-meta">展示名称</span>
+                                    <input class="ld-input" name="displayName" placeholder="StarMC 主项目" required>
+                                </label>
+                                <label class="ld-field" style="grid-column: 1 / -1;">
+                                    <span class="ld-meta">回调地址</span>
+                                    <input class="ld-input" name="callbackUrl" placeholder="https://your-app.example.com/pay/callback">
+                                </label>
+
+                                <div class="ld-panel" style="grid-column: 1 / -1;">
+                                    <p class="ld-kicker" style="margin-bottom:14px;">支付方式</p>
+                                    <div class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap:16px;">
+                                        <div class="ld-field">
+                                            <span class="ld-meta">支付宝展示名</span>
+                                            <input class="ld-input" name="alipayDisplayName" placeholder="支付宝主通道">
+                                            <input class="ld-input" name="alipayQrImagePath" placeholder="/assets/qr/alipay/custom.png">
+                                            <label class="ld-copy" style="display:flex; gap:8px; align-items:center;">
+                                                <input type="checkbox" name="alipayEnabled" checked> 启用支付宝
+                                            </label>
+                                        </div>
+                                        <div class="ld-field">
+                                            <span class="ld-meta">微信展示名</span>
+                                            <input class="ld-input" name="wechatDisplayName" placeholder="微信主通道">
+                                            <input class="ld-input" name="wechatQrImagePath" placeholder="/assets/qr/wechat/custom.png">
+                                            <label class="ld-copy" style="display:flex; gap:8px; align-items:center;">
+                                                <input type="checkbox" name="wechatEnabled"> 启用微信
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="grid-column: 1 / -1; display:flex; gap:12px; flex-wrap:wrap;">
+                                    <button class="ld-button" type="submit">创建租户</button>
+                                    <span id="createTenantStatus" class="ld-copy"></span>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="ld-card" id="admin-tools">
+                            <p class="ld-kicker">Admin Tools</p>
+                            <h3 class="ld-card-title">管理员工具</h3>
+                            <div class="ld-list">
+                                <div class="ld-list-item">
+                                    <div>
+                                        <div style="font-weight:700;">当前身份</div>
+                                        <div class="ld-copy" id="currentIdentity">加载中</div>
+                                    </div>
+                                    <div class="ld-chip" id="identityBadge">-</div>
+                                </div>
+                                <div class="ld-list-item">
+                                    <div>
+                                        <div style="font-weight:700;">Swagger 接口</div>
+                                        <div class="ld-copy">直接查看开放接口和后台接口。</div>
+                                    </div>
+                                    <a href="/swagger-ui.html" class="ld-button-secondary">打开</a>
+                                </div>
+                            </div>
+
+                            <form id="createAdminForm" class="ld-grid hidden" style="margin-top:22px; gap:14px;">
+                                <label class="ld-field">
+                                    <span class="ld-meta">新管理员用户名</span>
+                                    <input class="ld-input" name="username" placeholder="project_admin" required>
+                                </label>
+                                <label class="ld-field">
+                                    <span class="ld-meta">昵称</span>
+                                    <input class="ld-input" name="nickname" placeholder="Project Admin">
+                                </label>
+                                <button class="ld-button" type="submit">创建本地管理员</button>
+                                <span id="createAdminStatus" class="ld-copy"></span>
+                            </form>
+                        </section>
+                    </section>
+
+                    <section class="ld-card" id="tenant-list">
+                        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px;">
+                            <div>
+                                <p class="ld-kicker">Tenant Matrix</p>
+                                <h3 class="ld-card-title">租户列表与编辑</h3>
+                            </div>
+                            <button class="ld-button-secondary" type="button" onclick="loadDashboardData()">刷新</button>
+                        </div>
+                        <div id="tenantCards" class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));"></div>
+                    </section>
+
+                    <section class="ld-card" id="callback-debug">
+                        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px;">
+                            <div>
+                                <p class="ld-kicker">Callback Debug</p>
+                                <h3 class="ld-card-title">最近一次业务回调</h3>
+                            </div>
+                            <button class="ld-button-secondary" type="button" onclick="loadCallbackEcho()">刷新回调</button>
+                        </div>
+                        <pre id="callbackEchoBox" class="ld-panel ld-mono" style="white-space:pre-wrap; overflow:auto; margin:0;">加载中...</pre>
+                    </section>
+                </main>
             </div>
         </div>
-    </main>
+    </div>
+
+    <div class="ld-modal-backdrop" id="secretModal" aria-hidden="true">
+        <div class="ld-card" style="width:min(640px, 100%);">
+            <p class="ld-kicker">Sensitive Result</p>
+            <h3 class="ld-card-title" id="secretModalTitle">请立即保存</h3>
+            <pre id="secretModalBody" class="ld-panel ld-mono" style="white-space:pre-wrap; overflow:auto;"></pre>
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:18px;">
+                <button class="ld-button-secondary" type="button" onclick="closeSecretModal()">关闭</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-            checkAuth();
-            updateTime();
-            setInterval(updateTime, 1000);
-        });
+        let adminToken = null;
+        let authProfile = null;
+        let tenantsCache = [];
 
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
+        function renderStateChip(targetId, value, positiveText, negativeText) {
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            const active = Boolean(value);
+            el.className = 'ld-chip ' + (active ? 'is-success' : 'is-danger');
+            el.textContent = active ? positiveText : negativeText;
         }
 
-        function checkAuth() {
-            const token = localStorage.getItem('adminToken');
-            if (!token) {
+        document.addEventListener('DOMContentLoaded', async function () {
+            adminToken = localStorage.getItem('adminToken');
+            if (!adminToken) {
                 window.location.href = '/admin/login';
                 return;
             }
 
-            fetch('/admin/auth/check', {
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.success) {
-                    localStorage.removeItem('adminToken');
-                    window.location.href = '/admin/login';
-                    return;
-                }
+            updateTime();
+            setInterval(updateTime, 1000);
+            bindForms();
 
-                document.getElementById('adminName').textContent = data.data.nickname || '管理员';
-                if (data.data.avatarUrl) {
-                    document.getElementById('adminAvatar').src = data.data.avatarUrl;
+            const authOk = await checkAuth();
+            if (!authOk) {
+                return;
+            }
+
+            await loadDashboardData();
+        });
+
+        function bindForms() {
+            document.getElementById('tenantCreateForm').addEventListener('submit', handleCreateTenant);
+            document.getElementById('createAdminForm').addEventListener('submit', handleCreateAdmin);
+        }
+
+        function updateTime() {
+            document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+        }
+
+        async function checkAuth() {
+            try {
+                const data = await apiRequest('/admin/auth/check');
+                authProfile = data.result || data.data;
+                document.getElementById('adminName').textContent = authProfile.nickname || '管理员';
+                document.getElementById('adminRole').textContent = authProfile.role || '-';
+                document.getElementById('currentIdentity').textContent = (authProfile.nickname || '管理员') + ' / ' + (authProfile.openid || '-');
+                document.getElementById('identityBadge').textContent = authProfile.role || '-';
+                renderOfficialProviderState(authProfile.officialProviders || {});
+                if ((authProfile.role || '').toUpperCase() === 'SUPER_ADMIN') {
+                    document.getElementById('createAdminForm').classList.remove('hidden');
                 }
-            })
-            .catch(error => {
-                console.error('Auth check failed:', error);
+                return true;
+            } catch (error) {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin/login';
+                return false;
+            }
+        }
+
+        function renderOfficialProviderState(snapshot) {
+            renderStateChip('officialAlipayEnabled', snapshot.alipayEnabled, '已启用', '未启用');
+            renderStateChip('officialAlipayConfigured', snapshot.alipayConfigured, '配置完整', '缺少密钥');
+            renderStateChip('officialAlipayVerify', snapshot.alipayVerifyConfigured, '验签就绪', '验签未完成');
+            renderStateChip('officialWechatEnabled', snapshot.wechatEnabled, '已启用', '未启用');
+            renderStateChip('officialWechatConfigured', snapshot.wechatConfigured, '配置完整', '缺少参数');
+            renderStateChip('officialWechatVerify', snapshot.wechatVerifyConfigured, '验签就绪', '验签未完成');
+        }
+
+        async function loadDashboardData() {
+            await Promise.all([loadTenants(), loadCallbackEcho()]);
+        }
+
+        async function loadTenants() {
+            const payload = await apiRequest('/admin/tenants');
+            tenantsCache = payload.result || payload.data || [];
+            renderTenantCards(tenantsCache);
+            renderStats();
+        }
+
+        function renderStats() {
+            const enabledCount = tenantsCache.filter(item => Number(item.status) === 1).length;
+            const methodCount = tenantsCache.reduce((sum, item) => sum + ((item.paymentMethods || []).length), 0);
+            document.getElementById('statTenants').textContent = String(tenantsCache.length);
+            document.getElementById('statEnabled').textContent = String(enabledCount);
+            document.getElementById('statMethods').textContent = String(methodCount);
+        }
+
+        function renderTenantCards(tenants) {
+            const box = document.getElementById('tenantCards');
+            if (!tenants.length) {
+                box.innerHTML = '<div class="ld-empty-state ld-card-soft" style="grid-column:1 / -1;">暂无租户，先创建一个项目租户。</div>';
+                return;
+            }
+
+            box.innerHTML = tenants.map(tenant => {
+                const methods = tenant.paymentMethods || [];
+                const alipay = methods.find(item => item.payType === 'alipay') || {};
+                const wechat = methods.find(item => item.payType === 'wechat') || {};
+                return `
+                    <article class="ld-card" data-tenant-id="${tenant.id}">
+                        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:18px;">
+                            <div>
+                                <div class="ld-kicker">${escapeHtml(tenant.tenantKey)}</div>
+                                <h4 class="ld-card-title" style="font-size:1.5rem;">${escapeHtml(tenant.displayName || tenant.tenantKey)}</h4>
+                            </div>
+                            <span class="ld-chip ${Number(tenant.status) === 1 ? 'is-success' : 'is-danger'}">${Number(tenant.status) === 1 ? '启用中' : '已禁用'}</span>
+                        </div>
+
+                        <div class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px;">
+                            <label class="ld-field">
+                                <span class="ld-meta">展示名称</span>
+                                <input class="ld-input" data-field="displayName" value="${escapeAttr(tenant.displayName || '')}">
+                            </label>
+                            <label class="ld-field">
+                                <span class="ld-meta">状态</span>
+                                <select class="ld-select" data-field="status">
+                                    <option value="1" ${Number(tenant.status) === 1 ? 'selected' : ''}>启用</option>
+                                    <option value="0" ${Number(tenant.status) === 0 ? 'selected' : ''}>禁用</option>
+                                </select>
+                            </label>
+                            <label class="ld-field" style="grid-column: 1 / -1;">
+                                <span class="ld-meta">回调地址</span>
+                                <input class="ld-input" data-field="callbackUrl" value="${escapeAttr(tenant.callbackUrl || '')}">
+                            </label>
+                        </div>
+
+                        <div class="ld-panel" style="margin-top:16px;">
+                            <p class="ld-kicker" style="margin-bottom:12px;">支付方式</p>
+                            <div class="ld-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px;">
+                                ${renderMethodEditor('alipay', alipay)}
+                                ${renderMethodEditor('wechat', wechat)}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:18px;">
+                            <button class="ld-button" type="button" onclick="saveTenant(${tenant.id})">保存配置</button>
+                            <button class="ld-button-secondary" type="button" onclick="rotateTenantSecrets(${tenant.id}, '${escapeJs(tenant.tenantKey)}')">轮换密钥</button>
+                            <span class="ld-copy" id="tenant-status-${tenant.id}"></span>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderMethodEditor(payType, method) {
+            const enabled = method.enabled === undefined ? (payType === 'alipay') : Boolean(method.enabled);
+            return `
+                <div class="ld-field" data-method="${payType}">
+                    <span class="ld-meta">${payType === 'alipay' ? '支付宝' : '微信'}</span>
+                    <input class="ld-input" data-method-field="displayName" value="${escapeAttr(method.displayName || '')}" placeholder="展示名称">
+                    <input class="ld-input" data-method-field="qrImagePath" value="${escapeAttr(method.qrImagePath || '')}" placeholder="二维码路径">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                        <input type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" data-upload-file="${payType}">
+                        <button class="ld-button-secondary" type="button" onclick="uploadQr(this, '${payType}')">上传二维码</button>
+                    </div>
+                    <div class="ld-copy" data-upload-status="${payType}">${method.qrImagePath ? '当前已配置二维码' : '未上传二维码'}</div>
+                    ${method.qrImagePath ? `<img src="${escapeAttr(method.qrImagePath)}" alt="${payType}" style="width:96px; height:96px; object-fit:cover; border-radius:16px; border:1px solid var(--ld-border);">` : ''}
+                    <label class="ld-copy" style="display:flex; gap:8px; align-items:center;">
+                        <input type="checkbox" data-method-field="enabled" ${enabled ? 'checked' : ''}> 启用该方式
+                    </label>
+                </div>
+            `;
+        }
+
+        async function handleCreateTenant(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const payload = {
+                tenantKey: form.tenantKey.value.trim(),
+                displayName: form.displayName.value.trim(),
+                callbackUrl: form.callbackUrl.value.trim(),
+                paymentMethods: buildCreateMethods(form)
+            };
+
+            const statusEl = document.getElementById('createTenantStatus');
+            statusEl.textContent = '创建中...';
+
+            try {
+                const response = await apiRequest('/admin/tenants', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = response.result || response.data || {};
+                showSecretModal('租户创建成功，请立即保存', JSON.stringify({
+                    tenantKey: result.tenant ? result.tenant.tenantKey : payload.tenantKey,
+                    accessToken: result.accessToken,
+                    callbackSecret: result.callbackSecret
+                }, null, 2));
+                statusEl.textContent = '创建成功';
+                form.reset();
+                form.alipayEnabled.checked = true;
+                await loadTenants();
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        }
+
+        function buildCreateMethods(form) {
+            return [
+                {
+                    payType: 'alipay',
+                    displayName: form.alipayDisplayName.value.trim() || '支付宝',
+                    qrImagePath: form.alipayQrImagePath.value.trim(),
+                    enabled: form.alipayEnabled.checked
+                },
+                {
+                    payType: 'wechat',
+                    displayName: form.wechatDisplayName.value.trim() || '微信',
+                    qrImagePath: form.wechatQrImagePath.value.trim(),
+                    enabled: form.wechatEnabled.checked
+                }
+            ].filter(item => item.enabled || item.qrImagePath || item.displayName);
+        }
+
+        function resetCreateForm() {
+            const form = document.getElementById('tenantCreateForm');
+            form.reset();
+            form.alipayEnabled.checked = true;
+            document.getElementById('createTenantStatus').textContent = '';
+        }
+
+        async function saveTenant(tenantId) {
+            const card = document.querySelector('[data-tenant-id="' + tenantId + '"]');
+            const statusEl = document.getElementById('tenant-status-' + tenantId);
+            const payload = {
+                displayName: card.querySelector('[data-field="displayName"]').value.trim(),
+                callbackUrl: card.querySelector('[data-field="callbackUrl"]').value.trim(),
+                status: Number(card.querySelector('[data-field="status"]').value),
+                paymentMethods: Array.from(card.querySelectorAll('[data-method]')).map(node => ({
+                    payType: node.getAttribute('data-method'),
+                    displayName: node.querySelector('[data-method-field="displayName"]').value.trim(),
+                    qrImagePath: node.querySelector('[data-method-field="qrImagePath"]').value.trim(),
+                    enabled: node.querySelector('[data-method-field="enabled"]').checked
+                }))
+            };
+
+            statusEl.textContent = '保存中...';
+
+            try {
+                await apiRequest('/admin/tenants/' + tenantId, {
+                    method: 'PUT',
+                    body: JSON.stringify(payload)
+                });
+                statusEl.textContent = '已保存';
+                await loadTenants();
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        }
+
+        async function rotateTenantSecrets(tenantId, tenantKey) {
+            try {
+                const response = await apiRequest('/admin/tenants/' + tenantId + '/rotate-secrets', {
+                    method: 'POST'
+                });
+                const result = response.result || response.data || {};
+                showSecretModal('密钥已轮换，请立即保存', JSON.stringify({
+                    tenantKey: tenantKey,
+                    accessToken: result.accessToken,
+                    callbackSecret: result.callbackSecret
+                }, null, 2));
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        async function handleCreateAdmin(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const statusEl = document.getElementById('createAdminStatus');
+            statusEl.textContent = '创建中...';
+
+            try {
+                const response = await apiRequest('/admin/local-admins', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: form.username.value.trim(),
+                        nickname: form.nickname.value.trim()
+                    })
+                });
+                const result = response.result || response.data || {};
+                showSecretModal('本地管理员已创建，请立即保存', JSON.stringify(result, null, 2));
+                statusEl.textContent = '创建成功';
+                form.reset();
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        }
+
+        async function uploadQr(button, payType) {
+            const card = button.closest('[data-tenant-id]');
+            const tenantId = card.getAttribute('data-tenant-id');
+            const fileInput = card.querySelector('[data-upload-file="' + payType + '"]');
+            const statusEl = card.querySelector('[data-upload-status="' + payType + '"]');
+            if (!fileInput.files || !fileInput.files[0]) {
+                statusEl.textContent = '请先选择图片文件';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            statusEl.textContent = '上传中...';
+
+            try {
+                const response = await fetch('/admin/tenants/' + tenantId + '/payment-methods/' + payType + '/qr', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + adminToken
+                    },
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.message || '上传失败');
+                }
+                const result = data.result || data.data || {};
+                card.querySelector('[data-method="' + payType + '"] [data-method-field="qrImagePath"]').value = result.qrImagePath || '';
+                statusEl.textContent = '上传成功: ' + (result.qrImagePath || '');
+                await loadTenants();
+            } catch (error) {
+                statusEl.textContent = error.message;
+            }
+        }
+
+        async function loadCallbackEcho() {
+            try {
+                const data = await fetch('/open/debug/callback-echo').then(resp => resp.json());
+                const result = data.result || data.data || {};
+                const lastCallback = result.lastCallback || null;
+                document.getElementById('callbackEchoBox').textContent = JSON.stringify(lastCallback, null, 2) || '暂无回调';
+                document.getElementById('statCallback').textContent = lastCallback && lastCallback.orderId ? lastCallback.orderId : '-';
+            } catch (error) {
+                document.getElementById('callbackEchoBox').textContent = '读取失败: ' + error.message;
+            }
+        }
+
+        async function apiRequest(url, options) {
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + adminToken,
+                    'Content-Type': 'application/json'
+                },
+                ...options
             });
+
+            const data = await response.json();
+            if (!response.ok || data.success === false) {
+                throw new Error(data.message || '请求失败');
+            }
+            return data;
+        }
+
+        function showSecretModal(title, body) {
+            document.getElementById('secretModalTitle').textContent = title;
+            document.getElementById('secretModalBody').textContent = body;
+            document.getElementById('secretModal').setAttribute('aria-hidden', 'false');
+        }
+
+        function closeSecretModal() {
+            document.getElementById('secretModal').setAttribute('aria-hidden', 'true');
         }
 
         function logout() {
-            const token = localStorage.getItem('adminToken');
-
             fetch('/admin/auth/logout', {
                 method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token
-                }
-            })
-            .then(() => {
-                localStorage.removeItem('adminToken');
-                window.location.href = '/admin/login';
-            })
-            .catch(() => {
+                headers: { 'Authorization': 'Bearer ' + adminToken }
+            }).finally(() => {
                 localStorage.removeItem('adminToken');
                 window.location.href = '/admin/login';
             });
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeAttr(value) {
+            return escapeHtml(value);
+        }
+
+        function escapeJs(value) {
+            return String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         }
     </script>
 </body>

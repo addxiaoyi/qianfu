@@ -19,11 +19,17 @@ import { warmUpCache } from '../scripts/warmup-cache';
 import { PluginLoader } from './services/pluginLoader';
 import { ActivityService } from './services/activityService';
 import { reconciliationJob } from './core/task/ReconciliationJob';
+import { mailScheduleService } from './services/mailScheduleService';
 import prisma from './db';
 
 const preferredPort = Number(process.env.PORT) || 3000;
+const portStrictEnv = process.env.PORT_STRICT;
+// In production we default to a fixed port so nginx / process-manager upstreams
+// do not silently drift after an EADDRINUSE restart.
 const portStrict =
-  process.env.PORT_STRICT === '1' || process.env.PORT_STRICT === 'true';
+  portStrictEnv != null
+    ? portStrictEnv === '1' || portStrictEnv === 'true'
+    : process.env.NODE_ENV === 'production';
 const MAX_PORT_OFFSET = 100;
 
 const server = http.createServer(app);
@@ -65,6 +71,9 @@ async function gracefulShutdown(signal: string, exitCode: number = 0) {
       backupService.stop();
       logger.info('[GracefulShutdown] BackupService stopped');
     }
+
+    mailScheduleService.stop();
+    logger.info('[GracefulShutdown] MailScheduleService stopped');
 
     // Gracefully close database connections
     await prisma.$disconnect();
@@ -125,6 +134,7 @@ function onListening(port: number): void {
   initPaymentHandlers();
   startIntelligentProbeService();
   notificationQueue.startWorker();
+  mailScheduleService.start();
   
   // Start activity updates
   ActivityService.start();

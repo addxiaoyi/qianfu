@@ -121,7 +121,7 @@ const ServerPortal: React.FC = () => {
                        </div>
                     </div>
 
-                    <button className="w-full py-6 bg-white text-black rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] hover:bg-accent hover:text-white transition-all italic active:scale-95 shadow-2xl">
+                    <button type="button" className="w-full py-6 bg-white text-black rounded-[2rem] font-black text-[11px] uppercase tracking-[0.4em] hover:bg-accent hover:text-white transition-all italic active:scale-95 shadow-2xl">
                        初始化加入
                     </button>
                  </div>

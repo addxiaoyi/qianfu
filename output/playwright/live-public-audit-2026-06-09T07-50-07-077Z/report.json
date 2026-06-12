@@ -1,0 +1,303 @@
+{
+  "timestamp": "2026-06-09T07:52:27.547Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z",
+  "plannedTotal": 12,
+  "completed": 6,
+  "partial": true,
+  "missingRoutes": [
+    "register-history",
+    "forgot-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash",
+    "pay-root"
+  ],
+  "options": {
+    "navTimeoutMs": 15000,
+    "domReadyTimeoutMs": 5000,
+    "routeReadyTimeoutMs": 3000,
+    "interactionTimeoutMs": 3000,
+    "stableWaitMs": 1000,
+    "waitUntil": "commit",
+    "concurrency": 3
+  },
+  "total": 6,
+  "failed": 6,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/ Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/servers Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/search Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/resources Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/rules Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/login Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history",
+    "resources-history",
+    "rules-history",
+    "login-history"
+  ],
+  "routeNotReadyRoutes": [],
+  "emptyBodyRoutes": [],
+  "resourceFailureRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history",
+    "resources-history",
+    "rules-history",
+    "login-history"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [],
+  "commonErrorResponses": [],
+  "payRoot": null,
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\home-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/ Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/servers",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/servers Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/search",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\search-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/search Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/resources",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/resources Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/rules",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/rules Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/login",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_CONNECTION_CLOSED"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-06-09T07-50-07-077Z\\login-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/login Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=1"
+      ]
+    }
+  ]
+}

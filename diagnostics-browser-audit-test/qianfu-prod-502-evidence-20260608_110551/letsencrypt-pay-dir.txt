@@ -1,0 +1,1 @@
++ bash -lc ls\ -lah\ \'/etc/letsencrypt/live/pay.star-web.top\'\ 2\>/dev/null\ \|\|\ true

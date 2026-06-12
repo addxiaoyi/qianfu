@@ -18,8 +18,21 @@ import { logDataChange } from '../../services/auditService';
 import { hookService, MotiaHook } from '../../services/hookService';
 import { clearPublicServersCache } from '../../services/publicServerCache';
 import { PermissionGroupManager } from '../../config/permissionGroups';
-import { getEffectiveServerLimit, userCanPublishServers } from '../../services/userLevelService';
+import { getEffectiveServerLimit } from '../../services/userLevelService';
 import { logger } from '../../utils/logger';
+import { pay } from '../../lib/wallet';
+
+const SERVER_LISTING_PRICE_FEN: Record<'basic-monthly' | 'pro-quarterly' | 'vip-yearly', number> = {
+  'basic-monthly': 700,
+  'pro-quarterly': 2000,
+  'vip-yearly': 9000,
+};
+
+const SERVER_LISTING_DURATION_DAYS: Record<'basic-monthly' | 'pro-quarterly' | 'vip-yearly', number> = {
+  'basic-monthly': 30,
+  'pro-quarterly': 90,
+  'vip-yearly': 365,
+};
 
 /**
  * Helper: Check effective server creation limit
@@ -36,14 +49,6 @@ export const createServer = async (req: AuthRequest, res: Response, next: NextFu
     const user = req.user;
     if (!user) throw new AppError('Unauthorized', 401, ErrorCode.UNAUTHORIZED);
 
-    if (!userCanPublishServers(user)) {
-      throw new AppError(
-        '需要开通发布权限或订阅套餐后才能创建服务器',
-        403,
-        ErrorCode.PERMISSION_DENIED
-      );
-    }
-
     const validation = serverSchema.safeParse(req.body);
     if (!validation.success) {
       throw new AppError('Invalid input', 400, ErrorCode.VALIDATION_ERROR, false, validation.error.issues);
@@ -52,7 +57,7 @@ export const createServer = async (req: AuthRequest, res: Response, next: NextFu
     const {
       name, name_en, thumbnail, summary, summary_en,
       content_html, ip, group_number, tags, link, activity,
-      platform, category, online_mode, supported_versions, network_env
+      platform, category, online_mode, supported_versions, network_env, listing_plan
     } = validation.data;
 
     // Strict sanitization for all fields
@@ -112,6 +117,13 @@ export const createServer = async (req: AuthRequest, res: Response, next: NextFu
       }
     }
 
+    const listingPlan = (listing_plan || 'basic-monthly') as 'basic-monthly' | 'pro-quarterly' | 'vip-yearly';
+    const listingPriceFen = SERVER_LISTING_PRICE_FEN[listingPlan];
+    const listingDurationDays = SERVER_LISTING_DURATION_DAYS[listingPlan];
+    if (!listingPriceFen || !listingDurationDays) {
+      throw new AppError('Invalid listing plan', 400, ErrorCode.VALIDATION_ERROR);
+    }
+
     const server = await redisService.withLock(`user:create_server:${user.id}`, async () => {
       const count = await localPrisma.server.count({ where: { owner_id: user.id } });
 
@@ -125,6 +137,25 @@ export const createServer = async (req: AuthRequest, res: Response, next: NextFu
       if (!moderationResult.passed) {
         throw new AppError(moderationResult.reason || 'Content violation', 400, ErrorCode.VALIDATION_ERROR);
       }
+
+      if (!isAdmin) {
+        try {
+          await pay(
+            user.id,
+            listingPriceFen / 100,
+            `Server publish plan: ${listingPlan}`,
+          );
+        } catch (error) {
+          throw new AppError(
+            '余额不足，无法开通服务器发布套餐',
+            400,
+            ErrorCode.INSUFFICIENT_FUNDS
+          );
+        }
+      }
+
+      const listingStartedAt = new Date();
+      const listingExpiresAt = new Date(listingStartedAt.getTime() + listingDurationDays * 24 * 60 * 60 * 1000);
 
       return await localPrisma.server.create({
         data: {
@@ -141,6 +172,10 @@ export const createServer = async (req: AuthRequest, res: Response, next: NextFu
           activity: finalActivity,
           owner_id: finalOwnerId,
           review_status: isAdmin ? 'APPROVED' : 'PENDING',
+          listing_plan: listingPlan,
+          listing_started_at: listingStartedAt,
+          listing_expires_at: listingExpiresAt,
+          listing_price_paid: listingPriceFen,
           platform: platform ?? undefined,
           category: cleanCategory,
           online_mode: online_mode ?? undefined,
@@ -294,7 +329,7 @@ export const updateServer = async (req: AuthRequest, res: Response, next: NextFu
       updateData.owner_id = bodyOwnerId;
     }
 
-    const updatedServer = await localPrisma.$transaction(async (tx) => {
+    const updatedServer = await localPrisma.$transaction(async (tx: any) => {
       // 1. Save current version before updating
       const lastVersion = await tx.serverVersion.findFirst({
         where: { server_id: serverId },
@@ -366,8 +401,24 @@ export const deleteServer = async (req: AuthRequest, res: Response, next: NextFu
       throw new AppError('Forbidden', 403, ErrorCode.FORBIDDEN);
     }
 
-    await localPrisma.server.delete({
-      where: { id: serverId }
+    // Some environments may have historical FK drift (missing ON DELETE CASCADE).
+    // Clean dependent rows explicitly before deleting the server record.
+    await localPrisma.$transaction(async (tx: any) => {
+      await tx.serverStatusHistory.deleteMany({ where: { server_id: serverId } });
+      await tx.serverComment.deleteMany({ where: { server_id: serverId } });
+      await tx.serverLike.deleteMany({ where: { server_id: serverId } });
+      await tx.serverVersion.deleteMany({ where: { server_id: serverId } });
+      await tx.serverStatus.deleteMany({ where: { serverId } });
+      await tx.reviewHistory.deleteMany({ where: { server_id: serverId } });
+      await tx.report.deleteMany({
+        where: {
+          target_type: 'SERVER',
+          target_id: serverId,
+        },
+      });
+      await tx.server.delete({
+        where: { id: serverId },
+      });
     });
 
     try {

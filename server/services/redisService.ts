@@ -57,6 +57,10 @@ class RedisService {
   private client: Redis | null = null;
   private isConnected: boolean = false;
   private memoryFallback = new MemoryCache();
+  private reconnectAttempts = 0;
+  private readonly maxReconnectAttempts = Number.parseInt(process.env.REDIS_MAX_RECONNECT_ATTEMPTS || '5', 10);
+  private redisDisabledForProcess = false;
+  private lastErrorLogAt = 0;
 
   constructor() {
     if (process.env.REDIS_ENABLED === 'true') {
@@ -65,10 +69,26 @@ class RedisService {
   }
 
   private init() {
+    if (this.redisDisabledForProcess) {
+      logger.warn('[Redis] Redis has been disabled for this process after repeated connection failures. Using memory cache fallback only.');
+      return;
+    }
+
     try {
       this.client = new Redis(REDIS_URL, {
         maxRetriesPerRequest: 3,
-        retryStrategy(times) {
+        enableOfflineQueue: false,
+        retryStrategy: (times) => {
+          this.reconnectAttempts = times;
+          if (times >= this.maxReconnectAttempts) {
+            this.redisDisabledForProcess = true;
+            this.isConnected = false;
+            this.logErrorThrottled(
+              '[Redis] Connection retry limit reached. Disabling Redis for this process and falling back to memory cache.',
+              { attempts: times, url: REDIS_URL },
+            );
+            return null;
+          }
           const delay = Math.min(times * 50, 2000);
           return delay;
         },
@@ -76,20 +96,41 @@ class RedisService {
 
       this.client.on('connect', () => {
         this.isConnected = true;
+        this.reconnectAttempts = 0;
         logger.info('[Redis] Connected successfully');
       });
 
       this.client.on('error', (err) => {
         this.isConnected = false;
-        logger.error('[Redis] Connection error:', {
+        if (this.redisDisabledForProcess) {
+          return;
+        }
+        this.logErrorThrottled('[Redis] Connection error:', {
           error: err instanceof Error ? err.message : String(err),
         });
+      });
+
+      this.client.on('end', () => {
+        this.isConnected = false;
+        if (this.redisDisabledForProcess) {
+          this.client = null;
+          logger.warn('[Redis] Redis retry loop stopped. Memory cache fallback is now active.');
+        }
       });
     } catch (error) {
       logger.error('[Redis] Initialization failed:', {
         error: error instanceof Error ? error.message : String(error),
       });
     }
+  }
+
+  private logErrorThrottled(message: string, meta?: Record<string, unknown>) {
+    const now = Date.now();
+    if (now - this.lastErrorLogAt < 30_000) {
+      return;
+    }
+    this.lastErrorLogAt = now;
+    logger.error(message, meta);
   }
 
   async get<T>(key: string): Promise<T | null> {

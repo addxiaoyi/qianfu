@@ -1,0 +1,184 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - navigation [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - link "千服联灯 QianFu" [ref=e24] [cursor=pointer]:
+            - /url: "#/"
+            - img [ref=e26]
+            - generic [ref=e47]:
+              - generic [ref=e48]: 千服联灯
+              - generic [ref=e49]: QianFu
+          - generic [ref=e50]:
+            - link "首页" [ref=e51] [cursor=pointer]:
+              - /url: "#/"
+              - generic [ref=e52]:
+                - img [ref=e53]
+                - text: 首页
+            - link "找服" [ref=e56] [cursor=pointer]:
+              - /url: "#/servers"
+              - generic [ref=e57]:
+                - img [ref=e58]
+                - text: 找服
+            - link "资源" [ref=e62] [cursor=pointer]:
+              - /url: "#/resources"
+              - generic [ref=e63]:
+                - img [ref=e64]
+                - text: 资源
+            - link "团队" [ref=e66] [cursor=pointer]:
+              - /url: "#/team"
+              - generic [ref=e67]:
+                - img [ref=e68]
+                - text: 团队
+            - link "规则" [ref=e73] [cursor=pointer]:
+              - /url: "#/rules"
+              - generic [ref=e74]:
+                - img [ref=e75]
+                - text: 规则
+            - link "推广" [ref=e79] [cursor=pointer]:
+              - /url: "#/promotion"
+              - generic [ref=e80]:
+                - img [ref=e81]
+                - text: 推广
+        - generic [ref=e84]:
+          - link "个人中心" [ref=e278] [cursor=pointer]:
+            - /url: "#/dashboard"
+            - img [ref=e279]
+            - text: 个人中心
+          - button "退出登录" [ref=e284]
+    - generic [ref=e285]:
+      - generic [ref=e287]:
+        - generic [ref=e288]:
+          - generic [ref=e290]: "协议: Liandeng_v4.0_Core"
+          - heading "发现下一个世界." [level=1] [ref=e292]: 发现下一个世界.
+          - paragraph [ref=e293]: 千服联灯是全网领先的 Minecraft 服务器推广与发现平台。基于公平竞价协议，让优质内容在数字矩阵中脱颖而出。
+          - generic [ref=e294]:
+            - link "探索节点" [ref=e295] [cursor=pointer]:
+              - /url: "#/servers"
+              - text: 探索节点
+              - img [ref=e296]
+            - link "初始化推广" [ref=e301] [cursor=pointer]:
+              - /url: "#/promotion"
+              - text: 初始化推广
+              - img [ref=e302]
+        - generic [ref=e305]:
+          - img [ref=e306]
+          - generic [ref=e310]: "Matrix_Link: 已连接"
+        - generic [ref=e312]:
+          - img [ref=e313]
+          - generic [ref=e318]: "Global_Grid: 同步中"
+      - generic [ref=e319]:
+        - generic [ref=e320]:
+          - generic [ref=e321]: 了解更多
+          - generic [ref=e322]:
+            - heading "Core Features" [level=2] [ref=e323]
+            - paragraph [ref=e324]: 探索、展示、管理与支持都放在同一条产品路径里，入口更清晰，动作更集中。
+        - generic [ref=e325]:
+          - generic [ref=e326]:
+            - generic [ref=e327]: / SEC_01
+            - img [ref=e329]
+            - heading "不可篡改的安全" [level=3] [ref=e332]
+            - paragraph [ref=e333]: 基于 SuperTokens 深度认证，保护您的账户与交易安全。所有会话均通过加密令牌进行端到端校验。
+            - generic [ref=e336]: Learn More
+          - generic [ref=e337]:
+            - generic [ref=e338]: / SEC_02
+            - img [ref=e340]
+            - heading "动态竞价协议" [level=3] [ref=e343]
+            - paragraph [ref=e344]: 摒弃固定展位，采用实时竞价算法，流量分配更透明。每一次展示都经过全网节点的实时共识校验。
+            - generic [ref=e347]: Learn More
+          - generic [ref=e348]:
+            - generic [ref=e349]: / SEC_03
+            - img [ref=e351]
+            - heading "行政级支持" [level=3] [ref=e355]
+            - paragraph [ref=e356]: 7x24 小时工单系统，专业团队为您排忧解难。我们的响应延迟低至毫秒级，确保您的操作永不中断。
+            - generic [ref=e359]: Learn More
+      - generic [ref=e362]:
+        - generic [ref=e363]:
+          - generic [ref=e364]: SYSTEM_METRICS
+          - generic [ref=e365]:
+            - heading "Live Status" [level=2] [ref=e366]
+            - paragraph [ref=e367]: 当前展示的是站点级别的实时统计，帮助访客快速确认节点规模、链路速度和在线稳定性。
+        - generic [ref=e368]:
+          - generic [ref=e369]:
+            - paragraph [ref=e370]: 在线节点
+            - paragraph [ref=e371]: —
+          - generic [ref=e372]:
+            - paragraph [ref=e373]: 同步延迟
+            - paragraph [ref=e374]: —
+          - generic [ref=e375]:
+            - paragraph [ref=e376]: 响应时间
+            - paragraph [ref=e377]: —
+          - generic [ref=e378]:
+            - paragraph [ref=e379]: 可用性
+            - paragraph [ref=e380]: —
+    - contentinfo [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - link "QianFu" [ref=e97] [cursor=pointer]:
+              - /url: "#/"
+              - img [ref=e99]
+              - generic [ref=e101]: QianFu
+            - paragraph [ref=e102]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e103]:
+              - button [ref=e104]:
+                - img [ref=e105]
+              - button [ref=e107]:
+                - img [ref=e108]
+              - button [ref=e110]:
+                - img [ref=e111]
+          - generic [ref=e114]:
+            - heading "Platform" [level=4] [ref=e115]
+            - list [ref=e116]:
+              - listitem [ref=e117]:
+                - link "浏览服务器" [ref=e118] [cursor=pointer]:
+                  - /url: "#/servers"
+              - listitem [ref=e119]:
+                - link "高级搜索" [ref=e120] [cursor=pointer]:
+                  - /url: "#/search"
+              - listitem [ref=e121]:
+                - link "推广方案" [ref=e122] [cursor=pointer]:
+                  - /url: "#/promotion"
+              - listitem [ref=e123]:
+                - link "资源中心" [ref=e124] [cursor=pointer]:
+                  - /url: "#/resources"
+          - generic [ref=e125]:
+            - heading "Organization" [level=4] [ref=e126]
+            - list [ref=e127]:
+              - listitem [ref=e128]:
+                - link "开发团队" [ref=e129] [cursor=pointer]:
+                  - /url: "#/team"
+              - listitem [ref=e130]:
+                - link "等级规则" [ref=e131] [cursor=pointer]:
+                  - /url: "#/rules"
+              - listitem [ref=e132]:
+                - link "服务条款" [ref=e133] [cursor=pointer]:
+                  - /url: "#/terms"
+              - listitem [ref=e134]:
+                - link "隐私政策" [ref=e135] [cursor=pointer]:
+                  - /url: "#/privacy"
+          - generic [ref=e136]:
+            - heading "Ecosystem" [level=4] [ref=e137]
+            - list [ref=e138]:
+              - listitem [ref=e139] [cursor=pointer]:
+                - generic [ref=e140]: MU Alliance
+                - img [ref=e141]
+              - listitem [ref=e145] [cursor=pointer]:
+                - generic [ref=e146]: QianFu API
+                - img [ref=e147]
+              - listitem [ref=e151] [cursor=pointer]:
+                - generic [ref=e152]: Discord Community
+                - img [ref=e153]
+        - generic [ref=e157]:
+          - generic [ref=e158]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+          - generic [ref=e159]:
+            - generic [ref=e160]: All Systems Operational
+            - button "Back to top ↑" [ref=e163]

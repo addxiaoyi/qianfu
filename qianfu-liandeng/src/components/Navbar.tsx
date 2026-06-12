@@ -1,33 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Menu,
-  X,
-  LayoutDashboard,
-  Home,
-  Server,
-  BookOpen,
-  Users,
-  FileText,
-  Megaphone,
-  Store,
-  BriefcaseBusiness,
-  ChevronDown,
-  Sparkles,
-  BadgeCheck,
-  Lock,
-} from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useT, type TranslationKey } from '@/store/uiStore';
 import LanternLogo from '@/components/LanternLogo';
+import GeometricLantern, { type LanternVariant } from '@/components/icons/GeometricLantern';
 
-const navLinks: { key: TranslationKey; path: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: 'nav.home', path: '/', icon: Home },
-  { key: 'nav.servers', path: '/servers', icon: Server },
-  { key: 'nav.resources', path: '/resources', icon: BookOpen },
-  { key: 'nav.team', path: '/team', icon: Users },
-  { key: 'nav.rules', path: '/rules', icon: FileText },
-  { key: 'nav.promotion', path: '/promotion', icon: Megaphone },
+const navLinks: { key: TranslationKey; path: string; iconVariant: LanternVariant }[] = [
+  { key: 'nav.home', path: '/', iconVariant: 'spark' },
+  { key: 'nav.servers', path: '/servers', iconVariant: 'server' },
+  { key: 'nav.resources', path: '/resources', iconVariant: 'data' },
+  { key: 'nav.team', path: '/team', iconVariant: 'user' },
+  { key: 'nav.rules', path: '/rules', iconVariant: 'terminal' },
+  { key: 'nav.promotion', path: '/promotion', iconVariant: 'activity' },
 ];
 
 const Navbar: React.FC = React.memo(() => {
@@ -146,7 +130,7 @@ const Navbar: React.FC = React.memo(() => {
                       className={`text-sm font-bold transition-all duration-300 relative group ${isResourcesActive ? 'text-accent' : 'text-zinc-400 hover:text-black'}`}
                     >
                       <span className="inline-flex items-center gap-2">
-                        <link.icon className="w-4 h-4" />
+                        <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                         {t(link.key)}
                       </span>
                       {isResourcesActive && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full" />}
@@ -170,7 +154,7 @@ const Navbar: React.FC = React.memo(() => {
                           <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-zinc-100" />
                           <div className="space-y-3">
                             <div className="px-1 text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-2">
-                              <Store className="w-3.5 h-3.5" />
+                              <GeometricLantern variant="payment" className="w-3.5 h-3.5" />
                               <span>市场</span>
                               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Public</span>
                             </div>
@@ -180,7 +164,7 @@ const Navbar: React.FC = React.memo(() => {
                               className="group flex items-start justify-between gap-3 rounded-2xl border border-zinc-100 px-4 py-3.5 text-zinc-700 hover:border-black hover:bg-zinc-50 hover:text-black transition-all"
                             >
                               <div className="flex items-start gap-3 min-w-0">
-                                <BookOpen className="w-4 h-4 mt-0.5 text-accent" />
+                                <GeometricLantern variant="data" className="w-4 h-4 mt-0.5 text-accent" />
                                 <div className="min-w-0">
                                   <div className="text-sm font-bold">资源中心</div>
                                   <div className="text-[11px] leading-5 text-zinc-400">查看全部公开资源</div>
@@ -196,7 +180,7 @@ const Navbar: React.FC = React.memo(() => {
                               <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-black/0 via-black/10 to-black/0" />
                               <div className="flex items-start gap-3 min-w-0">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl bg-black text-white shadow-sm">
-                                  <Store className="w-5 h-5" />
+                                  <GeometricLantern variant="payment" className="w-5 h-5" />
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
@@ -206,13 +190,13 @@ const Navbar: React.FC = React.memo(() => {
                                   <div className="text-[11px] leading-5 text-zinc-400">逛市场、看精选、看创作者主页</div>
                                 </div>
                               </div>
-                              <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                              <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                             </Link>
                           </div>
 
                           <div className="space-y-3">
                             <div className="px-1 text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-2">
-                              <BriefcaseBusiness className="w-3.5 h-3.5" />
+                              <GeometricLantern variant="settings" className="w-3.5 h-3.5" />
                               <span>我的创作空间</span>
                               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500">Pro</span>
                             </div>
@@ -225,7 +209,7 @@ const Navbar: React.FC = React.memo(() => {
                                 >
                                   <div className="flex items-start gap-3 min-w-0">
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-sm">
-                                      <BriefcaseBusiness className="w-4 h-4" />
+                                      <GeometricLantern variant="settings" className="w-4 h-4" />
                                     </div>
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
@@ -235,7 +219,7 @@ const Navbar: React.FC = React.memo(() => {
                                       <div className="text-[11px] leading-5 text-zinc-400">编辑主页、版本和资产</div>
                                     </div>
                                   </div>
-                                  <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                                  <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                                 </Link>
 
                                 <Link
@@ -245,7 +229,7 @@ const Navbar: React.FC = React.memo(() => {
                                 >
                                   <div className="flex items-start gap-3 min-w-0">
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-sm">
-                                      <LayoutDashboard className="w-4 h-4" />
+                                      <GeometricLantern variant="network" className="w-4 h-4" />
                                     </div>
                                     <div className="min-w-0">
                                       <div className="flex items-center gap-2">
@@ -255,13 +239,13 @@ const Navbar: React.FC = React.memo(() => {
                                       <div className="text-[11px] leading-5 text-zinc-400">查看商品管理与运营数据</div>
                                     </div>
                                   </div>
-                                  <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                                  <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                                 </Link>
                               </>
                             ) : (
                               <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white px-4 py-4 text-xs leading-5 text-amber-800 flex items-start gap-3 shadow-sm">
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm">
-                                  <Lock className="w-4 h-4" />
+                                  <GeometricLantern variant="security" className="w-4 h-4" />
                                 </div>
                                 <div className="min-w-0">
                                   <div className="text-sm font-bold text-amber-900">登录后可管理店铺</div>
@@ -290,7 +274,7 @@ const Navbar: React.FC = React.memo(() => {
                       className={`text-sm font-bold transition-all duration-300 relative group ${isActive('/promotion') ? 'text-accent' : 'text-zinc-400 hover:text-black'}`}
                     >
                       <span className="inline-flex items-center gap-2">
-                        <link.icon className="w-4 h-4" />
+                        <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                         {t(link.key)}
                       </span>
                       {isActive('/promotion') && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full" />}
@@ -317,7 +301,7 @@ const Navbar: React.FC = React.memo(() => {
                           >
                             <div className="flex items-start gap-3 min-w-0">
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-white shadow-sm">
-                                <Sparkles className="w-4 h-4" />
+                                <GeometricLantern variant="spark" className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
@@ -327,7 +311,7 @@ const Navbar: React.FC = React.memo(() => {
                                 <div className="text-[11px] leading-5 text-zinc-400">参与推广激励，查看任务与奖励说明</div>
                               </div>
                             </div>
-                            <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                            <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                           </Link>
 
                           <Link
@@ -337,7 +321,7 @@ const Navbar: React.FC = React.memo(() => {
                           >
                             <div className="flex items-start gap-3 min-w-0">
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white shadow-sm">
-                                <BadgeCheck className="w-4 h-4" />
+                                <GeometricLantern variant="security" className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
@@ -347,7 +331,7 @@ const Navbar: React.FC = React.memo(() => {
                                 <div className="text-[11px] leading-5 text-zinc-400">查看领取状态、审核进度与处理结果</div>
                               </div>
                             </div>
-                            <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                            <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                           </Link>
 
                           <Link
@@ -357,14 +341,14 @@ const Navbar: React.FC = React.memo(() => {
                           >
                             <div className="flex items-start gap-3 min-w-0">
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 shadow-sm">
-                                <Lock className="w-4 h-4" />
+                                <GeometricLantern variant="security" className="w-4 h-4" />
                               </div>
                               <div className="min-w-0">
                                 <div className="text-sm font-bold">个人主页</div>
                                 <div className="text-[11px] leading-5 text-zinc-400">查看个人信息、奖励记录与相关页面</div>
                               </div>
                             </div>
-                            <ChevronDown className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
+                            <GeometricLantern variant="chevron" className="w-4 h-4 mt-1 opacity-40 rotate-[-90deg]" />
                           </Link>
                         </div>
                       </div>
@@ -382,7 +366,7 @@ const Navbar: React.FC = React.memo(() => {
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <link.icon className="w-4 h-4" />
+                    <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                     {t(link.key)}
                   </span>
                   {isActive(link.path) && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full" />}
@@ -398,7 +382,7 @@ const Navbar: React.FC = React.memo(() => {
               to="/dashboard"
               className="btn-accent flex items-center gap-2 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg hover:shadow-xl italic transition-all duration-300"
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
+              <GeometricLantern variant="network" className="w-3.5 h-3.5" />
               {t('nav.dashboard')}
             </Link>
           ) : (
@@ -436,7 +420,7 @@ const Navbar: React.FC = React.memo(() => {
             onClick={() => setIsMobileMenuOpen((open) => !open)}
             className="md:hidden p-2 rounded-xl hover:bg-zinc-50 transition-colors"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <GeometricLantern variant={isMobileMenuOpen ? 'close' : 'menu'} className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -459,7 +443,7 @@ const Navbar: React.FC = React.memo(() => {
                           className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all"
                         >
                           <span className="inline-flex items-center gap-3">
-                            <link.icon className="w-4 h-4" />
+                            <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                             {t(link.key)}
                           </span>
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Open</span>
@@ -472,15 +456,15 @@ const Navbar: React.FC = React.memo(() => {
                   <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 mb-3">资源与创作</div>
                   <div className="grid grid-cols-1 gap-2">
                     <Link to="/resources" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><BookOpen className="w-4 h-4" />资源中心</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="data" className="w-4 h-4" />资源中心</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Market</span>
                     </Link>
                     <Link to="/marketplace/shop" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><Store className="w-4 h-4" />个人店铺</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="payment" className="w-4 h-4" />个人店铺</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Shop</span>
                     </Link>
                     <Link to="/seller/shop" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><BriefcaseBusiness className="w-4 h-4" />店铺管理</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="settings" className="w-4 h-4" />店铺管理</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Manage</span>
                     </Link>
                   </div>
@@ -490,15 +474,15 @@ const Navbar: React.FC = React.memo(() => {
                   <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 mb-3">推广中心</div>
                   <div className="grid grid-cols-1 gap-2">
                     <Link to="/promotion/tasks" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><Sparkles className="w-4 h-4" />激励任务</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="spark" className="w-4 h-4" />激励任务</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Task</span>
                     </Link>
                     <Link to="/promotion/claims" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><BadgeCheck className="w-4 h-4" />领取审核</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="security" className="w-4 h-4" />领取审核</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Audit</span>
                     </Link>
                     <Link to="/me" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
-                      <span className="inline-flex items-center gap-3"><Lock className="w-4 h-4" />个人主页</span>
+                      <span className="inline-flex items-center gap-3"><GeometricLantern variant="user" className="w-4 h-4" />个人主页</span>
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Me</span>
                     </Link>
                   </div>
@@ -508,7 +492,7 @@ const Navbar: React.FC = React.memo(() => {
               {isAuthenticated ? (
                 <>
                   <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl bg-black px-4 py-3 text-sm font-bold text-white">
-                    <span className="inline-flex items-center gap-3"><LayoutDashboard className="w-4 h-4" />控制台</span>
+                    <span className="inline-flex items-center gap-3"><GeometricLantern variant="network" className="w-4 h-4" />控制台</span>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/70">Panel</span>
                   </Link>
                   <button type="button" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-bold text-zinc-700 hover:bg-zinc-50 transition-all">

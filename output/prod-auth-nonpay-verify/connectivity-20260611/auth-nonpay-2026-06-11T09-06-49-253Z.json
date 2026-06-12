@@ -1,0 +1,51 @@
+{
+  "startedAt": "2026-06-11T09:05:51.852Z",
+  "finishedAt": "2026-06-11T09:06:49.253Z",
+  "baseUrl": "https://mc-u.top",
+  "browser": {
+    "proxyMode": "direct",
+    "navTimeoutMs": 5000,
+    "fetchTimeoutMs": 5000
+  },
+  "plannedRoutes": 2,
+  "passedRoutes": 0,
+  "failedRoutes": 2,
+  "skipped": [
+    {
+      "scope": "desktop-admin",
+      "reason": "admin login probe failed (fetch timed out after 5000ms: https://mc-u.top/api/v1/auth/login)"
+    }
+  ],
+  "login": {
+    "username": null,
+    "role": null,
+    "emailVerified": null,
+    "adminProbeOk": false
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "(login)",
+      "label": "desktop-user login",
+      "ok": false,
+      "finalUrl": "about:blank",
+      "error": {
+        "message": "page.goto: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\connectivity-20260611\\desktop-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\connectivity-20260611\\desktop-user-login.png"
+      }
+    },
+    {
+      "context": "mobile-user",
+      "path": "(login)",
+      "label": "mobile-user login",
+      "ok": false,
+      "finalUrl": "about:blank",
+      "error": {
+        "message": "page.goto: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"commit\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\connectivity-20260611\\mobile-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\connectivity-20260611\\mobile-user-login.png"
+      }
+    }
+  ]
+}

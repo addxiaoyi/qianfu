@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User } from '@/types/api';
-import { api, getFrontendApiBase } from '@/api/request';
+import { api, ApiError, getFrontendApiBase, getLocalAuthToken, setLocalAuthToken } from '@/api/request';
+import { normalizeUser } from '@/utils/user';
 
 interface AuthState {
   user: User | null;
@@ -21,10 +22,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isLoading: true,
   backendReady: true,
-  setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false, backendReady: true }),
+  setUser: (user) => {
+    const normalizedUser = normalizeUser(user);
+    set({ user: normalizedUser, isAuthenticated: !!normalizedUser, isLoading: false, backendReady: true });
+  },
   setAuthenticated: (status) => set({ isAuthenticated: status, isLoading: false }),
   setBackendReady: (ready) => set({ backendReady: ready }),
-  logout: () => set({ user: null, isAuthenticated: false, isLoading: false }),
+  logout: () => {
+    const token = getLocalAuthToken();
+    void fetch('/api/v1/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }).catch(() => undefined);
+    setLocalAuthToken(null);
+    set({ user: null, isAuthenticated: false, isLoading: false, backendReady: true });
+  },
   hydrateFromSession: async () => {
     if (get().user) {
       set({ isLoading: false, backendReady: true });
@@ -35,9 +48,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     hydratePromise = (async () => {
       try {
         await api.get<{ csrfToken: string }>('/csrf-token', undefined, { useAuth: false, skipCsrf: true });
-        const profile = await api.get<User>('/profile');
-        set({ user: profile, isAuthenticated: true, isLoading: false, backendReady: true });
-      } catch {
+        const profile = normalizeUser(await api.get<User>('/profile'));
+        set({ user: profile, isAuthenticated: !!profile, isLoading: false, backendReady: true });
+      } catch (error) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          set({ user: null, isAuthenticated: false, isLoading: false, backendReady: true });
+          return;
+        }
         set({ user: null, isAuthenticated: false, isLoading: false, backendReady: false });
         if (typeof window !== 'undefined') {
           console.warn(`[auth] Backend unavailable at ${getFrontendApiBase()}, auth state loaded in offline mode.`);

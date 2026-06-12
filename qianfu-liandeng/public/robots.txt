@@ -1,34 +1,46 @@
 User-agent: *
 Disallow: /api/
 Disallow: /admin/
+Disallow: /admin-users
+Disallow: /admin-review
+Disallow: /admin-tickets
+Disallow: /admin-reports
+Disallow: /admin-audit
+Disallow: /admin-settings
 Disallow: /private/
 Disallow: /tmp/
+Disallow: /uploads/private/
+Allow: /
+Allow: /logo.png
+Allow: /favicon.svg
+Allow: /manifest.json
+Allow: /llms.txt
+Allow: /sitemap.xml
+
+# Public pages are available to search and AI answer engines.
+User-agent: GPTBot
 Allow: /
 
-# Block AI bots to prevent scraping
-User-agent: GPTBot
-Disallow: /
-
 User-agent: CCBot
-Disallow: /
+Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /
+Allow: /
 
 User-agent: Google-Extended
-Disallow: /
+Allow: /
 
 User-agent: anthropic-ai
-Disallow: /
+Allow: /
 
 User-agent: Claude-Web
-Disallow: /
+Allow: /
 
 User-agent: FacebookBot
-Disallow: /
+Allow: /
 
 # Rate limiting hint (not standard but respected by some)
 Crawl-delay: 10
 
 # Sitemaps
-Sitemap: https://motiacraft.com/sitemap.xml
+Sitemap: https://mc-u.top/sitemap.xml

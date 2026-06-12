@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildErrorEnvelope, buildSuccessEnvelope } from '../../server/contracts/responseEnvelope';
+import { buildErrorEnvelope, buildSuccessEnvelope, getRequestId } from '../../server/contracts/responseEnvelope';
 
 describe('responseEnvelope', () => {
   it('buildSuccessEnvelope should return the unified success shape', () => {
@@ -29,5 +29,10 @@ describe('responseEnvelope', () => {
     expect(payload.error.requestId).toBe('req-2');
     expect(payload.error.details).toEqual([{ field: 'name', message: 'required' }]);
     expect(typeof payload.timestamp).toBe('string');
+  });
+
+  it('getRequestId should read the express request id when present', () => {
+    expect(getRequestId({ requestId: 'req-3' } as any)).toBe('req-3');
+    expect(getRequestId()).toBeUndefined();
   });
 });

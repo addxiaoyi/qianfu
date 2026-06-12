@@ -22,7 +22,7 @@ const HomeFeatureCard: React.FC<HomeFeatureCardProps> = ({ tag, title, descripti
       <p className="text-zinc-400 font-bold text-lg leading-relaxed italic group-hover:text-zinc-600 transition-colors">{description}</p>
       <div className="mt-12 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
         <div className="w-8 h-[1px] bg-accent" />
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] italic text-accent">Learn More</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.4em] italic text-accent">查看详情</span>
       </div>
     </motion.div>
   );

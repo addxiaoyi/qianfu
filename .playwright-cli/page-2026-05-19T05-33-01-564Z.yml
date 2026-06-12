@@ -1,0 +1,117 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - generic [ref=e512]:
+      - generic [ref=e513]: 千服
+      - link [ref=e515] [cursor=pointer]:
+        - /url: "#/me/settings"
+        - img [ref=e516]
+    - generic [ref=e1433]:
+      - generic [ref=e1436]:
+        - generic [ref=e1437]: 发布
+        - generic [ref=e1438]:
+          - generic [ref=e1440]:
+            - link [ref=e1441] [cursor=pointer]:
+              - /url: "#/mobile"
+              - img [ref=e1442]
+            - heading "发布服务器" [level=1] [ref=e1444]
+            - button "发布" [ref=e1445]
+          - generic [ref=e1446]:
+            - generic [ref=e1447]:
+              - text: 服务器图片
+              - generic [ref=e1448]:
+                - generic [ref=e1449]:
+                  - img [ref=e1450]
+                  - generic [ref=e1454]: 添加图片
+                - generic [ref=e1455]:
+                  - img [ref=e1456]
+                  - generic [ref=e1460]: 添加图片
+                - generic [ref=e1461]:
+                  - img [ref=e1462]
+                  - generic [ref=e1466]: 添加图片
+            - generic [ref=e1467]:
+              - text: 服务器名称 *
+              - textbox "输入服务器名称" [ref=e1468]
+            - generic [ref=e1469]:
+              - text: 服务器介绍
+              - textbox "描述你的服务器特色、玩法等..." [ref=e1470]
+              - paragraph [ref=e1471]: 0/500
+            - generic [ref=e1472]:
+              - text: 服务器类型
+              - generic [ref=e1473]:
+                - button "生存" [ref=e1474]
+                - button "PVP" [ref=e1475]
+                - button "RPG" [ref=e1476]
+                - button "小游戏" [ref=e1477]
+                - button "创造" [ref=e1478]
+                - button "模组" [ref=e1479]
+                - button "整合包" [ref=e1480]
+            - generic [ref=e1481]:
+              - text: 技术信息
+              - generic [ref=e1482]:
+                - generic [ref=e1483]:
+                  - generic [ref=e1484]:
+                    - img [ref=e1485]
+                    - text: 版本
+                  - textbox "如 1.20.4" [ref=e1488]
+                - generic [ref=e1489]:
+                  - generic [ref=e1490]:
+                    - img [ref=e1491]
+                    - text: 最大玩家
+                  - spinbutton [ref=e1494]
+              - generic [ref=e1495]:
+                - generic [ref=e1496]:
+                  - generic [ref=e1497]:
+                    - img [ref=e1498]
+                    - text: IP 地址
+                  - textbox "play.example.com" [ref=e1501]
+                - generic [ref=e1502]:
+                  - text: 端口
+                  - textbox "25565" [ref=e1503]
+            - generic [ref=e1504]:
+              - generic [ref=e1505]: 标签 (0/5)
+              - generic [ref=e1506]:
+                - button "生存" [ref=e1507]
+                - button "PVP" [ref=e1508]
+                - button "RPG" [ref=e1509]
+                - button "小游戏" [ref=e1510]
+                - button "创造" [ref=e1511]
+                - button "模组" [ref=e1512]
+                - button "整合包" [ref=e1513]
+              - generic [ref=e1514]:
+                - textbox "自定义标签" [ref=e1515]
+                - button "添加" [ref=e1516]
+            - button "发布服务器" [ref=e1517]:
+              - img [ref=e1518]
+              - text: 发布服务器
+      - generic [ref=e1521]:
+        - link "苏ICP备2026025306号-2" [ref=e1523] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
+        - generic [ref=e1525]:
+          - link "首页" [ref=e1526] [cursor=pointer]:
+            - /url: "#/mobile"
+            - img [ref=e1528]
+            - generic [ref=e1531]: 首页
+          - link "发现" [ref=e1532] [cursor=pointer]:
+            - /url: "#/servers"
+            - img [ref=e1534]
+            - generic [ref=e1537]: 发现
+          - link "发布" [ref=e1538] [cursor=pointer]:
+            - /url: "#/editor"
+            - img [ref=e1540]
+            - generic [ref=e1543]: 发布
+          - link "消息" [ref=e1544] [cursor=pointer]:
+            - /url: "#/messages"
+            - img [ref=e1546]
+            - generic [ref=e1548]: 消息
+          - link "我的" [ref=e1549] [cursor=pointer]:
+            - /url: "#/me"
+            - img [ref=e1551]
+            - generic [ref=e1554]: 我的

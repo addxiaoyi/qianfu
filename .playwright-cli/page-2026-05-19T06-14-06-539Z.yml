@@ -1,0 +1,68 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - generic [ref=e21]:
+      - generic [ref=e22]: 千服
+      - link [ref=e24] [cursor=pointer]:
+        - /url: "#/me/settings"
+        - img [ref=e25]
+    - generic [ref=e33]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: 支付
+        - generic [ref=e100]:
+          - generic [ref=e102]:
+            - button [ref=e129]:
+              - img [ref=e130]
+            - generic [ref=e103]:
+              - generic [ref=e104]: PAYMENT_FLOW
+              - heading "支付方式" [level=1] [ref=e132]
+            - generic [ref=e106]: STEP 2/3
+          - generic [ref=e108]:
+            - generic [ref=e134] [cursor=pointer]:
+              - img [ref=e136]
+              - generic [ref=e142]:
+                - generic [ref=e143]: 微信支付
+                - generic [ref=e144]: WECHAT PAY
+            - generic [ref=e146] [cursor=pointer]:
+              - img [ref=e148]
+              - generic [ref=e150]:
+                - generic [ref=e151]: 支付宝
+                - generic [ref=e152]: ALIPAY
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]: 总计费用
+              - generic [ref=e125]: ¥10
+            - button "立即支付" [ref=e153]:
+              - text: 立即支付
+              - img [ref=e127]
+      - generic [ref=e61]:
+        - link "苏ICP备2026025306号-2" [ref=e63] [cursor=pointer]:
+          - /url: https://beian.miit.gov.cn/
+        - generic [ref=e65]:
+          - link "首页" [ref=e66] [cursor=pointer]:
+            - /url: "#/mobile"
+            - img [ref=e68]
+            - generic [ref=e72]: 首页
+          - link "发现" [ref=e73] [cursor=pointer]:
+            - /url: "#/servers"
+            - img [ref=e75]
+            - generic [ref=e78]: 发现
+          - link "发布" [ref=e79] [cursor=pointer]:
+            - /url: "#/editor"
+            - img [ref=e81]
+            - generic [ref=e83]: 发布
+          - link "消息" [ref=e84] [cursor=pointer]:
+            - /url: "#/messages"
+            - img [ref=e86]
+            - generic [ref=e88]: 消息
+          - link "我的" [ref=e89] [cursor=pointer]:
+            - /url: "#/me"
+            - img [ref=e91]
+            - generic [ref=e94]: 我的

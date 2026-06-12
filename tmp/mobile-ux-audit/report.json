@@ -1,0 +1,293 @@
+[
+  {
+    "route": "/mobile",
+    "before": "http://127.0.0.1:4176/mobile",
+    "after": "http://127.0.0.1:4176/mobile",
+    "navigated": false,
+    "events": [
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/mobile"
+      }
+    ],
+    "error": "locator.fill: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"q\"]')\u001b[22m\n",
+    "metrics": {
+      "path": "/mobile",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "visualH": 844
+      },
+      "docH": 844,
+      "nodes": []
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\mobile.png"
+  },
+  {
+    "route": "/search",
+    "before": "http://127.0.0.1:4176/search",
+    "after": "http://127.0.0.1:4176/search",
+    "navigated": false,
+    "events": [
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/search"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/search"
+      }
+    ],
+    "error": "locator.fill: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[placeholder*=\"搜索\"]').first()\u001b[22m\n",
+    "metrics": {
+      "path": "/search",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "visualH": 844
+      },
+      "docH": 844,
+      "nodes": []
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\search.png"
+  },
+  {
+    "route": "/tickets/new",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/tickets/new"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/tickets/new"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/verify-code?email="
+      }
+    ],
+    "error": "locator.fill: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('textarea').first()\u001b[22m\n",
+    "metrics": {
+      "path": "/verify-code",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "visualH": 844
+      },
+      "docH": 888,
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\tickets_new.png"
+  },
+  {
+    "route": "/editor",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/editor"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/editor"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/verify-code?email="
+      }
+    ],
+    "error": "locator.fill: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input').nth(1)\u001b[22m\n",
+    "metrics": {
+      "path": "/verify-code",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "visualH": 844
+      },
+      "docH": 888,
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\editor.png"
+  },
+  {
+    "route": "/payment",
+    "before": "http://127.0.0.1:4176/payment",
+    "after": "http://127.0.0.1:4176/payment",
+    "navigated": false,
+    "events": [
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/payment"
+      },
+      {
+        "type": "navigate",
+        "url": "http://127.0.0.1:4176/payment"
+      }
+    ],
+    "error": null,
+    "metrics": {
+      "path": "/payment",
+      "viewport": {
+        "w": 390,
+        "h": 844,
+        "visualH": 844
+      },
+      "docH": 945,
+      "nodes": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "x": 86,
+          "y": 508,
+          "w": 218,
+          "h": 47,
+          "bottom": 555
+        },
+        {
+          "tag": "BUTTON",
+          "text": "继续下一步",
+          "x": 167,
+          "y": 871,
+          "w": 188,
+          "h": 53,
+          "bottom": 924
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\payment.png"
+  }
+]

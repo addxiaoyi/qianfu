@@ -15,6 +15,7 @@ const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const email = searchParams.get('email');
 
   const resetSchema = z.object({
     password: z.string().min(8, t('auth.password') + ' min 8 chars'),
@@ -44,7 +45,7 @@ const ResetPassword: React.FC = () => {
       await request('/auth/password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, token }),
+        body: JSON.stringify({ ...values, token, email }),
       });
       toast({ 
         title: t('auth.reset.success'), 
@@ -58,12 +59,12 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-zinc-50/30 selection:bg-accent selection:text-white relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-zinc-50/30 selection:bg-accent selection:text-white relative overflow-hidden">
       <div className="absolute top-0 right-0 p-24 opacity-[0.02] pointer-events-none">
          <GeometricLantern variant="security" className="w-96 h-96 rotate-12" />
       </div>
 
-      <div className="max-w-md w-full bg-white border border-zinc-50 rounded-[3rem] p-12 shadow-2xl shadow-black/5 relative z-10">
+      <div className="max-w-md w-full bg-white border border-zinc-50 rounded-[3rem] p-6 sm:p-12 shadow-2xl shadow-black/5 relative z-10">
         <header className="mb-12 space-y-4 text-center">
            <div className="w-20 h-20 bg-black text-white rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl animate-float">
               <GeometricLantern variant="security" className="w-10 h-10 fill-current" />

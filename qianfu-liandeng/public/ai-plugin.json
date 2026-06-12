@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "千服联灯",
+  "name_for_model": "qianfu_liandeng",
+  "description_for_human": "中文 Minecraft 服务器发现、发布、状态展示、推广和支持平台。",
+  "description_for_model": "QianFu Liandeng is a Chinese Minecraft server discovery and publishing platform. It provides public server listings, search, server status summaries, resources for players, publishing tools for server owners, and account support workflows.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://mc-u.top/api-docs.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://mc-u.top/logo.png",
+  "contact_email": "admin@mc-u.top",
+  "legal_info_url": "https://mc-u.top/#/terms"
+}

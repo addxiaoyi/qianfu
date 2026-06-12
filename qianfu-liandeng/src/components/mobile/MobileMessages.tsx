@@ -1,70 +1,122 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Search, MessageSquare, User, ArrowRight, Shield, Settings } from 'lucide-react';
+import { Search, MessageSquare, User, ArrowRight, Shield, Bell, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import TouchButton from './TouchButton';
+import { api } from '../../api/request';
 import { cn } from '../../utils/cn';
+import { formatDateTime } from '../../utils/serverView';
+import { toArray } from '../../utils/apiData';
 
-type Tab = 'inbox' | 'system' | 'group';
+type Tab = 'inbox' | 'system' | 'support';
 
-interface Message {
+interface ConversationItem {
   id: string;
-  from: string;
-  avatar?: string;
+  title: string;
   lastMsg: string;
   time: string;
-  unread: number;
-  online?: boolean;
+  timestamp: number;
+  unread: boolean;
+  href: string;
+  type: Tab;
 }
 
-const mockMessages: Message[] = [
-  { id: '1', from: '技术支持团队', lastMsg: '您的问题已处理完成', time: '10:30', unread: 2, online: true },
-  { id: '2', from: '系统通知', lastMsg: '您的服务器续费提醒', time: '昨天', unread: 0, online: true },
-  { id: '3', from: '张三', lastMsg: '好的，明天见', time: '昨天', unread: 1 },
-  { id: '4', from: '社区运营', lastMsg: '活动报名成功！', time: '3天前', unread: 0 },
-  { id: '5', from: '李四', lastMsg: '谢谢你的推荐', time: '1周前', unread: 0 },
-];
-
 const tabConfig: Record<Tab, { label: string; icon: React.ElementType }> = {
-  inbox: { label: '收件箱', icon: MessageSquare },
+  inbox: { label: '全部', icon: MessageSquare },
   system: { label: '系统', icon: Shield },
-  group: { label: '群组', icon: User },
+  support: { label: '工单', icon: User },
 };
 
 const MobileMessages: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('inbox');
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredMessages = mockMessages.filter(m =>
-    m.from.includes(searchQuery) || m.lastMsg.includes(searchQuery)
-  );
+
+  const { data: notificationResponse } = useQuery({
+    queryKey: ['notifications', 'mobile-messages'],
+    queryFn: () => api.get<any>('/notifications'),
+  });
+  const notifications = toArray<any>(notificationResponse);
+
+  const { data: ticketResponse } = useQuery({
+    queryKey: ['tickets', 'mobile-messages'],
+    queryFn: () => api.get<any>('/tickets', { limit: 50 }),
+  });
+  const tickets = toArray<any>(ticketResponse);
+
+  const items = useMemo<ConversationItem[]>(() => {
+    const noticeItems = notifications.map((item: any) => ({
+      id: `notification-${item.id}`,
+      title: item.title || '系统通知',
+      lastMsg: item.message || item.content || '暂无内容',
+      time: formatDateTime(item.created_at || item.createdAt),
+      timestamp: new Date(String(item.created_at || item.createdAt || 0)).getTime() || 0,
+      unread: item.is_read === false || item.read === false,
+      href: '/me/notifications',
+      type: 'system' as const,
+    }));
+
+    const ticketItems = tickets.map((ticket: any) => ({
+      id: `ticket-${ticket.id}`,
+      title: ticket.title || ticket.subject || `工单 #${ticket.id}`,
+      lastMsg: ticket.description || ticket.messages?.[0]?.content || ticket.status || '暂无最新回复',
+      time: formatDateTime(ticket.updated_at || ticket.updatedAt || ticket.created_at),
+      timestamp: new Date(String(ticket.updated_at || ticket.updatedAt || ticket.created_at || 0)).getTime() || 0,
+      unread: ticket.status !== 'CLOSED' && ticket.status !== 'RESOLVED',
+      href: `/tickets/${ticket.id}`,
+      type: 'support' as const,
+    }));
+
+    return [...noticeItems, ...ticketItems].sort((a, b) => b.timestamp - a.timestamp);
+  }, [notifications, tickets]);
+
+  const filteredMessages = items.filter((item) => {
+    const matchTab = activeTab === 'inbox' || item.type === activeTab;
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || `${item.title} ${item.lastMsg}`.toLowerCase().includes(q);
+    return matchTab && matchSearch;
+  });
+  const unreadCount = items.filter((item) => item.unread).length;
 
   return (
-    <div className="space-y-4">
-      {/* Search */}
+    <div className="space-y-4 pb-4">
+      <div className="rounded-2xl border border-zinc-100 bg-white p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">MESSAGES</p>
+            <h2 className="mt-1 text-xl font-black tracking-tight">消息中心</h2>
+          </div>
+          <div className="rounded-xl bg-zinc-900 px-3 py-2 text-center text-white">
+            <p className="text-base font-black leading-none">{unreadCount}</p>
+            <p className="mt-1 text-[9px] font-bold text-white/60">未读</p>
+          </div>
+        </div>
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
           type="text"
           placeholder="搜索消息..."
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') e.preventDefault();
+          }}
           className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
         />
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 bg-white p-1 rounded-xl border border-zinc-200">
-        {(Object.keys(tabConfig) as Tab[]).map(tab => {
+        {(Object.keys(tabConfig) as Tab[]).map((tab) => {
           const Icon = tabConfig[tab].icon;
           return (
             <button
+              type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
                 'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'bg-zinc-900 text-white'
-                  : 'text-zinc-500 hover:text-zinc-700'
+                activeTab === tab ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-700',
               )}
             >
               <Icon className="w-4 h-4" />
@@ -74,7 +126,6 @@ const MobileMessages: React.FC = () => {
         })}
       </div>
 
-      {/* Messages list */}
       <div className="bg-white rounded-xl border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
         {filteredMessages.length === 0 ? (
           <div className="p-8 text-center">
@@ -87,65 +138,42 @@ const MobileMessages: React.FC = () => {
               key={msg.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex items-center gap-3 p-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors"
+              transition={{ delay: i * 0.03 }}
             >
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <div className="w-11 h-11 bg-zinc-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-semibold text-zinc-500">
-                    {msg.from.charAt(0)}
-                  </span>
+              <Link to={msg.href} className="flex items-center gap-3 p-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors">
+                <div className="relative flex-shrink-0">
+                  <div className="w-11 h-11 bg-zinc-100 rounded-full flex items-center justify-center">
+                    {msg.type === 'system' ? <Bell className="w-5 h-5 text-zinc-500" /> : <MessageSquare className="w-5 h-5 text-zinc-500" />}
+                  </div>
+                  {msg.unread && <div className="absolute bottom-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />}
                 </div>
-                {msg.online && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                )}
-              </div>
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-sm text-zinc-900">
-                    {msg.from}
-                  </span>
-                  <span className="text-xs text-zinc-400">{msg.time}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-semibold text-sm text-zinc-900 truncate">{msg.title}</span>
+                    <span className="text-xs text-zinc-400 ml-2 shrink-0">{msg.time}</span>
+                  </div>
+                  <p className="text-sm text-zinc-500 truncate">{msg.lastMsg}</p>
                 </div>
-                <p className="text-sm text-zinc-500 truncate">{msg.lastMsg}</p>
-              </div>
-
-              {/* Unread badge + arrow */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {msg.unread > 0 && (
-                  <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {msg.unread}
-                  </span>
-                )}
-                <ArrowRight className="w-4 h-4 text-zinc-300" />
-              </div>
+                <ArrowRight className="w-4 h-4 text-zinc-300 shrink-0" />
+              </Link>
             </motion.div>
           ))
         )}
       </div>
 
-      {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3">
-        <Link
-          to="/tickets"
-          className="bg-white rounded-xl border border-zinc-200 p-4 flex items-center gap-3 hover:bg-zinc-50 transition-colors"
-        >
+        <Link to="/tickets" className="bg-white rounded-xl border border-zinc-200 p-4 flex items-center gap-3 hover:bg-zinc-50 transition-colors">
           <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
             <MessageSquare className="w-5 h-5 text-blue-600" />
           </div>
           <span className="text-sm font-medium text-zinc-700">工单中心</span>
         </Link>
-        <Link
-          to="/me"
-          className="bg-white rounded-xl border border-zinc-200 p-4 flex items-center gap-3 hover:bg-zinc-50 transition-colors"
-        >
-          <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-            <Settings className="w-5 h-5 text-purple-600" />
+        <Link to="/tickets/new" className="bg-white rounded-xl border border-zinc-200 p-4 flex items-center gap-3 hover:bg-zinc-50 transition-colors">
+          <div className="w-10 h-10 bg-zinc-100 rounded-lg flex items-center justify-center">
+            <Plus className="w-5 h-5 text-zinc-600" />
           </div>
-          <span className="text-sm font-medium text-zinc-700">设置</span>
+          <span className="text-sm font-medium text-zinc-700">新建工单</span>
         </Link>
       </div>
     </div>

@@ -2,7 +2,6 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
 import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
 import { motion } from 'framer-motion';
 import GeometricLantern from '@/components/icons/GeometricLantern';
 
@@ -12,6 +11,10 @@ interface PortSecurityStats {
   encryption?: string;
   activeConnections?: number;
   blockedAttempts?: number;
+  totalAccesses?: number;
+  failedAccesses?: number;
+  successfulAccesses?: number;
+  uniqueUsers?: number;
   recentEvents?: Array<{
     id: string;
     type: string;
@@ -26,18 +29,32 @@ interface PortSecurityStats {
   }>;
 }
 
-const adminShellClass = 'space-y-16 pb-32 bg-white selection:bg-accent selection:text-white';
-const adminHeaderTagClass = 'px-4 py-1.5 bg-accent text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-sm shadow-2xl shadow-accent/20 italic';
+type PortSecurityStatsResponse = { stats?: PortSecurityStats } | PortSecurityStats | undefined;
+type PortSecurityEvent = NonNullable<PortSecurityStats['recentEvents']>[number];
+type PortSecurityPolicy = NonNullable<PortSecurityStats['policies']>[number];
+
+function normalizePortSecurityStats(value: PortSecurityStatsResponse): PortSecurityStats {
+  if (!value) return {};
+  const envelope = value as { stats?: PortSecurityStats };
+  if (Object.prototype.hasOwnProperty.call(envelope, 'stats')) return envelope.stats || {};
+  return value as PortSecurityStats;
+}
 
 const AdminPortSecurity: React.FC = () => {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-port-security'],
-    queryFn: () => api.get<PortSecurityStats>('/port5555/stats'),
+    queryFn: () => api.get<PortSecurityStatsResponse>('/port5555/stats'),
   });
 
-  const stats = data || {};
+  const stats = normalizePortSecurityStats(data);
   const recentEvents = stats.recentEvents || [];
   const policies = stats.policies || [];
+  const derivedRiskScore = typeof stats.totalAccesses === 'number' && stats.totalAccesses > 0 && typeof stats.failedAccesses === 'number'
+    ? Math.round((stats.failedAccesses / stats.totalAccesses) * 100)
+    : null;
+  const riskScore = typeof stats.riskScore === 'number' ? Math.max(0, Math.min(100, stats.riskScore)) : derivedRiskScore;
+  const riskProgress = riskScore == null ? 0 : 100 - riskScore;
+  const riskLabel = riskScore == null ? '暂无数据' : `${riskScore}%`;
 
   return (
     <div className="space-y-16 pb-32 bg-white selection:bg-accent selection:text-white">
@@ -68,22 +85,22 @@ const AdminPortSecurity: React.FC = () => {
               </div>
               <div className="space-y-1">
                 <div className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 italic">Risk Score</div>
-                <div className="text-4xl font-black font-mono tracking-tighter italic">{stats.riskScore ?? 12}%</div>
+                <div className="text-4xl font-black font-mono tracking-tighter italic">{riskLabel}</div>
               </div>
             </div>
-            <button className="group px-12 py-6 btn-accent rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-500 flex items-center gap-6 shadow-2xl shadow-accent/20 italic active:scale-[0.98]">
+            <div className="group px-12 py-6 bg-zinc-50 border border-zinc-100 rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.5em] transition-all duration-500 flex items-center gap-6 shadow-xs italic text-zinc-400">
               <GeometricLantern variant="spark" className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" />
-              DEPLOY_POLICY
-            </button>
+              POLICY_STATUS
+            </div>
           </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-10 pt-12 border-t border-zinc-50">
           {[
-            { label: 'Firewall', value: stats.firewallStatus || 'ENFORCED', variant: 'security' as const },
-            { label: 'Encryption', value: stats.encryption || 'AES-256', variant: 'data' as const },
-            { label: 'Connections', value: String(stats.activeConnections ?? 0), variant: 'network' as const },
-            { label: 'Blocked', value: String(stats.blockedAttempts ?? 0), variant: 'alert' as const },
+            { label: 'Firewall', value: stats.firewallStatus || '暂无数据', variant: 'security' as const },
+            { label: 'Encryption', value: stats.encryption || '暂无数据', variant: 'data' as const },
+            { label: 'Connections', value: String(stats.activeConnections ?? stats.totalAccesses ?? 0), variant: 'network' as const },
+            { label: 'Blocked', value: String(stats.blockedAttempts ?? stats.failedAccesses ?? 0), variant: 'alert' as const },
           ].map((item) => (
             <motion.div
               key={item.label}
@@ -118,7 +135,7 @@ const AdminPortSecurity: React.FC = () => {
                   No suspicious events detected.
                 </div>
               ) : (
-                recentEvents.map((event) => (
+                recentEvents.map((event: PortSecurityEvent) => (
                   <div key={event.id} className="px-12 py-10 flex items-center justify-between gap-6 hover:bg-zinc-50/50 transition-all duration-500">
                     <div className="flex items-center gap-6 min-w-0">
                       <div className="w-14 h-14 rounded-[1.5rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-xs">
@@ -149,7 +166,7 @@ const AdminPortSecurity: React.FC = () => {
                 {policies.length === 0 ? (
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-300">No active policies</p>
                 ) : (
-                  policies.map((policy) => (
+                  policies.map((policy: PortSecurityPolicy) => (
                     <div key={policy.id} className="flex justify-between items-center px-4 py-5 bg-white rounded-[2rem] shadow-xs border border-zinc-100">
                       <span className="text-[10px] font-black uppercase tracking-widest italic">{policy.name}</span>
                       <span className={`text-[10px] font-black font-mono uppercase tracking-widest italic ${policy.status === 'enabled' ? 'text-green-500' : 'text-zinc-400'}`}>
@@ -168,14 +185,14 @@ const AdminPortSecurity: React.FC = () => {
               <div className="space-y-4 relative z-10">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] italic text-white/50">Risk Overview</h4>
                 <div className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter leading-none break-words">
-                  {stats.riskScore ?? 12}% Secure
+                  {riskScore == null ? '等待安全数据' : `${riskScore}% Risk`}
                 </div>
               </div>
               <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden relative z-10">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${100 - (stats.riskScore ?? 12)}%` }} transition={{ duration: 2, delay: 0.5 }} className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
+                <motion.div initial={{ width: 0 }} animate={{ width: `${riskProgress}%` }} transition={{ duration: 2, delay: 0.5 }} className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
               </div>
               <p className="text-[10px] font-black uppercase tracking-widest italic text-white/40 leading-relaxed relative z-10 break-words">
-                The current port posture is within acceptable thresholds.
+                {riskScore == null ? '等待后端同步真实端口安全指标。' : '端口风险分数来自后端统计。'}
               </p>
             </div>
           </aside>

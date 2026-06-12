@@ -33,7 +33,8 @@ export const createRateLimiter = (config: RateLimitConfig) => {
         ip: req.ip,
         user: req.user?.id,
         path: req.path,
-        headers: req.headers
+        requestId: req.requestId,
+        userAgent: req.get?.('user-agent') || undefined,
       });
       (async () => {
         try {
@@ -184,7 +185,7 @@ export const checkinLimiter = createRateLimiter({
 
 export const adminLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 30 : 300,
+  max: process.env.NODE_ENV === 'production' ? 180 : 1200,
   message: 'Admin operations too frequent, please try again later',
   prefix: 'rl:admin:',
   keyStrategy: 'userOrIp'
@@ -203,6 +204,14 @@ export const paymentLimiter = createRateLimiter({
   max: process.env.NODE_ENV === 'production' ? 30 : 300,
   message: 'Payment requests too frequent, please try again later',
   prefix: 'rl:payment:',
+  keyStrategy: 'userOrIp'
+});
+
+export const paymentStatusLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 240 : 2400,
+  message: 'Payment status polling too frequent, please try again later',
+  prefix: 'rl:payment_status:',
   keyStrategy: 'userOrIp'
 });
 

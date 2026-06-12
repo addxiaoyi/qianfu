@@ -1,0 +1,56 @@
+[
+  {
+    "path": "server",
+    "total_files": 210,
+    "total_words": 124844,
+    "categories": {
+      "code": 208,
+      "document": 2
+    }
+  },
+  {
+    "path": "qianfu-liandeng/src",
+    "total_files": 135,
+    "total_words": 88242,
+    "categories": {
+      "code": 132,
+      "image": 3
+    }
+  },
+  {
+    "path": "packages",
+    "total_files": 22,
+    "total_words": 4829,
+    "categories": {
+      "code": 21,
+      "document": 1
+    }
+  },
+  {
+    "path": "services",
+    "total_files": 41,
+    "total_words": 13762,
+    "categories": {
+      "code": 40,
+      "document": 1
+    }
+  },
+  {
+    "path": "scripts",
+    "total_files": 95,
+    "total_words": 39171,
+    "categories": {
+      "code": 92,
+      "document": 1,
+      "image": 2
+    }
+  },
+  {
+    "path": "tests",
+    "total_files": 22,
+    "total_words": 7794,
+    "categories": {
+      "code": 22
+    }
+  }
+]

@@ -1,0 +1,1 @@
++ bash -lc grep\ -R\ -nE\ \'server_name\|127\\.0\\.0\\.1:3000\|127\\.0\\.0\\.1:3001\|127\\.0\\.0\\.1:8889\|ssl_certificate\|location\ /api/\|location\ /auth/\|location\ /xpay/\'\ \'/www/server/panel/vhost/nginx\'\ 2\>/dev/null\ \|\|\ true

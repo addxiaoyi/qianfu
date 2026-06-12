@@ -1,0 +1,175 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - generic [ref=e8]: 系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+    - button [ref=e9]:
+      - img [ref=e10]
+  - button "设置" [ref=e13]:
+    - img [ref=e14]
+  - generic [ref=e17]:
+    - navigation [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - link "千服联灯 QianFu" [ref=e22] [cursor=pointer]:
+            - /url: "#/"
+            - img [ref=e24]
+            - generic [ref=e45]:
+              - generic [ref=e46]: 千服联灯
+              - generic [ref=e47]: QianFu
+          - generic [ref=e48]:
+            - link "首页" [ref=e49] [cursor=pointer]:
+              - /url: "#/"
+              - generic [ref=e50]:
+                - img [ref=e51]
+                - text: 首页
+            - link "找服" [ref=e54] [cursor=pointer]:
+              - /url: "#/servers"
+              - generic [ref=e55]:
+                - img [ref=e56]
+                - text: 找服
+            - link "资源" [ref=e60] [cursor=pointer]:
+              - /url: "#/resources"
+              - generic [ref=e61]:
+                - img [ref=e62]
+                - text: 资源
+            - link "团队" [ref=e64] [cursor=pointer]:
+              - /url: "#/team"
+              - generic [ref=e65]:
+                - img [ref=e66]
+                - text: 团队
+            - link "规则" [ref=e71] [cursor=pointer]:
+              - /url: "#/rules"
+              - generic [ref=e72]:
+                - img [ref=e73]
+                - text: 规则
+            - link "推广" [ref=e77] [cursor=pointer]:
+              - /url: "#/promotion"
+              - generic [ref=e78]:
+                - img [ref=e79]
+                - text: 推广
+        - generic [ref=e82]:
+          - link "登录" [ref=e83] [cursor=pointer]:
+            - /url: "#/login"
+          - link "快速注册" [ref=e84] [cursor=pointer]:
+            - /url: "#/register"
+    - generic [ref=e362]:
+      - button "Back" [ref=e363]:
+        - img [ref=e364]
+        - generic [ref=e366]: Back
+      - banner [ref=e367]:
+        - heading "等级与经验规则" [level=1] [ref=e368]
+        - paragraph [ref=e369]: 用户通过站内互动积累成长经验，最高可达 100 级。等级与角色权限合并计算，部分权益需达到对应等级后解锁。
+      - generic [ref=e370]:
+        - generic [ref=e371]:
+          - generic [ref=e372]:
+            - img [ref=e374]
+            - heading "经验获取 (XP Gain)" [level=2] [ref=e376]
+          - list [ref=e377]:
+            - listitem [ref=e378]:
+              - generic [ref=e380]: 首次给已通过审核的服务器点赞 +3 经验
+            - listitem [ref=e381]:
+              - generic [ref=e383]: 发表评论 +8 经验（每条评论）
+            - listitem [ref=e384]:
+              - generic [ref=e386]: 每日签到 +25 经验（每日限一次）
+        - generic [ref=e387]:
+          - generic [ref=e388]:
+            - img [ref=e390]
+            - heading "等级与解锁 (Unlockables)" [level=2] [ref=e396]
+          - list [ref=e397]:
+            - listitem [ref=e398]:
+              - generic [ref=e400]: Lv.3：解锁「评分」功能
+            - listitem [ref=e401]:
+              - generic [ref=e403]: Lv.5：解锁「评论」功能
+            - listitem [ref=e404]:
+              - generic [ref=e406]: Lv.25 / 50 / 75：在具备发布权限时，各额外增加 1 个服务器发布位（最多 +3）
+        - generic [ref=e407]:
+          - generic [ref=e408]:
+            - img [ref=e410]
+            - heading "称号角标 (Tier Badges)" [level=2] [ref=e413]
+          - list [ref=e414]:
+            - listitem [ref=e415]:
+              - generic [ref=e417]: Lv.35 起：显示「信赖」角标
+            - listitem [ref=e418]:
+              - generic [ref=e420]: Lv.60 起：显示「资深」角标
+            - listitem [ref=e421]:
+              - generic [ref=e423]: Lv.85 起：显示「精英」角标
+        - generic [ref=e424]:
+          - generic [ref=e425]:
+            - img [ref=e427]
+            - heading "权限说明 (Permissions)" [level=2] [ref=e430]
+          - list [ref=e431]:
+            - listitem [ref=e432]:
+              - generic [ref=e434]: 管理员、运维等角色的既有权限不受等级削弱
+            - listitem [ref=e435]:
+              - generic [ref=e437]: 等级解锁为额外能力或额度
+            - listitem [ref=e438]:
+              - generic [ref=e440]: 未登录用户可浏览本页，登录后可查看个人进度
+      - contentinfo [ref=e441]:
+        - paragraph [ref=e442]: "Rules version: 2026.04.29 · Subject to change"
+    - contentinfo [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - link "千服联灯" [ref=e95] [cursor=pointer]:
+              - /url: "#/"
+              - img [ref=e97]
+              - generic [ref=e99]: 千服联灯
+            - paragraph [ref=e100]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e101]:
+              - button [ref=e102]:
+                - img [ref=e103]
+              - button [ref=e105]:
+                - img [ref=e106]
+              - button [ref=e108]:
+                - img [ref=e109]
+          - generic [ref=e112]:
+            - heading "Platform" [level=4] [ref=e113]
+            - list [ref=e114]:
+              - listitem [ref=e115]:
+                - link "浏览服务器" [ref=e116] [cursor=pointer]:
+                  - /url: "#/servers"
+              - listitem [ref=e117]:
+                - link "高级搜索" [ref=e118] [cursor=pointer]:
+                  - /url: "#/search"
+              - listitem [ref=e119]:
+                - link "推广方案" [ref=e120] [cursor=pointer]:
+                  - /url: "#/promotion"
+              - listitem [ref=e121]:
+                - link "资源中心" [ref=e122] [cursor=pointer]:
+                  - /url: "#/resources"
+          - generic [ref=e123]:
+            - heading "Organization" [level=4] [ref=e124]
+            - list [ref=e125]:
+              - listitem [ref=e126]:
+                - link "开发团队" [ref=e127] [cursor=pointer]:
+                  - /url: "#/team"
+              - listitem [ref=e128]:
+                - link "等级规则" [ref=e129] [cursor=pointer]:
+                  - /url: "#/rules"
+              - listitem [ref=e130]:
+                - link "服务条款" [ref=e131] [cursor=pointer]:
+                  - /url: "#/terms"
+              - listitem [ref=e132]:
+                - link "隐私政策" [ref=e133] [cursor=pointer]:
+                  - /url: "#/privacy"
+          - generic [ref=e134]:
+            - heading "服务入口" [level=4] [ref=e135]
+            - list [ref=e136]:
+              - listitem [ref=e137] [cursor=pointer]:
+                - link "钱包与账单" [ref=e138]:
+                  - /url: "#/dashboard/billing"
+              - listitem [ref=e139] [cursor=pointer]:
+                - link "推广中心" [ref=e140]:
+                  - /url: "#/promotion"
+              - listitem [ref=e141] [cursor=pointer]:
+                - link "工单支持" [ref=e142]:
+                  - /url: "#/tickets"
+        - generic [ref=e143]:
+          - generic [ref=e144]:
+            - generic [ref=e145]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e146] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e147]:
+            - generic [ref=e148]: All Systems Operational
+            - button "Back to top ↑" [ref=e151]

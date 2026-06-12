@@ -1,7 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
-import pkg from '../../package.json';
-const { version } = pkg;
 import { API_DEFAULT_VERSION, SUPPORTED_API_VERSIONS } from '../constants/api';
+
+const version = process.env.APP_VERSION || '0.0.0';
 
 const DEFAULT_VERSION = API_DEFAULT_VERSION;
 const SUPPORTED_VERSIONS = [...SUPPORTED_API_VERSIONS];

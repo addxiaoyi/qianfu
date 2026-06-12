@@ -1,0 +1,39 @@
+{
+  "cookies": [
+    {
+      "name": "csrf_secret",
+      "value": "e46ff270b01723fd7efaee6fda11c5cd781b871b0e50decccc61ee3a8dc10013",
+      "domain": "mc-u.top",
+      "path": "/",
+      "expires": 1779255786.991845,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "csrf_token",
+      "value": "eae474b1bd967ae69697d5df7b95d246efa626169c592aa4f5ed6a3e0d8a668c.381d1b21eb646847531d9f0680577da44154d6b3c7466ba659290d1551807b60",
+      "domain": "mc-u.top",
+      "path": "/",
+      "expires": 1779255786.992868,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://mc-u.top",
+      "localStorage": [
+        {
+          "name": "qf_csrf_token",
+          "value": "eae474b1bd967ae69697d5df7b95d246efa626169c592aa4f5ed6a3e0d8a668c.381d1b21eb646847531d9f0680577da44154d6b3c7466ba659290d1551807b60"
+        },
+        {
+          "name": "qf_local_auth_token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjE4LCJtb2RlIjoibG9jYWwtYXV0aCIsImlhdCI6MTc3OTE2NzQwNywiZXhwIjoxNzc5NzcyMjA3fQ.mvIqZKhHUxa_Eqcg-Kgey29wTdSm2vrDQf_XeVRR1TE"
+        }
+      ]
+    }
+  ]
+}

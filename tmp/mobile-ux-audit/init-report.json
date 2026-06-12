@@ -1,0 +1,278 @@
+[
+  {
+    "route": "/mobile",
+    "before": "http://127.0.0.1:4176/mobile",
+    "after": "http://127.0.0.1:4176/mobile",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/mobile",
+      "http://127.0.0.1:4176/mobile"
+    ],
+    "error": null,
+    "logs": [
+      {
+        "type": "pageerror",
+        "text": "r.map is not a function"
+      }
+    ],
+    "metrics": {
+      "path": "/mobile",
+      "h": 844,
+      "docH": 844,
+      "active": "BODY",
+      "blocks": [],
+      "nearBottom": []
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\init_mobile.png"
+  },
+  {
+    "route": "/tickets/new",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/tickets/new",
+      "http://127.0.0.1:4176/tickets/new",
+      "http://127.0.0.1:4176/verify-code?email="
+    ],
+    "error": "locator.fill: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('textarea').first()\u001b[22m\n",
+    "logs": [],
+    "metrics": {
+      "path": "/verify-code",
+      "h": 844,
+      "docH": 888,
+      "active": "INPUT",
+      "blocks": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31,
+          "visible": true
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200,
+          "visible": true
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ],
+      "nearBottom": [
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\init_tickets_new.png"
+  },
+  {
+    "route": "/editor",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/editor",
+      "http://127.0.0.1:4176/editor",
+      "http://127.0.0.1:4176/verify-code?email="
+    ],
+    "error": "locator.fill: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input').nth(1)\u001b[22m\n",
+    "logs": [],
+    "metrics": {
+      "path": "/verify-code",
+      "h": 844,
+      "docH": 888,
+      "active": "INPUT",
+      "blocks": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31,
+          "visible": true
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200,
+          "visible": true
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ],
+      "nearBottom": [
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\init_editor.png"
+  },
+  {
+    "route": "/payment",
+    "before": "http://127.0.0.1:4176/payment",
+    "after": "http://127.0.0.1:4176/payment",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/payment",
+      "http://127.0.0.1:4176/payment"
+    ],
+    "error": null,
+    "logs": [],
+    "metrics": {
+      "path": "/payment",
+      "h": 844,
+      "docH": 945,
+      "active": "INPUT",
+      "blocks": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31,
+          "visible": true
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90,
+          "visible": true
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "x": 86,
+          "y": 508,
+          "w": 218,
+          "h": 47,
+          "bottom": 555,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "继续下一步",
+          "x": 167,
+          "y": 871,
+          "w": 188,
+          "h": 53,
+          "bottom": 924,
+          "visible": false
+        }
+      ],
+      "nearBottom": []
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\init_payment.png"
+  }
+]

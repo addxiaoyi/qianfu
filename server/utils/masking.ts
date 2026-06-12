@@ -38,6 +38,10 @@ export const maskPhone = (phone: string): string => {
  */
 export const maskData = (data: any, depth = 0): any => {
   if (data === null || data === undefined || depth > 5) return data;
+
+  if (data instanceof Date) {
+    return data.toISOString();
+  }
   
   if (typeof data === 'string') {
     // Check if it's an email
@@ -60,21 +64,27 @@ export const maskData = (data: any, depth = 0): any => {
     for (const key in data) {
       if (Object.hasOwn(data, key)) {
         const lowerKey = key.toLowerCase();
+        const value = data[key];
+
+        if (lowerKey === 'email_verified' || lowerKey === 'emailverified') {
+          masked[key] = Boolean(value);
+          continue;
+        }
         
         // Check if key is sensitive
         if (SENSITIVE_KEYS.some(k => lowerKey.includes(k))) {
           // Special cases
           if (lowerKey === 'signature') {
-            masked[key] = data[key]; // Allow signature for integrity checks
+            masked[key] = value; // Allow signature for integrity checks
           } else if (lowerKey.includes('email')) {
-            masked[key] = typeof data[key] === 'string' ? maskEmail(data[key]) : '***MASKED***';
+            masked[key] = typeof value === 'string' ? maskEmail(value) : '***MASKED***';
           } else if (lowerKey.includes('phone') || lowerKey.includes('mobile')) {
-            masked[key] = typeof data[key] === 'string' ? maskPhone(data[key]) : '***MASKED***';
+            masked[key] = typeof value === 'string' ? maskPhone(value) : '***MASKED***';
           } else {
             masked[key] = '***MASKED***';
           }
         } else {
-          masked[key] = maskData(data[key], depth + 1);
+          masked[key] = maskData(value, depth + 1);
         }
       }
     }

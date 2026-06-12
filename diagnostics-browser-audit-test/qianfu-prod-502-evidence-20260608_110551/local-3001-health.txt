@@ -1,0 +1,2 @@
++ curl -k -i -sS -m 15 http://127.0.0.1:3001/api/health
+curl: (7) Failed to connect to 127.0.0.1 port 3001 after 2031 ms: Could not connect to server

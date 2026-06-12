@@ -1,0 +1,460 @@
+{
+  "timestamp": "2026-06-08T07:57:47.183Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check",
+  "plannedTotal": 12,
+  "completed": 11,
+  "partial": true,
+  "missingRoutes": [
+    "pay-root"
+  ],
+  "options": {
+    "navTimeoutMs": 2500,
+    "stableWaitMs": 100
+  },
+  "total": 11,
+  "failed": 11,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=千服联灯"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/servers",
+        "missing_text=服务器"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/search",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/resources",
+        "missing_text=资源"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/rules",
+        "missing_text=规则"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/login"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/register"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/forgot-password"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=服务器"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=资源"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history",
+    "resources-history",
+    "rules-history",
+    "login-history",
+    "register-history",
+    "forgot-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [
+    "search-history",
+    "search-hash"
+  ],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": false,
+      "detail": "search_input_missing"
+    },
+    {
+      "label": "search-hash",
+      "ok": false,
+      "detail": "search_input_missing"
+    }
+  ],
+  "commonErrorResponses": [],
+  "payRoot": null,
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\home-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=千服联灯"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/servers",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/servers",
+        "missing_text=服务器"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/search",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\search-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/search",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/resources",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/resources",
+        "missing_text=资源"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/rules",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/rules",
+        "missing_text=规则"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/login",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\login-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/login"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/register",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\register-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/register"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/forgot-password",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "form_inputs=0",
+        "title_mismatch=Loading https://mc-u.top/forgot-password"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "interaction_failed=search_input_missing",
+        "missing_text=搜索"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=服务器"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "about:blank",
+      "documentStatus": null,
+      "title": "Loading https://mc-u.top/",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-timeout-capture-check\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: Timeout 2500ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m",
+        "document_status=null",
+        "title_mismatch=Loading https://mc-u.top/",
+        "missing_text=资源"
+      ]
+    }
+  ]
+}

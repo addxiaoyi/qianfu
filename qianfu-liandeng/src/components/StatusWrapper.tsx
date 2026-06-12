@@ -108,7 +108,7 @@ const StatusWrapper: React.FC<StatusWrapperProps> = ({
             <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.28em] italic leading-none">The server returned an unexpected response.</p>
             <p className="text-sm text-zinc-500 font-medium leading-relaxed">无法获取数据，请检查网络连接或稍后再试。系统已准备好重新拉取最新状态。</p>
           </div>
-          <button onClick={onRetry} className="w-full sm:w-auto px-6 sm:px-10 py-4 rounded-2xl bg-black text-white text-[11px] font-semibold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg shadow-black/10 group">
+          <button type="button" onClick={onRetry} className="w-full sm:w-auto px-6 sm:px-10 py-4 rounded-2xl bg-black text-white text-[11px] font-semibold uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg shadow-black/10 group">
             <RefreshCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-700" /> Retry
           </button>
         </motion.div>

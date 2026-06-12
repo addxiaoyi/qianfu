@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { api, ApiError } from '@/api/request';
+import { api, ApiError, setLocalAuthToken } from '@/api/request';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -8,6 +8,7 @@ import { Loader2, Mail, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useT } from '@/store/uiStore';
 import GeometricLantern from '@/components/icons/GeometricLantern';
+import { normalizeUser } from '@/utils/user';
 
 const VerifyEmail: React.FC = () => {
   const t = useT();
@@ -15,9 +16,10 @@ const VerifyEmail: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
+  const currentUser = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const email = searchParams.get('email') || '';
+  const email = searchParams.get('email') || currentUser?.email || '';
 
   const canSend = useMemo(() => !sending, [sending]);
 
@@ -25,12 +27,15 @@ const VerifyEmail: React.FC = () => {
     if (email && !code) {
       setSending(false);
     }
-  }, [email]);
+  }, [email, code]);
 
   const handleSendCode = async () => {
     setSending(true);
     try {
-      await api.post('/auth/send-code', email ? { email } : undefined, { skipCsrf: true });
+      if (!email) {
+        throw new Error('缺少邮箱地址，请返回登录或注册页重新进入验证流程。');
+      }
+      await api.post('/auth/send-code', { email }, { skipCsrf: true });
       toast({
         title: '验证码发送成功',
         description: '验证码已发送，请查看邮箱。',
@@ -59,7 +64,14 @@ const VerifyEmail: React.FC = () => {
   const handleVerify = async () => {
     setLoading(true);
     try {
-      const updatedUser = await api.post<User>('/auth/verify-code', { code, email }, { skipCsrf: true });
+      const result = await api.post<any>('/auth/verify-code', { code, email }, { skipCsrf: true });
+      const updatedUser = normalizeUser(result?.user ?? (result as User));
+      if (!updatedUser) {
+        throw new Error('邮箱验证返回缺少用户信息');
+      }
+      if (result?.token) {
+        setLocalAuthToken(result.token);
+      }
       setUser(updatedUser);
       toast({ title: '验证成功', description: '邮箱已验证，正在跳转到控制台。' });
       navigate('/dashboard');
@@ -101,7 +113,7 @@ const VerifyEmail: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white border border-zinc-50 rounded-[3rem] p-12 text-center shadow-2xl shadow-black/5 relative z-10"
       >
-        <button 
+        <button type="button" 
           onClick={() => navigate(-1)}
           className="absolute top-8 left-8 p-3 hover:bg-zinc-50 rounded-2xl transition-all group"
         >
@@ -132,7 +144,7 @@ const VerifyEmail: React.FC = () => {
             />
           </div>
           
-          <button 
+          <button type="button" 
             onClick={handleVerify}
             disabled={loading || code.length < 6}
             className="w-full py-7 btn-accent rounded-2xl font-black text-[12px] uppercase tracking-[0.5em] transition-all disabled:opacity-20 flex items-center justify-center gap-4 shadow-2xl shadow-accent/20 italic group active:scale-95"
@@ -142,7 +154,7 @@ const VerifyEmail: React.FC = () => {
           </button>
           
           <div className="pt-4">
-            <button 
+            <button type="button" 
               onClick={handleSendCode}
               disabled={!canSend}
               className="text-[10px] font-black text-zinc-300 hover:text-black uppercase tracking-widest italic border-b border-transparent hover:border-black transition-all disabled:opacity-30"

@@ -1,0 +1,186 @@
+[
+  {
+    "route": "/tickets/new",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/tickets/new",
+      "http://127.0.0.1:4176/tickets/new",
+      "http://127.0.0.1:4176/verify-code?email="
+    ],
+    "error": "locator.fill: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('textarea').first()\u001b[22m\n",
+    "metrics": {
+      "path": "/verify-code",
+      "h": 844,
+      "docH": 888,
+      "blocks": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31,
+          "visible": true
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200,
+          "visible": true
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ],
+      "nearBottom": [
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\protected_tickets_new.png"
+  },
+  {
+    "route": "/editor",
+    "before": "http://127.0.0.1:4176/verify-code?email=",
+    "after": "http://127.0.0.1:4176/verify-code?email=",
+    "navigated": false,
+    "events": [
+      "http://127.0.0.1:4176/editor",
+      "http://127.0.0.1:4176/editor",
+      "http://127.0.0.1:4176/verify-code?email="
+    ],
+    "error": "locator.fill: Timeout 4000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input').nth(1)\u001b[22m\n",
+    "metrics": {
+      "path": "/verify-code",
+      "h": 844,
+      "docH": 888,
+      "blocks": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 352,
+          "y": 13,
+          "w": 18,
+          "h": 18,
+          "bottom": 31,
+          "visible": true
+        },
+        {
+          "tag": "A",
+          "text": "",
+          "x": 341,
+          "y": 55,
+          "w": 35,
+          "h": 35,
+          "bottom": 90,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "x": 57,
+          "y": 161,
+          "w": 39,
+          "h": 39,
+          "bottom": 200,
+          "visible": true
+        },
+        {
+          "tag": "INPUT",
+          "text": "000000",
+          "x": 71,
+          "y": 416,
+          "w": 248,
+          "h": 114,
+          "bottom": 530,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "立即验证并解锁",
+          "x": 71,
+          "y": 565,
+          "w": 248,
+          "h": 67,
+          "bottom": 632,
+          "visible": true
+        },
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ],
+      "nearBottom": [
+        {
+          "tag": "BUTTON",
+          "text": "重新发送验证码",
+          "x": 157,
+          "y": 685,
+          "w": 77,
+          "h": 16,
+          "bottom": 701,
+          "visible": true
+        }
+      ]
+    },
+    "screenshot": "D:\\qwq\\项目\\千服\\tmp\\mobile-ux-audit\\protected_editor.png"
+  }
+]

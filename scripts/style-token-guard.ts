@@ -1,15 +1,19 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-const TARGET_DIRS = [
+const TARGET_DIR_CANDIDATES = [
   resolve(ROOT, 'src/components/ui'),
   resolve(ROOT, 'src/components/header-parts'),
   resolve(ROOT, 'src/components'),
+  resolve(ROOT, 'qianfu-liandeng/src/components/ui'),
+  resolve(ROOT, 'qianfu-liandeng/src/components/header-parts'),
+  resolve(ROOT, 'qianfu-liandeng/src/components'),
 ];
+const TARGET_DIRS = [...new Set(TARGET_DIR_CANDIDATES.filter((dir) => existsSync(dir)))];
 
 const ALLOWLIST_CONFIG_PATH = resolve(ROOT, 'scripts/style-token-guard.allowlist.json');
 const RULES_CONFIG_PATH = resolve(ROOT, 'scripts/style-token-guard.rules.json');
@@ -46,8 +50,20 @@ function readAllowlistEntries(): string[] {
   return parsed.filter((v): v is string => typeof v === 'string');
 }
 
+function resolveAllowlistPath(relativePath: string): string {
+  const direct = resolve(ROOT, relativePath);
+  if (existsSync(direct)) return direct;
+
+  if (!relativePath.startsWith('qianfu-liandeng/')) {
+    const migrated = resolve(ROOT, `qianfu-liandeng/${relativePath}`);
+    if (existsSync(migrated)) return migrated;
+  }
+
+  return direct;
+}
+
 function readAllowlist(): Set<string> {
-  return new Set(readAllowlistEntries().map((relativePath) => resolve(ROOT, relativePath)));
+  return new Set(readAllowlistEntries().map(resolveAllowlistPath));
 }
 
 function isSeverity(v: unknown): v is Severity {
@@ -162,7 +178,7 @@ function scanFile(absPath: string) {
 
 function reportStaleAllowlist() {
   const stale = readAllowlistEntries().filter((relPath) => {
-    const abs = resolve(ROOT, relPath);
+    const abs = resolveAllowlistPath(relPath);
     try {
       statSync(abs);
       return false;
@@ -181,6 +197,10 @@ function reportStaleAllowlist() {
 
 function main() {
   reportStaleAllowlist();
+  if (TARGET_DIRS.length === 0) {
+    console.warn('⚠️ Style token guard 未找到目标目录，已跳过。');
+    return;
+  }
 
   for (const dir of TARGET_DIRS) {
     walk(dir, scanFile);

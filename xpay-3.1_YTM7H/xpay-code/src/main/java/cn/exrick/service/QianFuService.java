@@ -2,10 +2,14 @@ package cn.exrick.service;
 
 import cn.exrick.bean.QianFuOrder;
 import cn.exrick.bean.QianFuRecharge;
+import cn.exrick.bean.XpayTenant;
+import cn.exrick.bean.XpayTenantPaymentMethod;
 import cn.exrick.common.utils.SignatureUtil;
 import cn.exrick.config.QianFuProperties;
 import cn.exrick.dao.QianFuOrderDao;
 import cn.exrick.dao.QianFuRechargeDao;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +17,14 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +48,12 @@ public class QianFuService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private XpayTenantService xpayTenantService;
+
+    private final Gson gson = new Gson();
+    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     public boolean isEnabled() {
         return qianFuProperties.isEnabled();
@@ -241,5 +256,208 @@ public class QianFuService {
             log.error("千服连接测试失败: {}", e.getMessage());
             return false;
         }
+    }
+
+    @Transactional
+    public Map<String, Object> createTenantOrder(XpayTenant tenant,
+                                                 XpayTenantPaymentMethod method,
+                                                 String orderId,
+                                                 String outOrderId,
+                                                 BigDecimal amount,
+                                                 String subject,
+                                                 String body,
+                                                 Map<String, Object> metadata) {
+        if (qianFuOrderDao.findByOrderId(orderId).isPresent()) {
+            throw new IllegalArgumentException("orderId already exists");
+        }
+
+        QianFuOrder order = new QianFuOrder();
+        order.setOrderId(orderId);
+        order.setOutOrderId(outOrderId);
+        order.setAmount(amount);
+        order.setSubject(subject);
+        order.setBody(body);
+        order.setPayType(method.getPayType());
+        order.setQianfuOrderId("XT" + System.currentTimeMillis());
+        order.setTenantKey(tenant.getTenantKey());
+        order.setCallbackUrl(tenant.getCallbackUrl());
+        order.setMetadataJson(metadata == null ? null : gson.toJson(metadata));
+        order.setCallbackStatus("PENDING");
+        order.setExpireTime(new Date(System.currentTimeMillis() + 30 * 60 * 1000));
+        qianFuOrderDao.save(order);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("orderId", order.getOrderId());
+        result.put("outOrderId", order.getOutOrderId());
+        result.put("tenantKey", tenant.getTenantKey());
+        result.put("amount", order.getAmount());
+        result.put("subject", order.getSubject());
+        result.put("status", order.getStatus());
+        result.put("payType", order.getPayType());
+        result.put("qianfuOrderId", order.getQianfuOrderId());
+        result.put("expireTime", order.getExpireTime());
+        result.put("paymentMethod", method);
+        result.put("payUrl", "/open/tenants/" + tenant.getTenantKey() + "/orders/" + order.getOrderId() + "/pay");
+        return result;
+    }
+
+    public QianFuOrder getTenantOrder(String tenantKey, String orderId) {
+        QianFuOrder order = qianFuOrderDao.findByOrderId(orderId).orElse(null);
+        if (order == null || !tenantKey.equals(order.getTenantKey())) {
+            return null;
+        }
+        return order;
+    }
+
+    @Transactional
+    public Map<String, Object> markTenantOrderPaid(XpayTenant tenant, String orderId, String gatewayTradeNo) {
+        return markTenantOrderPaid(tenant, orderId, gatewayTradeNo, null);
+    }
+
+    @Transactional
+    public Map<String, Object> markTenantOrderPaid(XpayTenant tenant, String orderId, String gatewayTradeNo, BigDecimal expectedAmount) {
+        QianFuOrder order = getTenantOrder(tenant.getTenantKey(), orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("order not found");
+        }
+        if (Integer.valueOf(1).equals(order.getStatus())) {
+            return buildTenantOrderResult(order);
+        }
+        if (!Integer.valueOf(0).equals(order.getStatus())) {
+            throw new IllegalArgumentException("order status does not allow payment");
+        }
+        if (order.getExpireTime() != null && order.getExpireTime().before(new Date())) {
+            order.setStatus(2);
+            order.setCallbackStatus("EXPIRED");
+            order.setCallbackLastResponse("Payment notification arrived after order expiration");
+            qianFuOrderDao.save(order);
+            throw new IllegalArgumentException("order expired");
+        }
+        if (expectedAmount != null && order.getAmount().compareTo(expectedAmount) != 0) {
+            throw new IllegalArgumentException("amount mismatch");
+        }
+        order.setStatus(1);
+        order.setPayTime(new Date());
+        order.setQianfuOrderId(gatewayTradeNo);
+        order.setCallbackStatus("READY");
+        qianFuOrderDao.save(order);
+        dispatchTenantCallback(tenant, order);
+        return buildTenantOrderResult(order);
+    }
+
+    public Map<String, Object> buildTenantOrderResult(QianFuOrder order) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("orderId", order.getOrderId());
+        result.put("outOrderId", order.getOutOrderId());
+        result.put("tenantKey", order.getTenantKey());
+        result.put("amount", order.getAmount());
+        result.put("subject", order.getSubject());
+        result.put("body", order.getBody());
+        result.put("status", order.getStatus());
+        result.put("payType", order.getPayType());
+        result.put("qianfuOrderId", order.getQianfuOrderId());
+        result.put("payTime", order.getPayTime());
+        result.put("expireTime", order.getExpireTime());
+        result.put("callbackStatus", order.getCallbackStatus());
+        result.put("callbackLastResponse", order.getCallbackLastResponse());
+        result.put("metadata", order.getMetadataJson());
+        return result;
+    }
+
+    @Transactional
+    public QianFuOrder mergeTenantOrderMetadata(String tenantKey, String orderId, Map<String, Object> patch) {
+        QianFuOrder order = getTenantOrder(tenantKey, orderId);
+        if (order == null) {
+            throw new IllegalArgumentException("order not found");
+        }
+        Map<String, Object> merged = new LinkedHashMap<>();
+        if (order.getMetadataJson() != null && !order.getMetadataJson().trim().isEmpty()) {
+            try {
+                Map<String, Object> existing = gson.fromJson(
+                    order.getMetadataJson(),
+                    new TypeToken<LinkedHashMap<String, Object>>() {}.getType()
+                );
+                if (existing != null) {
+                    merged.putAll(existing);
+                }
+            } catch (Exception ex) {
+                log.warn("订单元数据解析失败, orderId={}, error={}", orderId, ex.getMessage());
+            }
+        }
+        if (patch != null) {
+            merged.putAll(patch);
+        }
+        order.setMetadataJson(gson.toJson(merged));
+        qianFuOrderDao.save(order);
+        return order;
+    }
+
+    public boolean verifyTenantGatewaySignature(Map<String, String> payload, String signature, String gatewaySecret) {
+        Map<String, String> copied = new LinkedHashMap<>(payload);
+        copied.remove("sign");
+        return signatureUtil.verifySignature(copied, signature, gatewaySecret);
+    }
+
+    public boolean verifyTenantGatewayTimestamp(String timestamp) {
+        return signatureUtil.verifyTimestamp(timestamp);
+    }
+
+    @Transactional
+    public void dispatchTenantCallback(XpayTenant tenant, QianFuOrder order) {
+        if (tenant == null || order == null) {
+            return;
+        }
+        if (tenant.getCallbackUrl() == null || tenant.getCallbackUrl().trim().isEmpty()) {
+            order.setCallbackStatus("SKIPPED");
+            order.setCallbackLastResponse("No callback URL configured");
+            qianFuOrderDao.save(order);
+            return;
+        }
+        try {
+            Map<String, String> payload = new LinkedHashMap<>();
+            payload.put("tenantKey", tenant.getTenantKey());
+            payload.put("orderId", order.getOrderId());
+            payload.put("outOrderId", order.getOutOrderId());
+            payload.put("amount", order.getAmount().toPlainString());
+            payload.put("subject", order.getSubject());
+            payload.put("status", String.valueOf(order.getStatus()));
+            payload.put("payType", order.getPayType());
+            payload.put("tradeNo", order.getQianfuOrderId());
+            payload.put("paidAt", order.getPayTime() == null ? "" : String.valueOf(order.getPayTime().getTime()));
+            payload.put("timestamp", String.valueOf(System.currentTimeMillis()));
+            payload.put("nonce", signatureUtil.generateNonce());
+            if (order.getMetadataJson() != null) {
+                payload.put("metadata", order.getMetadataJson());
+            }
+
+            String callbackSecret = xpayTenantService.decryptCallbackSecret(tenant);
+            String sign = signatureUtil.generateSignature(payload, callbackSecret);
+            payload.put("sign", sign);
+
+            String requestBody = gson.toJson(payload);
+            HttpRequest request = HttpRequest.newBuilder(URI.create(tenant.getCallbackUrl()))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            order.setNotifyCount(order.getNotifyCount() == null ? 1 : order.getNotifyCount() + 1);
+            order.setCallbackStatus(response.statusCode() >= 200 && response.statusCode() < 300 ? "SUCCESS" : "FAILED");
+            order.setCallbackLastResponse(truncateCallbackResponse("HTTP " + response.statusCode() + " " + response.body()));
+            qianFuOrderDao.save(order);
+        } catch (Exception ex) {
+            order.setNotifyCount(order.getNotifyCount() == null ? 1 : order.getNotifyCount() + 1);
+            order.setCallbackStatus("FAILED");
+            order.setCallbackLastResponse(truncateCallbackResponse(ex.getMessage()));
+            qianFuOrderDao.save(order);
+            log.error("租户回调失败, tenantKey={}, orderId={}, error={}", tenant.getTenantKey(), order.getOrderId(), ex.getMessage());
+        }
+    }
+
+    private String truncateCallbackResponse(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() > 1000 ? value.substring(0, 1000) : value;
     }
 }

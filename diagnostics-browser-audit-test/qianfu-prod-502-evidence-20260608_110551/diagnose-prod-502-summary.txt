@@ -1,0 +1,137 @@
++ bash -lc bash\ scripts/linux/diagnose-prod-502.sh\ --summary
+
+== PM2 ==
+[WARN] pm2 command not found
+
+== Listening Ports ==
+[WARN] ss command not found
+
+== Local Health ==
+[HTTP] local-health http://127.0.0.1:3000/api/health -> 404 
+[HTTP] local-ready http://127.0.0.1:3000/api/ready -> 404 
+[HTTP] local-health http://127.0.0.1:3001/api/health -> 000 curl: (7) Failed to connect to 127.0.0.1 port 3001 after 2039 ms: Could not connect to server
+[HTTP] local-ready http://127.0.0.1:3001/api/ready -> 000 curl: (7) Failed to connect to 127.0.0.1 port 3001 after 2032 ms: Could not connect to server
+
+== Web Nginx ==
+[WARN] missing config: /www/server/panel/vhost/nginx/mc-u.top.conf
+
+== Pay Nginx ==
+[WARN] missing config: /www/server/panel/vhost/nginx/pay.star-web.top.conf
+
+== Public Health ==
+[HTTP] public-web https://mc-u.top/ -> 200
+[HTTP] public-api-health https://mc-u.top/api/health -> 502 
+[HTTP] public-api-ready https://mc-u.top/api/ready -> 502 
+[HTTP] public-pay-root https://pay.star-web.top/ -> 200
+[HTTP] public-pay-health https://pay.star-web.top/health -> 502 
+[HTTP] public-pay-api-health https://pay.star-web.top/api/health -> 502 
+
+== Pay Domain Probe ==
+[PAY-PROBE] host=pay.star-web.top
+[PAY-PROBE] tls_status=wrong_principal
+[PAY-PROBE] tls_authorization_error=ERR_TLS_CERT_ALTNAME_INVALID
+[PAY-PROBE] cert_cn=mc-u.top
+[PAY-PROBE] cert_san=DNS:mc-u.top
+[PAY-PROBE] html_status=200
+[PAY-PROBE] canonical_url=https://mc-u.top/
+[PAY-PROBE] og_url=https://mc-u.top/
+[PAY-PROBE] looks_like_main_site=true
+[PAY-PROBE] root_marker_match=false
+
+== Frontend Deploy Probe ==
+[FRONTEND-PROBE] remote_url=https://mc-u.top/
+[FRONTEND-PROBE] local_html_path=D:\qwq\项目\千服\qianfu-liandeng\dist\index.html
+[FRONTEND-PROBE] remote_root_status=200
+[FRONTEND-PROBE] remote_etag=W/"6a110ee7-10c5"
+[FRONTEND-PROBE] remote_last_modified=Sat, 23 May 2026 02:20:23 GMT
+[FRONTEND-PROBE] remote_bundle=/assets/index-D8ePUst4.js
+[FRONTEND-PROBE] local_bundle=/assets/index-CHZmvcH-.js
+[FRONTEND-PROBE] bundle_match=false
+[FRONTEND-PROBE] remote_legacy_hash_markers=https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+[FRONTEND-PROBE] local_legacy_hash_markers=none
+[FRONTEND-PROBE] remote_search_target=https://mc-u.top/#/search?q={search_term_string}
+[FRONTEND-PROBE] local_search_target=https://mc-u.top/search?q={search_term_string}
+[FRONTEND-PROBE] search_target_match=false
+[FRONTEND-PROBE] remote_same_as=https://mc-u.top/#/servers,https://mc-u.top/#/resources
+[FRONTEND-PROBE] local_same_as=https://mc-u.top/servers,https://mc-u.top/resources
+
+== Unified Public Diagnose ==
+[PUBLIC-DIAG] timestamp=2026-06-08T03:07:13.282Z
+[PUBLIC-DIAG] base_url=https://mc-u.top
+[PUBLIC-DIAG] main_site_host=mc-u.top
+[PUBLIC-DIAG] pay_host=pay.star-web.top
+[PUBLIC-DIAG] main_root_status=200
+[PUBLIC-DIAG] main_api_health_status=502
+[PUBLIC-DIAG] main_api_ready_status=502
+[PUBLIC-DIAG] main_diagnosis=static_html_likely_alive_but_api_edge_broken
+[PUBLIC-DIAG] frontend_bundle_match=false
+[PUBLIC-DIAG] frontend_remote_bundle=/assets/index-D8ePUst4.js
+[PUBLIC-DIAG] frontend_local_bundle=/assets/index-CHZmvcH-.js
+[PUBLIC-DIAG] frontend_legacy_hash_markers=https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+[PUBLIC-DIAG] frontend_search_target_match=false
+[PUBLIC-DIAG] frontend_diagnosis=stale_bundle
+[PUBLIC-DIAG] pay_root_status=200
+[PUBLIC-DIAG] pay_health_status=502
+[PUBLIC-DIAG] pay_api_health_status=502
+[PUBLIC-DIAG] pay_tls_status=wrong_principal
+[PUBLIC-DIAG] pay_cert_cn=mc-u.top
+[PUBLIC-DIAG] pay_cert_san=DNS:mc-u.top
+[PUBLIC-DIAG] pay_html_status=200
+[PUBLIC-DIAG] pay_canonical_url=https://mc-u.top/
+[PUBLIC-DIAG] pay_og_url=https://mc-u.top/
+[PUBLIC-DIAG] pay_looks_like_main_site=true
+[PUBLIC-DIAG] pay_root_marker_match=false
+[PUBLIC-DIAG] pay_diagnosis=main_site_tls_vhost_fallback
+[PUBLIC-DIAG] finding_count=3
+[PUBLIC-DIAG] findings=主站更像是静态根页还活着，但 /api 边缘或上游进程仍然损坏。 | 主站前端仍在使用旧 bundle：remote=/assets/index-D8ePUst4.js local=/assets/index-CHZmvcH-.js。 | 支付域 https://pay.star-web.top 很可能落到了主站 TLS/vhost，而不是独立支付站点。
+
+== Diagnosis ==
+[WARN] Main site static HTML is still serving HTTP 200 while the public API is failing. This usually means the frontend vhost/root is alive, but the API upstream or app process behind /api is broken.
+[WARN] Pay domain certificate does not match pay.star-web.top. Check nginx server_name, TLS certificate binding, and whether the pay host is falling back to the mc-u.top certificate.
+[WARN] Pay domain is serving HTML that looks like the main mc-u.top site. Check the pay-domain 443 vhost, default_server ordering, and site binding in nginx / hosting panel.
+[WARN] Pay domain is almost certainly landing on the main-site TLS/vhost instead of a dedicated pay-site block. Prioritize pay.star-web.top server_name matching, certificate binding, and hosting-panel site assignment before adjusting app ports.
+[WARN] Main site frontend bundle does not match the current local build (/assets/index-D8ePUst4.js vs /assets/index-CHZmvcH-.js). The deployed static site is stale.
+[WARN] Main site HTML still exposes legacy hash-route SEO markers (https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources). The deployed frontend is older than the current repo build.
+[WARN] Main site SearchAction target still uses the legacy hash route shape. A fresh frontend deploy is still pending even aside from the API 502.
+
+== Quick Read ==
+[INFO] If local 3000 is healthy but nginx config still points to 127.0.0.1:3001, update upstream and reload nginx.
+[INFO] If neither 3000 nor 3001 is healthy, inspect pm2 logs and .env / database state first.
+[INFO] If the main site root stays 200 while /api stays 502, focus on the API upstream/process rather than the static frontend vhost.
+[INFO] If pay domain HTTPS fails before HTTP status returns, inspect DNS and certificate files under /etc/letsencrypt/live/pay.star-web.top/.
+[INFO] If pay domain returns main-site HTML or the mc-u.top certificate, inspect the pay-domain server_name and certificate binding before changing upstream ports.
+[INFO] If frontend probe reports bundle mismatch or legacy hash-route markers, redeploy the latest frontend dist after fixing the API edge.
+[INFO] This machine does not look like the production host. Prefer npm run prod:diagnose:public or the Windows public diagnosis wrapper for off-server checks.
+
+== Summary ==
+local_3000_health=fail
+local_3001_health=fail
+public_web_api_health=fail
+public_pay_api_health=fail
+public_pay_tls_status=wrong_principal
+public_pay_canonical_url=https://mc-u.top/
+public_pay_og_url=https://mc-u.top/
+public_pay_main_site_fallback=true
+public_pay_root_marker_match=false
+public_web_frontend_root_status=200
+public_web_frontend_bundle=/assets/index-D8ePUst4.js
+local_web_frontend_bundle=/assets/index-CHZmvcH-.js
+public_web_frontend_bundle_match=false
+public_web_frontend_legacy_hash_markers=https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+public_web_frontend_search_target_match=false
+public_main_diagnosis=static_html_likely_alive_but_api_edge_broken
+public_frontend_diagnosis=stale_bundle
+public_pay_diagnosis=main_site_tls_vhost_fallback
+pay_conf_server_name_match=unknown
+pay_conf_cert_path_match=unknown
+web_conf_3000=0
+web_conf_3001=0
+pay_conf_3000=0
+pay_conf_3001=0
+diagnosis=Main site static HTML is still serving HTTP 200 while the public API is failing. This usually means the frontend vhost/root is alive, but the API upstream or app process behind /api is broken.
+diagnosis=Pay domain certificate does not match pay.star-web.top. Check nginx server_name, TLS certificate binding, and whether the pay host is falling back to the mc-u.top certificate.
+diagnosis=Pay domain is serving HTML that looks like the main mc-u.top site. Check the pay-domain 443 vhost, default_server ordering, and site binding in nginx / hosting panel.
+diagnosis=Pay domain is almost certainly landing on the main-site TLS/vhost instead of a dedicated pay-site block. Prioritize pay.star-web.top server_name matching, certificate binding, and hosting-panel site assignment before adjusting app ports.
+diagnosis=Main site frontend bundle does not match the current local build (/assets/index-D8ePUst4.js vs /assets/index-CHZmvcH-.js). The deployed static site is stale.
+diagnosis=Main site HTML still exposes legacy hash-route SEO markers (https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources). The deployed frontend is older than the current repo build.
+diagnosis=Main site SearchAction target still uses the legacy hash route shape. A fresh frontend deploy is still pending even aside from the API 502.

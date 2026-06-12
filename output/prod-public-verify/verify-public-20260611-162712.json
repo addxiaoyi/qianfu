@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-06-11T08:28:11.213Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "diagnosis": "main_api_unreachable"
+  },
+  "frontend": {
+    "probeOk": false,
+    "probeError": "Command failed: C:\\Program Files\\nodejs\\node.exe D:\\qwq\\项目\\千服\\node_modules\\tsx\\dist\\cli.mjs scripts/probe-frontend-deploy.ts --report-only --kv --base https://mc-u.top\n[probe:frontend-deploy] Unexpected error: Error: Unable to fetch https://mc-u.top/ after 3 fetch attempt(s) and curl fallback: fetch failed | Command failed: curl.exe -L -sS -m 20 -D C:\\Users\\l\\AppData\\Local\\Temp\\qianfu-frontend-probe-P6FVra\\headers.txt -o - -H Accept: text/html,application/xhtml+xml -H User-Agent: qianfu-frontend-deploy-probe/1.0 https://mc-u.top/\ncurl: (28) Connection timed out after 20005 milliseconds\r\n\n    at fetchHtml (D:\\qwq\\项目\\千服\\scripts\\probe-frontend-deploy.ts:195:11)\n    at async main (D:\\qwq\\项目\\千服\\scripts\\probe-frontend-deploy.ts:440:18)\n",
+    "remoteRootStatus": "",
+    "remoteBundle": "",
+    "localBundle": "",
+    "bundleMatch": "",
+    "remoteLegacyHashMarkers": "",
+    "searchTargetMatch": "",
+    "assetReferenceMatch": "",
+    "assetContentMatch": "",
+    "missingOrMismatchedAssets": "",
+    "manifestChecked": "true",
+    "manifestMatch": "false",
+    "manifestError": "fetch failed",
+    "manifestDistHash": "285f237952fd31ae84e0826cfc645086eacfd09d4c96c0f765b638e5876e69a5",
+    "diagnosis": "frontend_probe_failed"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "probeOk": false,
+    "probeError": "Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=tls timeout\n",
+    "tlsStatus": "",
+    "certCn": "",
+    "certSan": "",
+    "htmlStatus": "",
+    "looksLikeMainSite": "",
+    "rootMarkerMatch": "",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "pay_probe_failed"
+  },
+  "findings": [
+    "主站 API 目前不可用或无法稳定访问。",
+    "主站前端 freshness 探针执行失败：Command failed: C:\\Program Files\\nodejs\\node.exe D:\\qwq\\项目\\千服\\node_modules\\tsx\\dist\\cli.mjs scripts/probe-frontend-deploy.ts --report-only --kv --base https://mc-u.top\n[probe:frontend-deploy] Unexpected error: Error: Unable to fetch https://mc-u.top/ after 3 fetch attempt(s) and curl fallback: fetch failed | Command failed: curl.exe -L -sS -m 20 -D C:\\Users\\l\\AppData\\Local\\Temp\\qianfu-frontend-probe-P6FVra\\headers.txt -o - -H Accept: text/html,application/xhtml+xml -H User-Agent: qianfu-frontend-deploy-probe/1.0 https://mc-u.top/\ncurl: (28) Connection timed out after 20005 milliseconds\r\n\n    at fetchHtml (D:\\qwq\\项目\\千服\\scripts\\probe-frontend-deploy.ts:195:11)\n    at async main (D:\\qwq\\项目\\千服\\scripts\\probe-frontend-deploy.ts:440:18)\n",
+    "主站前端 dist manifest 未部署或与本地不一致：fetch failed。",
+    "支付域探针执行失败：Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=tls timeout\n"
+  ],
+  "recommendedActions": [
+    "主站下一步：先恢复 Node API 进程和本机健康检查，再 reload Nginx；不要只替换静态前端。",
+    "前端下一步：先修复 probe:frontend-deploy 运行环境或网络访问，再判断静态前端是否已更新。",
+    "前端整包验收下一步：使用 scripts/linux/deploy-frontend-dist.sh 原子发布完整 dist，确认 /qianfu-dist-manifest.json 返回 JSON 且 dist_hash 与本地一致。",
+    "支付域下一步：先修复 domain-cert-probe 运行环境或 DNS/TLS 访问，再判断 vhost 是否恢复。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260611-162712.json"
+}

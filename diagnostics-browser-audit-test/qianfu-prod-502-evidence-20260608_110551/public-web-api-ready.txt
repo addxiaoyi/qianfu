@@ -1,0 +1,15 @@
++ curl -k -i -sS -m 15 https://mc-u.top/api/ready
+HTTP/1.1 502 Bad Gateway
+Server: nginx
+Date: Mon, 08 Jun 2026 03:06:07 GMT
+Content-Type: text/html
+Content-Length: 150
+Connection: keep-alive
+
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>

@@ -1,0 +1,398 @@
+{
+  "timestamp": "2026-06-08T07:43:18.247Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608",
+  "plannedTotal": 12,
+  "completed": 12,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 12000,
+    "stableWaitMs": 500
+  },
+  "total": 12,
+  "failed": 12,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": null,
+      "findings": [
+        "certificate_error_detected",
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "certificateErrorRoutes": [
+    "pay-root"
+  ],
+  "interactionFailures": [],
+  "searchInteractionResults": [],
+  "commonErrorResponses": [],
+  "payRoot": {
+    "finalUrl": "https://pay.star-web.top/",
+    "title": "",
+    "canonicalHref": null,
+    "ogUrl": null,
+    "textSnippet": "",
+    "certificateErrorDetected": true,
+    "bodyMismatch": ""
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\home-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\search-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\resources-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/rules\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\login-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\register-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/register\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES"
+        }
+      ],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/api/health",
+          "method": "GET",
+          "resourceType": "fetch",
+          "errorText": "net::ERR_INSUFFICIENT_RESOURCES"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "https://pay.star-web.top/",
+      "finalUrl": "https://pay.star-web.top/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-fast-20260608\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "certificate_error_detected",
+        "page.goto: Timeout 12000ms exceeded. Call log: \u001b[2m - navigating to \"https://pay.star-web.top/\", waiting until \"domcontentloaded\"\u001b[22m"
+      ]
+    }
+  ]
+}

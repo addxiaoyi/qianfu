@@ -5,7 +5,7 @@ import { sendSuccess, sendListResponse } from '../utils/response';
 import { AppError, ErrorCode } from '../utils/errors';
 import { AuthRequest, invalidateUserCache } from '../middleware/auth';
 import { PermissionGroupManager, PermissionGroup } from '../config/permissionGroups';
-import { userRoleUpdateSchema, idParamSchema, userQuerySchema } from '../utils/validation';
+import { userRoleUpdateSchema, userEmailVerificationUpdateSchema, idParamSchema, userQuerySchema } from '../utils/validation';
 import { redisService } from '../services/redisService';
 import {
   buildDateRange,
@@ -174,6 +174,75 @@ export const updateUserRole = async (req: AuthRequest, res: Response, next: Next
         role: updatedUser.role,
         permissions: groupInfo.permissions,
         roleInfo: groupInfo
+      }
+    }, 'Success');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUserEmailVerification = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const adminUser = req.user;
+    if (!adminUser || !adminUser.permissions) {
+      throw new AppError('Unauthorized', 401, ErrorCode.UNAUTHORIZED);
+    }
+
+    const adminPermissions = adminUser.permissions ? JSON.parse(adminUser.permissions) : [];
+    if (!adminPermissions.includes('manage_users')) {
+      throw new AppError('Forbidden: Insufficient permissions', 403, ErrorCode.FORBIDDEN);
+    }
+
+    const idValidation = idParamSchema.safeParse({ id: req.params.userId });
+    if (!idValidation.success) {
+      throw new AppError('Invalid User ID', 400, ErrorCode.VALIDATION_ERROR, false, {
+        issues: idValidation.error.issues,
+      });
+    }
+    const userId = idValidation.data.id;
+
+    const bodyValidation = userEmailVerificationUpdateSchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+      throw new AppError('Invalid input', 400, ErrorCode.VALIDATION_ERROR, false, {
+        issues: bodyValidation.error.issues,
+      });
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!targetUser) {
+      throw new AppError('User not found', 404, ErrorCode.NOT_FOUND);
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        email_verified: bodyValidation.data.email_verified,
+        updated_at: new Date(),
+      },
+    });
+
+    await invalidateUserCache(userId);
+    cacheDelete(USER_STATS_CACHE_KEY);
+    await redisService.del(USER_STATS_CACHE_KEY);
+
+    await logDataChange(
+      adminUser.id,
+      'UPDATE_USER_EMAIL_VERIFIED',
+      `user_${updatedUser.id}`,
+      req as any,
+      targetUser,
+      updatedUser,
+    );
+
+    return sendSuccess(res, {
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        username: updatedUser.username,
+        email_verified: updatedUser.email_verified,
       }
     }, 'Success');
   } catch (error) {

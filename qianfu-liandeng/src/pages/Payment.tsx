@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '@/api/request';
+import { ApiError } from '@/api/request';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, QrCode, CreditCard, ChevronRight, ChevronLeft } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,10 +10,82 @@ import { useMobile } from '@/hooks/useMobile';
 interface Order {
   orderId: string;
   paymentUrl: string;
+  provider?: string;
+  qrImagePath?: string;
+  paymentQrContent?: string;
+  tenantKey?: string;
+  upstreamOrderId?: string;
   planId: string;
   amount: number;
   status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+  createdAt?: number;
 }
+
+const IMAGE_PATH_PATTERN = /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i;
+
+const toAbsoluteUrl = (value?: string) => {
+  if (!value) return undefined;
+  if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:')) {
+    return value;
+  }
+  if (typeof window === 'undefined') {
+    return value;
+  }
+  try {
+    return new URL(value, window.location.origin).toString();
+  } catch {
+    return value;
+  }
+};
+
+const looksLikeImagePath = (value?: string) => !!value && IMAGE_PATH_PATTERN.test(value);
+
+const normalizeOrder = (value: any, planId: string, amount: number): Order | null => {
+  const raw = value?.data && typeof value.data === 'object' ? value.data : value;
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const orderId = typeof raw.orderId === 'string'
+    ? raw.orderId
+    : typeof raw.paymentId === 'string'
+      ? raw.paymentId
+      : typeof raw.id === 'string'
+        ? raw.id
+        : '';
+  let paymentUrl = typeof raw.paymentUrl === 'string' ? raw.paymentUrl : '';
+  let qrImagePath = typeof raw.qrImagePath === 'string' ? raw.qrImagePath : undefined;
+  let paymentQrContent = typeof raw.paymentQrContent === 'string' ? raw.paymentQrContent : undefined;
+
+  if (!qrImagePath && looksLikeImagePath(paymentUrl)) {
+    qrImagePath = paymentUrl;
+  }
+  if (paymentQrContent && looksLikeImagePath(paymentQrContent)) {
+    qrImagePath = paymentQrContent;
+    paymentQrContent = undefined;
+  }
+
+  paymentUrl = toAbsoluteUrl(paymentUrl) || '';
+  qrImagePath = toAbsoluteUrl(qrImagePath);
+
+  if (!orderId || !paymentUrl) {
+    return null;
+  }
+
+  return {
+    orderId,
+    paymentUrl,
+    provider: typeof raw.provider === 'string' ? raw.provider : undefined,
+    qrImagePath,
+    paymentQrContent,
+    tenantKey: typeof raw.tenantKey === 'string' ? raw.tenantKey : undefined,
+    upstreamOrderId: typeof raw.upstreamOrderId === 'string' ? raw.upstreamOrderId : undefined,
+    planId,
+    amount,
+    status: ['COMPLETED', 'FAILED', 'EXPIRED'].includes(raw.status) ? raw.status : 'PENDING',
+    createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : Date.now(),
+  };
+};
 
 const isValidOrder = (value: any): value is Order => {
   return !!value
@@ -23,21 +97,86 @@ const isValidOrder = (value: any): value is Order => {
 };
 
 const PLANS = [
-  { id: 'basic-monthly', name: '基础月度', price: 20, period: 'monthly', desc: '首页推荐 + 搜索优先' },
-  { id: 'pro-quarterly', name: '专业季度', price: 55, period: 'quarterly', desc: '全站置顶 + 专属标识' },
-  { id: 'vip-yearly', name: '尊享年度', price: 200, period: 'yearly', desc: '超级置顶 + 评论特权' },
-  { id: 'custom', name: '自定义推广', price: 0, period: 'one-time', desc: '灵活金额，按量分配' },
+  { id: 'custom', name: '钱包充值', price: 10, period: 'recharge', desc: '先充值到账户余额，再在发布服务器时按月租 / 季付 / 年付扣款' },
 ] as const;
 
 const paymentMethodMeta = {
-  wechat: { label: '微信支付', short: 'WECHAT PAY', accentClass: 'text-green-500' },
-  alipay: { label: '支付宝', short: 'ALIPAY', accentClass: 'text-blue-500' },
+  wechat: { label: '微信支付', short: '实时到账', accentClass: 'text-green-500' },
+  alipay: { label: '支付宝', short: '实时到账', accentClass: 'text-blue-500' },
 } as const;
 
 const flowSteps = ['选择方案', '支付方式', '生成订单'];
+const PENDING_ORDER_TTL_MS = 15 * 60 * 1000;
+const PENDING_ORDER_STORAGE_KEY = 'payment.pending.order';
+
+const allowedPaymentHosts = (import.meta.env.VITE_ALLOWED_PAYMENT_REDIRECT_HOSTS || '')
+  .split(',')
+  .map((host: string) => host.trim().toLowerCase())
+  .filter(Boolean);
+
+const isSafeCheckoutUrl = (value: string, provider?: string) => {
+  if (!value) return false;
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return false;
+    }
+
+    if (parsed.origin === window.location.origin) {
+      return true;
+    }
+
+    const host = parsed.host.toLowerCase();
+    const hostname = parsed.hostname.toLowerCase();
+    if (allowedPaymentHosts.includes(host) || allowedPaymentHosts.includes(hostname)) {
+      return true;
+    }
+
+    if (provider === 'creem') {
+      return hostname === 'creem.io' || hostname.endsWith('.creem.io');
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+const openCheckoutUrlSafely = (value: string, provider?: string) => {
+  if (!isSafeCheckoutUrl(value, provider)) {
+    throw new Error('支付跳转地址不安全，请联系管理员检查支付网关配置。');
+  }
+  window.location.href = value;
+};
+
+const buildLocalQrUrl = (value?: string, size = 220) => {
+  if (!value) return '';
+  return `/api/v1/assets/qr?size=${size}&data=${encodeURIComponent(value)}`;
+};
+
+const readPendingOrderSnapshot = () => {
+  if (typeof window === 'undefined') return null;
+  const saved = window.sessionStorage.getItem(PENDING_ORDER_STORAGE_KEY);
+  window.localStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+  return saved;
+};
+
+const writePendingOrderSnapshot = (order: Order) => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(PENDING_ORDER_STORAGE_KEY, JSON.stringify(order));
+  window.localStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+};
+
+const clearPendingOrderSnapshot = () => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+  window.localStorage.removeItem(PENDING_ORDER_STORAGE_KEY);
+};
 
 const Payment: React.FC = () => {
-  const isMobile = useMobile();
+  const navigate = useNavigate();
+  const { isMobile } = useMobile();
   const [step, setStep] = useState(1); // For mobile 3-step flow
   const [selectedPlan, setSelectedPlan] = useState<(typeof PLANS)[number]>(PLANS[0]);
   const [customAmount, setCustomAmount] = useState<number>(10);
@@ -47,96 +186,127 @@ const Payment: React.FC = () => {
   const paymentMeta = paymentMethodMeta[paymentMethod];
   const pollRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const backoffTimeoutRef = useRef<number | null>(null);
 
-  const clearPolling = () => {
+  const clearPolling = useCallback(() => {
     if (pollRef.current) window.clearInterval(pollRef.current);
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    if (backoffTimeoutRef.current) window.clearTimeout(backoffTimeoutRef.current);
     pollRef.current = null;
     timeoutRef.current = null;
-  };
+    backoffTimeoutRef.current = null;
+  }, []);
+
+  const resetPendingState = useCallback((options?: { resetStep?: boolean }) => {
+    clearPolling();
+    setPendingOrder(null);
+    clearPendingOrderSnapshot();
+    if (isMobile && options?.resetStep !== false) {
+      setStep(1);
+    }
+  }, [clearPolling, isMobile]);
+
+  const startPolling = useCallback((orderId: string) => {
+    clearPolling();
+    let consecutiveFailures = 0;
+    let currentIntervalMs = 3000;
+
+    const schedulePolling = (intervalMs: number) => {
+      if (pollRef.current) window.clearInterval(pollRef.current);
+      currentIntervalMs = intervalMs;
+      pollRef.current = window.setInterval(tick, intervalMs);
+    };
+
+    const stopPendingOrder = (title: string, description: string) => {
+      resetPendingState({ resetStep: false });
+      toast({
+        title,
+        description,
+        variant: 'destructive',
+      });
+    };
+
+    const tick = async () => {
+      try {
+        const statusData = await api.get<Order>(`/payment/status/${orderId}`);
+        const status = (statusData as any)?.status ?? (statusData as any)?.data?.status;
+        consecutiveFailures = 0;
+        if (currentIntervalMs !== 3000) {
+          schedulePolling(3000);
+        }
+        if (status === 'COMPLETED') {
+          clearPolling();
+          setPendingOrder((prev) => (prev ? { ...prev, status } : null));
+          clearPendingOrderSnapshot();
+        }
+        if (status === 'FAILED' || status === 'EXPIRED') {
+          clearPolling();
+          setPendingOrder((prev) => (prev ? { ...prev, status } : null));
+          clearPendingOrderSnapshot();
+        }
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 429) {
+          stopPendingOrder('支付状态轮询过于频繁', '已暂停当前订单轮询，请返回支付页重新发起订单。');
+          return;
+        }
+        consecutiveFailures += 1;
+        if (consecutiveFailures >= 4) {
+          stopPendingOrder('支付状态暂不可达', '已暂停轮询，请稍后重新发起订单。');
+          return;
+        }
+        const nextInterval = Math.min(15000, 3000 * (consecutiveFailures + 1));
+        if (nextInterval !== currentIntervalMs) {
+          schedulePolling(nextInterval);
+        }
+      }
+    };
+
+    schedulePolling(3000);
+
+    timeoutRef.current = window.setTimeout(() => {
+      resetPendingState();
+      toast({
+        title: '支付订单已过期',
+        description: '本地保存的待支付订单已超时清理。',
+      });
+    }, PENDING_ORDER_TTL_MS);
+  }, [clearPolling, resetPendingState]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('payment.pending.order');
+    const saved = readPendingOrderSnapshot();
     if (saved) {
       try {
         const order = JSON.parse(saved);
         if (isValidOrder(order)) {
+          const createdAt = typeof order.createdAt === 'number' ? order.createdAt : 0;
+          if (createdAt > 0 && Date.now() - createdAt > PENDING_ORDER_TTL_MS) {
+            resetPendingState();
+            toast({
+              title: '已清理过期订单',
+              description: '检测到本地待支付订单已过期，已自动移除。',
+            });
+            return;
+          }
           setPendingOrder(order);
           startPolling(order.orderId);
         } else {
-          localStorage.removeItem('payment.pending.order');
+          resetPendingState();
           toast({
             title: '已清理过期订单',
             description: '本地保存的支付订单格式无效，已自动移除。',
           });
         }
       } catch {
-        localStorage.removeItem('payment.pending.order');
+        resetPendingState();
       }
     }
     return () => clearPolling();
-  }, []);
-
-  const startPolling = (orderId: string) => {
-    clearPolling();
-    let consecutiveFailures = 0;
-    pollRef.current = window.setInterval(async () => {
-      try {
-        const statusData = await api.get<Order>(`/payment/status/${orderId}`);
-        const status = (statusData as any)?.status ?? (statusData as any)?.data?.status;
-        consecutiveFailures = 0;
-        if (status === 'COMPLETED') {
-          clearPolling();
-          setPendingOrder((prev) => (prev ? { ...prev, status } : null));
-          localStorage.removeItem('payment.pending.order');
-        }
-        if (status === 'FAILED' || status === 'EXPIRED') {
-          clearPolling();
-          setPendingOrder((prev) => (prev ? { ...prev, status } : null));
-          localStorage.removeItem('payment.pending.order');
-        }
-      } catch {
-        consecutiveFailures += 1;
-        if (consecutiveFailures >= 4) {
-          toast({
-            title: '支付状态暂不可达',
-            description: '已暂停轮询，请稍后重试或刷新页面恢复支付状态。',
-            variant: 'destructive',
-          });
-          consecutiveFailures = 0;
-        }
-      }
-    }, 3000);
-
-    timeoutRef.current = window.setTimeout(() => {
-      clearPolling();
-      localStorage.removeItem('payment.pending.order');
-      toast({
-        title: '支付订单已过期',
-        description: '本地保存的待支付订单已超时清理。',
-      });
-    }, 15 * 60 * 1000);
-  };
+  }, [resetPendingState, startPolling, clearPolling]);
 
   const handleCreateOrder = async () => {
     setLoading(true);
-    const amount = selectedPlan.id === 'custom' ? customAmount : selectedPlan.price;
-    // Price validation: ensure amount matches plan pricing
-    const validPrices: Record<string, number> = {
-      'basic-monthly': 20,
-      'pro-quarterly': 55,
-      'vip-yearly': 200,
-    };
-    if (selectedPlan.id !== 'custom' && amount !== validPrices[selectedPlan.id]) {
-      toast({
-        title: '价格校验失败',
-        description: '订单金额与所选方案不匹配，请刷新页面重试。',
-        variant: 'destructive',
-      });
-      return;
-    }
-    // Custom amount validation: min ¥10, max ¥10000
-    if (selectedPlan.id === 'custom' && (amount < 10 || amount > 10000)) {
+    const amount = customAmount;
+    if (amount < 10 || amount > 10000) {
       toast({
         title: '金额范围无效',
         description: '自定义金额必须在 ¥10 至 ¥10000 之间。',
@@ -145,21 +315,27 @@ const Payment: React.FC = () => {
       return;
     }
     try {
-      const order = await api.post<Order>('/payment/create', { planId: selectedPlan.id, amount, paymentMethod }, {
+      const orderResponse = await api.post<any>('/payment/create', { planId: 'custom', amount, paymentMethod }, {
         headers: { 'Idempotency-Key': uuidv4() },
         skipCsrf: false,
       });
+      const order = normalizeOrder(orderResponse, 'custom', amount);
       if (!isValidOrder(order)) {
         throw new Error('支付服务返回了无效的订单数据');
       }
+      order.createdAt = Date.now();
       setPendingOrder(order);
-      localStorage.setItem('payment.pending.order', JSON.stringify(order));
+      writePendingOrderSnapshot(order);
       startPolling(order.orderId);
+      if (order.provider === 'creem') {
+        openCheckoutUrlSafely(order.paymentUrl, order.provider);
+        return;
+      }
       if (isMobile) setStep(3);
     } catch (err: any) {
       toast({
         title: '创建订单失败',
-        description: err?.message || '当前后端未响应，已可切换为开发模拟模式。',
+        description: err?.message || '当前后端未响应，请稍后重试。',
         variant: 'destructive',
       });
     } finally {
@@ -178,8 +354,8 @@ const Payment: React.FC = () => {
             <CheckCircle2 className="w-10 h-10 text-accent" />
           </div>
           <h2 className="text-4xl font-black tracking-tighter uppercase italic mb-4">支付成功</h2>
-          <p className="text-zinc-400 font-bold italic leading-relaxed mb-10">感谢您的支持，宣传位已立即生效。</p>
-          <button onClick={() => { setPendingOrder(null); window.location.hash = '#/dashboard'; }} className="w-full py-5 btn-accent text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.5em] shadow-2xl italic">返回中心</button>
+          <p className="text-zinc-400 font-bold italic leading-relaxed mb-10">充值金额已到账钱包，发布服务器时会按所选周期扣除余额。</p>
+          <button type="button" onClick={() => { resetPendingState(); navigate('/dashboard'); }} className="w-full py-5 btn-accent text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.5em] shadow-2xl italic">返回中心</button>
         </div>
       </div>
     );
@@ -195,30 +371,91 @@ const Payment: React.FC = () => {
             <Loader2 className="w-4 h-4 animate-spin" /> 正在轮询订单状态
           </div>
           
-          <div className="bg-white p-6 rounded-[2.5rem] mb-8 inline-block border border-zinc-100 shadow-sm">
-             <img
-               src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pendingOrder.paymentUrl)}`}
-               alt="QR Code"
-               onError={(event) => {
-                 const target = event.currentTarget;
-                 target.onerror = null;
-                 target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${pendingOrder.paymentUrl}&fallback=1`)}`;
-               }}
-             />
-          </div>
+          {pendingOrder.provider === 'creem' ? (
+            <div className="bg-white p-6 rounded-[2.5rem] mb-8 border border-zinc-100 shadow-sm space-y-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic">支付跳转</div>
+              <div className="text-sm font-bold text-zinc-500 break-all">{pendingOrder.paymentUrl}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    openCheckoutUrlSafely(pendingOrder.paymentUrl, pendingOrder.provider);
+                  } catch (error) {
+                    toast({
+                      title: '无法打开支付页',
+                      description: error instanceof Error ? error.message : '支付地址校验失败',
+                      variant: 'destructive',
+                    });
+                  }
+                }}
+                className="w-full py-4 btn-accent text-white rounded-[2rem] font-black text-[11px] uppercase tracking-[0.35em] italic"
+              >
+                打开支付页
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white p-6 rounded-[2.5rem] mb-8 inline-block border border-zinc-100 shadow-sm">
+              <img
+                src={pendingOrder.paymentQrContent
+                  ? buildLocalQrUrl(pendingOrder.paymentQrContent, 220)
+                  : pendingOrder.qrImagePath || buildLocalQrUrl(pendingOrder.paymentUrl, 220)}
+                alt="QR Code"
+                onError={(event) => {
+                  const target = event.currentTarget;
+                  target.onerror = null;
+                  target.src = buildLocalQrUrl(pendingOrder.paymentUrl, 220);
+                }}
+              />
+            </div>
+          )}
 
           <h2 className="text-3xl font-black tracking-tighter uppercase italic mb-3">
             {paymentMeta.label}
           </h2>
           <p className={`text-zinc-400 font-bold italic leading-relaxed mb-2 ${paymentMeta.accentClass}`}>{paymentMeta.short}</p>
+          {pendingOrder.provider === 'xpay-tenant' && pendingOrder.tenantKey && (
+            <p className="text-zinc-300 font-black uppercase tracking-[0.3em] text-[10px] italic mb-2">XPay / {pendingOrder.tenantKey}</p>
+          )}
+          {pendingOrder.provider === 'creem' && (
+            <p className="text-zinc-300 font-black uppercase tracking-[0.3em] text-[10px] italic mb-2">Creem / Hosted Checkout</p>
+          )}
           <p className="text-zinc-400 font-bold italic leading-relaxed mb-8">请扫描二维码完成 ¥{pendingOrder.amount} 的订单支付</p>
+          {pendingOrder.provider === 'xpay-tenant' && (
+            <div className="mb-8 rounded-[2rem] border border-zinc-100 bg-white px-5 py-4 text-left">
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic mb-2">付款备注</div>
+              <div className="font-mono text-xs break-all text-zinc-700">{pendingOrder.orderId}</div>
+              <p className="mt-2 text-xs font-bold text-zinc-400">个人码到账监听需要用备注匹配订单，请付款时填写此订单号。</p>
+            </div>
+          )}
+          {(pendingOrder.provider === 'tpay' || pendingOrder.provider === 'hupijiao' || pendingOrder.provider === 'qiupay') && (
+            <div className="mb-8 rounded-[2rem] border border-zinc-100 bg-white px-5 py-4 text-left">
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic mb-2">自动到账</div>
+              <p className="text-xs font-bold text-zinc-400">当前通道支持自动异步回调，无需填写付款备注，支付成功后会自动更新订单状态。</p>
+            </div>
+          )}
           
-          <button 
-            onClick={() => { setPendingOrder(null); localStorage.removeItem('payment.pending.order'); clearPolling(); if(isMobile) setStep(1); window.location.hash = '#/dashboard'; }}
-            className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-accent transition-colors italic"
-          >
-            取消订单并返回
-          </button>
+          <div className="flex flex-col items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                resetPendingState();
+                toast({
+                  title: '已重置待支付订单',
+                  description: '您可以重新生成新的支付订单。',
+                });
+              }}
+              className="px-6 py-3 rounded-[1.5rem] border border-zinc-100 bg-white text-[10px] font-black uppercase tracking-[0.35em] text-zinc-500 hover:border-accent hover:text-accent transition-colors italic"
+            >
+              重新生成订单
+            </button>
+            <button 
+              type="button"
+              onClick={() => { resetPendingState(); navigate('/dashboard'); }}
+              className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-accent transition-colors italic"
+            >
+              取消订单
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -230,12 +467,12 @@ const Payment: React.FC = () => {
       <div className="flex flex-col min-h-screen bg-white">
         <div className="px-6 py-6 border-b border-zinc-50 bg-white/90 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-6xl mx-auto flex items-center gap-4">
-            {step > 1 && <button onClick={() => setStep(step - 1)} className="w-10 h-10 rounded-xl border border-zinc-100 flex items-center justify-center hover:bg-zinc-50 transition-colors"><ChevronLeft className="w-5 h-5" /></button>}
+            {step > 1 && <button type="button" onClick={() => setStep(step - 1)} className="w-10 h-10 rounded-xl border border-zinc-100 flex items-center justify-center hover:bg-zinc-50 transition-colors"><ChevronLeft className="w-5 h-5" /></button>}
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">PAYMENT_FLOW</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">充值流程</div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase italic">{flowSteps[step - 1]}</h1>
             </div>
-            <div className="ml-auto px-4 py-2 rounded-full border border-zinc-100 text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-400">STEP {step}/3</div>
+            <div className="ml-auto px-4 py-2 rounded-full border border-zinc-100 text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-400">第 {step}/3 步</div>
           </div>
         </div>
 
@@ -257,11 +494,11 @@ const Payment: React.FC = () => {
                       <p className="text-zinc-400 font-bold italic leading-relaxed">{plan.desc}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-4xl font-black tracking-tighter italic text-black">¥{plan.price || customAmount}</div>
+                      <div className="text-4xl font-black tracking-tighter italic text-black">¥{customAmount}</div>
                       <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-2">{selectedPlan.id === plan.id ? '已选择' : '点击选择'}</div>
                     </div>
                   </div>
-                  {plan.id === 'custom' && selectedPlan.id === 'custom' && (
+                  {selectedPlan.id === 'custom' && (
                     <div className="mt-8 p-6 rounded-[2rem] border border-zinc-100 bg-white/80">
                       <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic block mb-3">自定义金额</label>
                       <input 
@@ -285,7 +522,7 @@ const Payment: React.FC = () => {
                   <div className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-green-500 shadow-sm"><QrCode className="w-7 h-7" /></div>
                   <div>
                     <div className="text-2xl font-black uppercase italic tracking-tighter">微信支付</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">WECHAT PAY</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</div>
                   </div>
                 </div>
               </div>
@@ -297,7 +534,7 @@ const Payment: React.FC = () => {
                   <div className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-blue-500 shadow-sm"><CreditCard className="w-7 h-7" /></div>
                   <div>
                     <div className="text-2xl font-black uppercase italic tracking-tighter">支付宝</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">ALIPAY</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</div>
                   </div>
                 </div>
               </div>
@@ -309,9 +546,10 @@ const Payment: React.FC = () => {
           <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between gap-6">
             <div>
               <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">总计费用</div>
-              <div className="text-3xl font-black tracking-tighter italic">¥{selectedPlan.id === 'custom' ? customAmount : selectedPlan.price}</div>
+              <div className="text-3xl font-black tracking-tighter italic">¥{customAmount}</div>
             </div>
             <button 
+              type="button"
               onClick={() => step === 1 ? setStep(2) : handleCreateOrder()}
               disabled={loading}
               className="px-10 py-5 btn-accent text-white rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.5em] shadow-2xl italic flex items-center gap-3"
@@ -330,11 +568,11 @@ const Payment: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto py-24 px-4">
       <div className="flex flex-col items-center text-center mb-16">
-         <h1 className="text-5xl font-black tracking-tight mb-4">选择宣传方案</h1>
-         <p className="text-muted-foreground text-lg max-w-xl">提升您的服务器曝光率，吸引更多玩家。选择最适合您的推广策略。</p>
+         <h1 className="text-5xl font-black tracking-tight mb-4">钱包充值</h1>
+         <p className="text-muted-foreground text-lg max-w-xl">充值到账户余额后，再去发布页选择上架周期。发布时系统会自动从钱包扣款。</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+      <div className="grid grid-cols-1 gap-8 mb-16">
         {PLANS.map((plan) => (
           <div 
             key={plan.id}
@@ -345,7 +583,7 @@ const Payment: React.FC = () => {
           >
             <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-3xl font-black">¥{plan.price || customAmount}</span>
+              <span className="text-3xl font-black">¥{customAmount}</span>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{plan.period}</span>
             </div>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">{plan.desc}</p>
@@ -365,10 +603,10 @@ const Payment: React.FC = () => {
                <div className="space-y-2">
                  <label className="text-xs font-bold uppercase text-muted-foreground">支付方式</label>
                  <div className="flex gap-4">
-                    <button onClick={() => setPaymentMethod('wechat')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'wechat' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('wechat')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'wechat' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
                        <QrCode className="w-4 h-4" /> 微信支付
                     </button>
-                    <button onClick={() => setPaymentMethod('alipay')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'alipay' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
+                    <button type="button" onClick={() => setPaymentMethod('alipay')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'alipay' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
                        <CreditCard className="w-4 h-4" /> 支付宝
                     </button>
                  </div>
@@ -396,9 +634,10 @@ const Payment: React.FC = () => {
             <div>
                <div className="flex justify-between items-end mb-8">
                   <span className="text-white/60 font-medium">应付金额</span>
-                  <span className="text-5xl font-black">¥{selectedPlan.id === 'custom' ? customAmount : selectedPlan.price}</span>
+                  <span className="text-5xl font-black">¥{customAmount}</span>
                </div>
                <button 
+                type="button"
                 onClick={handleCreateOrder}
                 disabled={loading}
                 className="w-full py-5 bg-white text-brand rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl flex items-center justify-center gap-3"

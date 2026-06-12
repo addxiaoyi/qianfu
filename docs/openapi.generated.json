@@ -549,7 +549,7 @@
       "url": "https://opensource.org/licenses/MIT"
     },
     "title": "QianFu API (generated)",
-    "version": "1.0.0"
+    "version": "0.0.0"
   },
   "openapi": "3.0.0",
   "paths": {
@@ -1300,6 +1300,24 @@
           }
         ],
         "summary": "Compare two saved versions",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "User server management info"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user's server quota / publish permissions",
         "tags": [
           "Servers"
         ]

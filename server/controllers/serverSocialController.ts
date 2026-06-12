@@ -22,10 +22,8 @@ import {
 import { ModerationService } from '../services/moderationService';
 import { clearPublicServersCache } from '../services/publicServerCache';
 import { logger } from '../utils/logger';
-import { PermissionGroupManager } from '../config/permissionGroups';
 import {
   applyExperience,
-  getEffectivePermissions,
   publicTierBadgeFromXp,
   XP_COMMENT,
   XP_LIKE,
@@ -112,7 +110,7 @@ export const listServerComments = async (req: Request, res: Response, next: Next
       localPrisma.serverComment.count({ where: { server_id: serverId } }),
     ]);
 
-    const mapped = items.map((row) => ({
+    const mapped = items.map((row: any) => ({
       ...row,
       user: row.user
         ? {
@@ -162,7 +160,7 @@ export const postServerComment = async (req: AuthRequest, res: Response, next: N
       throw new AppError(mod.reason || 'Content violation', 400, ErrorCode.VALIDATION_ERROR);
     }
 
-    const comment = await localPrisma.$transaction(async (tx) => {
+    const comment = await localPrisma.$transaction(async (tx: any) => {
       const c = await tx.serverComment.create({
         data: {
           server_id: serverId,
@@ -263,7 +261,7 @@ export const deleteServerComment = async (req: AuthRequest, res: Response, next:
       throw new AppError('Forbidden', 403, ErrorCode.FORBIDDEN);
     }
 
-    await localPrisma.$transaction(async (tx) => {
+    await localPrisma.$transaction(async (tx: any) => {
       await tx.serverComment.delete({ where: { id: commentId } });
       await tx.server.update({
         where: { id: serverId },
@@ -305,7 +303,7 @@ export const toggleServerLike = async (req: AuthRequest, res: Response, next: Ne
       throw new AppError('Server not found', 404, ErrorCode.NOT_FOUND);
     }
 
-    const result = await localPrisma.$transaction(async (tx) => {
+    const result = await localPrisma.$transaction(async (tx: any) => {
       const existing = await tx.serverLike.findUnique({
         where: { server_id_user_id: { server_id: serverId, user_id: user.id } },
       });

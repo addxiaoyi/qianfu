@@ -1,0 +1,283 @@
+{
+  "startedAt": "2026-06-09T11:56:58.178Z",
+  "finishedAt": "2026-06-09T11:58:28.196Z",
+  "baseUrl": "https://mc-u.top",
+  "plannedRoutes": 26,
+  "passedRoutes": 26,
+  "failedRoutes": 0,
+  "skipped": [],
+  "login": {
+    "username": "dev_local",
+    "role": "ADMIN",
+    "emailVerified": true,
+    "adminProbeOk": true
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "/dashboard",
+      "label": "dashboard",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard",
+      "matchedText": "快捷概览",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/dashboard/profile",
+      "label": "dashboard profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard/profile",
+      "matchedText": "账号状态",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/me",
+      "label": "profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me",
+      "matchedText": "用户ID",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/me/edit",
+      "label": "profile edit",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me/edit",
+      "matchedText": "账号资料",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/tickets",
+      "label": "tickets",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/tickets",
+      "matchedText": "TICKET_QUEUE",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/editor",
+      "label": "server editor",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/editor",
+      "matchedText": "发布服务器",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/rules",
+      "label": "rules",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/rules",
+      "matchedText": "等级与经验规则",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/promotion/tasks",
+      "label": "promo tasks",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/promotion/tasks",
+      "matchedText": "任务列表",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/promotion/claims",
+      "label": "promo claims",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/promotion/claims",
+      "matchedText": "领取审核",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/dashboard",
+      "label": "mobile dashboard",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard",
+      "matchedText": "仪表盘",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/me",
+      "label": "mobile profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me",
+      "matchedText": "我的服务器",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/me/edit",
+      "label": "mobile profile edit",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me/edit",
+      "matchedText": "账号资料",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/tickets",
+      "label": "mobile tickets",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/tickets",
+      "matchedText": "工单",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/editor",
+      "label": "mobile editor",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/editor",
+      "matchedText": "发布服务器",
+      "networkErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/rules",
+      "label": "mobile rules",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/rules",
+      "matchedText": "等级与经验规则",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin",
+      "label": "admin dashboard",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin",
+      "matchedText": "管理总览",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-users",
+      "label": "admin users",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-users",
+      "matchedText": "用户目录",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-review",
+      "label": "admin review",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-review",
+      "matchedText": "服务器审核",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-tickets",
+      "label": "admin tickets",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-tickets",
+      "matchedText": "后台工单管理",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-reports",
+      "label": "admin reports",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-reports",
+      "matchedText": "举报管理",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-audit",
+      "label": "admin audit",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-audit",
+      "matchedText": "审计。",
+      "networkErrors": [
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/logs"
+        },
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/logs"
+        },
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/logs"
+        },
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/logs"
+        }
+      ]
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-audit-stats",
+      "label": "admin audit stats",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-audit-stats",
+      "matchedText": "审计洞察",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-moderation",
+      "label": "admin moderation",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-moderation",
+      "matchedText": "内容审核",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-port5555",
+      "label": "admin port security",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-port5555",
+      "matchedText": "端口",
+      "networkErrors": [
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/stats"
+        },
+        {
+          "status": 403,
+          "method": "GET",
+          "url": "/api/v1/port5555/stats"
+        }
+      ]
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-settings",
+      "label": "admin settings",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-settings",
+      "matchedText": "配置总控",
+      "networkErrors": []
+    },
+    {
+      "context": "desktop-admin",
+      "path": "/admin-mail",
+      "label": "admin mail",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/admin-mail",
+      "matchedText": "邮件配置",
+      "networkErrors": []
+    }
+  ]
+}

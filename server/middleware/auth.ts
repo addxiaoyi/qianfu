@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import Session from 'supertokens-node/recipe/session';
 import type { SessionContainerInterface } from 'supertokens-node/recipe/session/types';
+import jwt from 'jsonwebtoken';
 import prisma, { User } from '../db';
 import { AppError, ErrorCode } from '../utils/errors';
 import { redisService } from '../services/redisService';
 import { repairPrismaUserIfMissing } from '../services/supertokensPrismaSync';
 import { logger } from '../utils/logger';
 import { parseJsonArray } from '../utils/jsonField';
+import { getJwtSecret } from '../utils/securityConfig';
 import {
   isDevAuthBypassEnabled,
   isDevAuthCookiePresent,
@@ -15,6 +17,7 @@ import {
 
 const USER_CACHE_PREFIX = 'user:cache:';
 const USER_CACHE_TTL = 30;
+const LOCAL_AUTH_COOKIE_NAME = process.env.LOCAL_AUTH_COOKIE_NAME || 'qf_auth_token';
 
 export interface AuthRequest extends Request {
   user?: User;
@@ -24,6 +27,54 @@ export interface AuthRequest extends Request {
 }
 
 type AuthMode = 'required' | 'optional';
+
+type LocalAuthTokenPayload = {
+  userId: number;
+  mode: 'local-auth';
+};
+
+async function attachUserFromLocalAuthToken(
+  req: AuthRequest,
+  mode: AuthMode,
+): Promise<boolean> {
+  const header = req.headers.authorization;
+  const bearerToken =
+    typeof header === 'string' && header.startsWith('Bearer ')
+      ? header.slice(7).trim()
+      : '';
+  const cookieToken = typeof req.cookies?.[LOCAL_AUTH_COOKIE_NAME] === 'string'
+    ? String(req.cookies[LOCAL_AUTH_COOKIE_NAME]).trim()
+    : '';
+  const token = bearerToken || cookieToken;
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const payload = jwt.verify(token, getJwtSecret()) as LocalAuthTokenPayload;
+    if (!payload?.userId) {
+      throw new AppError('Invalid token', 401, ErrorCode.UNAUTHORIZED);
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!user) {
+      throw new AppError('User not found', 401, ErrorCode.UNAUTHORIZED);
+    }
+
+    req.user = user;
+    const permissions = parseJsonArray(user.permissions);
+    req.isAdmin =
+      user.role === 'ADMIN' ||
+      user.role === 'OWNER' ||
+      permissions.includes('admin');
+    return true;
+  } catch (error) {
+    if (mode === 'required') {
+      throw new AppError('Authentication required', 401, ErrorCode.UNAUTHORIZED);
+    }
+    return false;
+  }
+}
 
 async function attachUserFromSuperTokensSession(
   req: AuthRequest,
@@ -109,6 +160,9 @@ async function attachUserFromSuperTokensSession(
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    if (await attachUserFromLocalAuthToken(req, 'required')) {
+      return next();
+    }
     await attachUserFromSuperTokensSession(req, res, 'required');
     return next();
   } catch (error) {
@@ -118,6 +172,9 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 
 export const authenticateOptional = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    if (await attachUserFromLocalAuthToken(req, 'optional')) {
+      return next();
+    }
     await attachUserFromSuperTokensSession(req, res, 'optional');
     return next();
   } catch (error) {

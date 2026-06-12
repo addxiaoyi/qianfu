@@ -1,0 +1,46 @@
+请上传并在生产机执行以下恢复包：
+
+文件：
+qianfu-prod-restore-20260609-ssh-ready.tar.gz
+
+SHA-256：
+3eeb2983bd794c9e6e7c422f7007cf76527c5aa542ce0f54a33c855c803f595c
+
+建议上传路径：
+/www/wwwroot/qianfu-prod-restore-20260609-ssh-ready.tar.gz
+
+如果可以从本机 SSH 登录生产机，可直接执行：
+
+npm run prod:restore:ssh:win
+
+如需先预览：
+
+npm run prod:restore:ssh:win -- -DryRun
+
+如需只修主站：
+
+npm run prod:restore:ssh:win -- -WebOnly
+
+如需只修支付域：
+
+npm run prod:restore:ssh:win -- -PayOnly
+
+生产机终端手动执行：
+
+cd /www/wwwroot/qianfu-app
+tar -xzf /www/wwwroot/qianfu-prod-restore-20260609-ssh-ready.tar.gz -C /www/wwwroot/qianfu-app
+bash scripts/linux/prod-terminal-snapshot.sh
+bash scripts/linux/prod-terminal-minimal-repair.sh --preflight-only
+bash scripts/linux/prod-terminal-minimal-repair.sh --dry-run --no-strict
+sudo bash scripts/linux/prod-terminal-minimal-repair.sh
+
+恢复后请回传终端输出，或在本机执行：
+npm run prod:verify:public:win
+
+成功标准：
+- https://mc-u.top/api/health 返回 200
+- https://mc-u.top/api/ready 返回 200
+- https://mc-u.top/qianfu-dist-manifest.json 返回 JSON
+- https://mc-u.top/assets/index-CHZmvcH-.js 返回 200
+- https://pay.star-web.top/ 返回 qianfu-pay-gateway
+- npm run prod:verify:public:win 输出 failed_count=0

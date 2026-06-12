@@ -19,9 +19,10 @@ const AnnouncementBanner: React.FC = () => {
               <div className="w-5 h-5 bg-white/20 rounded flex items-center justify-center">
                  <Info className="w-3 h-3" />
               </div>
-              <span>Announcement: Spring Update 2026 is live with new bidding algorithms.</span>
+              <span>系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。</span>
             </div>
             <button 
+              type="button"
               onClick={() => setShow(false)}
               className="p-1 hover:bg-white/20 rounded transition-colors"
             >

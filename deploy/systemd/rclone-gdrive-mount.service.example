@@ -1,0 +1,20 @@
+[Unit]
+Description=QianFu Google Drive cold-storage mount via rclone
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=RCLONE_CONFIG=/root/.config/rclone/rclone.conf
+Environment=RCLONE_REMOTE=gdrive:qianfu
+Environment=MOUNT_POINT=/mnt/gdrive-qianfu
+ExecStartPre=/bin/mkdir -p ${MOUNT_POINT}
+ExecStart=/usr/bin/rclone mount ${RCLONE_REMOTE} ${MOUNT_POINT} --config ${RCLONE_CONFIG} --dir-cache-time 10m --poll-interval 30s --umask 022 --vfs-cache-mode full --vfs-cache-max-age 24h
+ExecStop=/bin/fusermount -u ${MOUNT_POINT}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

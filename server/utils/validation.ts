@@ -77,25 +77,29 @@ export const resendVerificationSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, { message: "Token is required" }),
-  email: z.string().email({ message: "Invalid email address" }),
-  newPassword: z.string()
-    .min(12, { message: "Password must be at least 12 characters long" })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/\d/, { message: "Password must contain at least one number" })
-    .regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character" }),
+  token: z.string().min(1, { message: "Token is required" }).optional(),
+  email: z.string().email({ message: "Invalid email address" }).optional(),
+  code: z.string().min(1, { message: "Code is required" }).optional(),
+  password: z.string().min(8, { message: "Password must be at least 8 characters long" }).optional(),
+  newPassword: z.string().min(8, { message: "Password must be at least 8 characters long" }).optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => data.password || data.newPassword, {
+  message: "Password is required",
+  path: ["password"],
 });
 
 export const changePasswordSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  oldPassword: z.string().min(1, { message: "Old password is required" }),
-  newPassword: z.string()
-    .min(12, { message: "Password must be at least 12 characters long" })
-    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
-    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-    .regex(/\d/, { message: "Password must contain at least one number" })
-    .regex(/[^a-zA-Z0-9]/, { message: "Password must contain at least one special character" }),
+  email: z.string().email({ message: "Invalid email address" }).optional(),
+  oldPassword: z.string().min(1, { message: "Old password is required" }).optional(),
+  currentPassword: z.string().min(1, { message: "Old password is required" }).optional(),
+  newPassword: z.string().min(8, { message: "Password must be at least 8 characters long" }),
+  confirmPassword: z.string().optional(),
+}).refine((data) => data.oldPassword || data.currentPassword, {
+  message: "Old password is required",
+  path: ["oldPassword"],
+}).refine((data) => !data.confirmPassword || data.confirmPassword === data.newPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 export const uploadSchema = z.object({
@@ -146,11 +150,11 @@ export const serverSchema = z.object({
   tags: z.string().refine(val => {
     try {
       const parsed = JSON.parse(val);
-      return Array.isArray(parsed);
+      return Array.isArray(parsed) && parsed.length > 0;
     } catch {
       return false;
     }
-  }, "Tags must be a valid JSON array string").optional(),
+  }, "Tags must be a non-empty JSON array string"),
   link: z.string().url("Invalid link URL").max(500, "Link too long").optional().or(z.literal("")).refine(val => !val || !validateUrl(val), { message: "URL points to a forbidden internal address" }),
   activity: z.number().int().optional(),
   owner_id: z.number().int().optional(),
@@ -159,6 +163,36 @@ export const serverSchema = z.object({
   online_mode: z.boolean().optional(),
   supported_versions: jsonStringArray,
   network_env: jsonStringArray,
+  listing_plan: z.enum(['basic-monthly', 'pro-quarterly', 'vip-yearly']).optional(),
+}).superRefine((data, ctx) => {
+  if (!data.summary || !data.summary.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['summary'],
+      message: 'Summary is required',
+    });
+  }
+  if (!data.content_html || data.content_html.replace(/<[^>]*>/g, '').trim().length < 20) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['content_html'],
+      message: 'Content must be at least 20 plain-text characters',
+    });
+  }
+  if (!data.ip || !data.ip.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['ip'],
+      message: 'IP / host is required',
+    });
+  }
+  if (!data.thumbnail || !String(data.thumbnail).trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['thumbnail'],
+      message: 'Thumbnail is required',
+    });
+  }
 });
 
 export const rollbackSchema = z.object({
@@ -426,6 +460,8 @@ export const ticketStatusSchema = z.object({
 export const paymentCreateSchema = z.object({
   amount: z.number().positive("Amount must be positive"),
   planId: z.string().min(1, "Plan ID is required").max(50, "Plan ID too long"),
+  projectKey: z.string().min(1, "Project key is required").max(64, "Project key too long").optional(),
+  provider: z.enum(['paypro', 'xpay', 'tpay', 'hupijiao']).optional(),
   paymentMethod: z.enum(['wechat', 'alipay', 'balance']),
   currency: z.string().length(3, "Currency must be a 3-letter code").optional().default('CNY'),
 });
@@ -461,6 +497,34 @@ export const payProNotifySchema = z.object({
   payNum: z.string().min(1),
   sign: z.string().min(1),
 });
+
+export const tpayNotifySchema = z.object({
+  order_no: z.string().min(1),
+  subject: z.string().optional().default(''),
+  pay_type: z.union([z.string(), z.number()]),
+  money: z.union([z.string(), z.number()]),
+  realmoney: z.union([z.string(), z.number()]).optional(),
+  result: z.string().min(1),
+  xddpay_order: z.string().min(1),
+  app_id: z.union([z.string(), z.number()]),
+  extra: z.string().optional().default(''),
+  sign: z.string().min(1),
+});
+
+export const hupijiaoNotifySchema = z.object({
+  trade_order_id: z.string().min(1),
+  total_fee: z.union([z.string(), z.number()]),
+  transaction_id: z.string().min(1),
+  open_order_id: z.string().optional().default(''),
+  order_title: z.string().optional().default(''),
+  status: z.string().min(1),
+  plugins: z.string().optional().default(''),
+  attach: z.string().optional().default(''),
+  appid: z.string().min(1),
+  time: z.union([z.string(), z.number()]),
+  nonce_str: z.string().min(1),
+  hash: z.string().min(1),
+}).passthrough();
 
 const sortOrderQuerySchema = z.enum(['asc', 'desc']);
 const parseQueryPage = (v?: string) => Math.max(1, parseInt(v || '1', 10) || 1);
@@ -514,6 +578,10 @@ export const setupSoleAdminSchema = z.object({
 
 export const userRoleUpdateSchema = z.object({
   role: z.string().min(1, "Role is required"),
+});
+
+export const userEmailVerificationUpdateSchema = z.object({
+  email_verified: z.boolean(),
 });
 
 export const auditLogQuerySchema = z.object({

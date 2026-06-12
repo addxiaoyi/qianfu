@@ -69,14 +69,14 @@ const SearchPage: React.FC = () => {
                        <GeometricLantern variant="settings" className="w-3.5 h-3.5" /> 发现标签
                     </h3>
                     {selectedTags.length > 0 && (
-                      <button onClick={() => setSelectedTags([])} className="text-[10px] font-black text-destructive uppercase tracking-widest flex items-center gap-1.5 hover:opacity-80 transition-opacity italic">
+                      <button type="button" onClick={() => setSelectedTags([])} className="text-[10px] font-black text-destructive uppercase tracking-widest flex items-center gap-1.5 hover:opacity-80 transition-opacity italic">
                          <X className="w-3 h-3" /> 清除筛选
                       </button>
                     )}
                  </div>
                  <div className="flex flex-wrap gap-3">
                     {CATEGORIES.map(tag => (
-                      <button 
+                      <button type="button" 
                         key={tag}
                         onClick={() => toggleTag(tag)}
                         className={`px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border italic ${
@@ -94,11 +94,11 @@ const SearchPage: React.FC = () => {
               <div className="lg:col-span-4 space-y-10">
                  <div className="flex items-center justify-between">
                     <h3 className="text-xs font-black font-mono uppercase tracking-[0.2em] text-muted-foreground italic">版本节点</h3>
-                    {selectedVersion && <button onClick={() => setSelectedVersion(null)} className="text-[10px] font-bold text-muted-foreground hover:text-black uppercase tracking-widest italic">重置</button>}
+                    {selectedVersion && <button type="button" onClick={() => setSelectedVersion(null)} className="text-[10px] font-bold text-muted-foreground hover:text-black uppercase tracking-widest italic">重置</button>}
                  </div>
                  <div className="grid grid-cols-2 gap-3">
                     {VERSIONS.map(v => (
-                      <button 
+                      <button type="button" 
                         key={v}
                         onClick={() => setSelectedVersion(v)}
                         className={`px-6 py-3 rounded-2xl text-[10px] font-black font-mono tracking-tighter border transition-all italic ${
@@ -117,17 +117,17 @@ const SearchPage: React.FC = () => {
            {/* Execution Bar */}
            <div className="pt-12 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex gap-8">
-                 <button className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest italic">
+                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest italic">
                     <GeometricLantern variant="user" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 热度高
                  </button>
-                 <button className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
+                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
                     <GeometricLantern variant="network" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 最近动态
                  </button>
-                 <button className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
+                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
                     <GeometricLantern variant="spark" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 算法推荐
                  </button>
               </div>
-              <button 
+              <button type="button" 
                 onClick={() => navigate('/servers')}
                 className="w-full md:w-auto px-16 py-6 bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-black/10 italic active:scale-95"
               >
@@ -143,7 +143,7 @@ const SearchPage: React.FC = () => {
                  <h2 className="text-4xl font-black tracking-tighter uppercase italic">精选发现。</h2>
                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">基于您最近的浏览行为 / NOC_RECOMMEND</p>
               </div>
-              <button className="px-6 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-black hover:text-white transition-all italic">
+              <button type="button" className="px-6 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-black hover:text-white transition-all italic">
                  刷新结果
               </button>
            </header>

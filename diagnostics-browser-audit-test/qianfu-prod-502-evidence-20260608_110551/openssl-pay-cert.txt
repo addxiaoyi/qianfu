@@ -1,0 +1,7 @@
++ bash -lc openssl\ s_client\ -connect\ \'pay.star-web.top:443\'\ -servername\ \'pay.star-web.top\'\ \</dev/null\ 2\>/dev/null\ \|\ openssl\ x509\ -noout\ -subject\ -issuer\ -dates\ -ext\ subjectAltName
+subject=CN=mc-u.top
+issuer=C=US, O=Let's Encrypt, CN=E7
+notBefore=May 17 10:45:14 2026 GMT
+notAfter=Aug 15 10:45:13 2026 GMT
+X509v3 Subject Alternative Name: 
+    DNS:mc-u.top

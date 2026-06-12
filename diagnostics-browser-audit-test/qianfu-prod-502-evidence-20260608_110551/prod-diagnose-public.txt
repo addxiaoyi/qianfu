@@ -1,0 +1,31 @@
++ bash -lc QIANFU_BASE_URL=\'https://mc-u.top\'\ PAY_DOMAIN_HOST=\'pay.star-web.top\'\ PAY_MAIN_SITE_HOST=\'mc-u.top\'\ npm\ run\ --silent\ prod:diagnose:public\ --\ --report-only
+timestamp=2026-06-08T03:08:02.118Z
+
+== Main site ==
+root status (from frontend probe): 200
+api health: HTTP 502; body=<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>
+api ready: HTTP 502; body=<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>
+diagnosis: static_html_likely_alive_but_api_edge_broken
+
+== Frontend ==
+bundle match: false
+remote bundle: /assets/index-D8ePUst4.js
+local bundle: /assets/index-CHZmvcH-.js
+legacy hash markers: https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+search target match: false
+diagnosis: stale_bundle
+
+== Pay domain ==
+root: HTTP 200; body=<!doctype html> <html lang="zh-CN"> <head> <meta charset="UTF-8" /> <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" /> <lin...
+health: HTTP 502; body=<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>
+api health: HTTP 502; body=<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>
+tls status: wrong_principal
+cert cn: mc-u.top
+looks like main site: true
+root marker match: false
+diagnosis: main_site_tls_vhost_fallback
+
+== Findings ==
+FAIL: 主站更像是静态根页还活着，但 /api 边缘或上游进程仍然损坏。
+FAIL: 主站前端仍在使用旧 bundle：remote=/assets/index-D8ePUst4.js local=/assets/index-CHZmvcH-.js。
+FAIL: 支付域 https://pay.star-web.top 很可能落到了主站 TLS/vhost，而不是独立支付站点。

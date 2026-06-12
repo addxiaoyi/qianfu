@@ -1,0 +1,85 @@
+{
+  "timestamp": "2026-06-09T07:08:47.674Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"ok\":true,\"service\":\"starmc-api\",\"persist\":{\"ok\":true,\"backend\":\"json-file\",\"postgresPlayerState\":true,\"postgresUserProfile\":true,\"postgresSubmission\":true,\"postgresStoreKv\":true,\"lastSaveAt\":\"2026-0...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json",
+      "bodyPreview": "{\"ok\":true,\"status\":\"ready\"}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/index-CHZmvcH-.js",
+    "localBundle": "/assets/index-CHZmvcH-.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "true",
+    "manifestError": "",
+    "manifestDistHash": "3062911fd997413f5aa818e2e0aeed049d166fb1a63634fca18f575edb80e007",
+    "diagnosis": "ok"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/plain",
+      "bodyPreview": "qianfu-pay-gateway",
+      "error": ""
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": 404,
+      "ok": false,
+      "contentType": "text/html; charset=utf-8",
+      "bodyPreview": "<!DOCTYPE html><html lang=\"zh-CN\" class=\"dark\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"image\" imageSrcSet=\"/_next/imag...",
+      "error": ""
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"ok\":true,\"service\":\"starmc-api\",\"persist\":{\"ok\":true,\"backend\":\"json-file\",\"postgresPlayerState\":true,\"postgresUserProfile\":true,\"postgresSubmission\":true,\"postgresStoreKv\":true,\"lastSaveAt\":\"2026-0...",
+      "error": ""
+    },
+    "probeOk": true,
+    "probeError": "",
+    "tlsStatus": "ok",
+    "certCn": "pay.star-web.top",
+    "certSan": "DNS:pay.star-web.top",
+    "htmlStatus": "200",
+    "looksLikeMainSite": "false",
+    "rootMarkerMatch": "true",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "ok"
+  },
+  "findings": [],
+  "recommendedActions": [
+    "无需额外动作：当前公网探针未发现主站 API、前端 freshness 或支付域 TLS/vhost 问题。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260609-150833.json"
+}

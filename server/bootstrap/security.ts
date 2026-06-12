@@ -19,12 +19,16 @@ export function registerSecurityHeaders(app: Application) {
         useDefaults: true,
         directives: {
           defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.tailwindcss.com'],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
           fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
-          scriptSrc: ["'self'", 'https://cdn.tailwindcss.com', 'https://*.tinymce.com', 'https://*.tiny.cloud'],
+          scriptSrc: ["'self'", 'https://*.tinymce.com', 'https://*.tiny.cloud'],
+          scriptSrcAttr: ["'none'"],
           connectSrc: ["'self'", 'https:', 'wss:'],
           frameSrc: ["'self'", 'https://*.bilibili.com', 'https://*.youtube.com', 'https://*.youku.com'],
+          mediaSrc: ["'self'", 'https:', 'blob:'],
+          workerSrc: ["'self'", 'blob:'],
+          manifestSrc: ["'self'"],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
           formAction: ["'self'"],
@@ -69,7 +73,9 @@ export function registerCors(app: Application) {
           callback(null, true);
         } else if (process.env.NODE_ENV === 'production') {
           logger.warn(`[CORS] Blocked request from unauthorized origin: ${origin}`);
-          callback(new Error('Not allowed by CORS'));
+          // Do not throw middleware errors for CORS mismatch, otherwise clients receive 500.
+          // Returning "false" lets browser enforce CORS policy without masking real API health.
+          callback(null, false);
         } else {
           logger.debug(`[CORS] Allowing unknown origin in development: ${origin}`);
           callback(null, true);
@@ -104,18 +110,23 @@ export function registerHpp(app: Application) {
 
 function getAllowedOrigins(): Set<string> {
   const origins = new Set<string>();
+  const envOrigins = [
+    ...(process.env.CORS_ALLOWED_ORIGINS?.split(',') ?? []),
+    ...(process.env.CORS_ORIGIN?.split(',') ?? []),
+  ]
+    .map((o) => o.trim())
+    .filter(Boolean);
+  for (const origin of envOrigins) origins.add(origin);
 
-  if (process.env.NODE_ENV === 'production') {
-    const envOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean) || [];
-    for (const origin of envOrigins) origins.add(origin);
+  if (process.env.FRONTEND_URL) origins.add(process.env.FRONTEND_URL);
+  if (process.env.PREVIEW_URL) origins.add(process.env.PREVIEW_URL);
 
-    if (process.env.FRONTEND_URL) origins.add(process.env.FRONTEND_URL);
-    if (process.env.PREVIEW_URL) origins.add(process.env.PREVIEW_URL);
-  } else {
-    origins.add('http://localhost:4123');
-    origins.add('http://127.0.0.1:4123');
-    origins.add('http://localhost:4137');
-    origins.add('http://127.0.0.1:4137');
+  // Always allow loopback origins used by local QA/dev tooling.
+  // Loopback-only origins do not widen external attack surface in production.
+  const localPorts = ['4123', '4137', '4173', '4177', '5173'];
+  for (const port of localPorts) {
+    origins.add(`http://localhost:${port}`);
+    origins.add(`http://127.0.0.1:${port}`);
   }
 
   return origins;

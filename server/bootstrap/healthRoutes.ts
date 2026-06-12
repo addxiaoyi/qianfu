@@ -9,6 +9,48 @@ import { logger } from '../utils/logger';
 import { isSafeHostname, mcStatusDirectTestSchema, validateHost } from '../utils/validation';
 import { API_PREFIX, API_VERSION_PREFIX } from '../constants/api';
 import crypto from 'node:crypto';
+import { handleGitHubAuthCallback, startGitHubAuth } from '../controllers/githubAuthController';
+
+function createSignedCsrfToken(token: string, secret: string): string {
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(token);
+  return `${token}.${hmac.digest('hex')}`;
+}
+
+function issueCsrfToken(res: { cookie: (name: string, value: string, options: Record<string, unknown>) => void }) {
+  const secret = crypto.randomBytes(32).toString('hex');
+  const token = crypto.randomBytes(32).toString('hex');
+  const signedToken = createSignedCsrfToken(token, secret);
+  const isSecure = process.env.NODE_ENV === 'production' && process.env.FORCE_HTTPS === 'true';
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: (isDevelopment ? 'lax' : 'strict') as 'lax' | 'strict',
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000,
+    ...(process.env.NODE_ENV === 'production'
+      ? { domain: process.env.COOKIE_DOMAIN || undefined }
+      : {}),
+  };
+
+  res.cookie('csrf_secret', secret, cookieOptions);
+  res.cookie('csrf_token', signedToken, {
+    ...cookieOptions,
+    httpOnly: false,
+  });
+
+  return {
+    status: 'ok',
+    csrfToken: signedToken,
+    token: signedToken,
+    headerName: 'x-csrf-token',
+    expiresIn: 3600,
+    expiresInSeconds: 7200,
+    timestamp: new Date().toISOString(),
+  };
+}
 
 interface ServiceHealth {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -65,18 +107,71 @@ function formatUptime(seconds: number): string {
   return parts.join(' ');
 }
 
+function isCacheReadyStatus(cacheStatus: string): boolean {
+  return cacheStatus === 'connected' || cacheStatus === 'memory';
+}
+
 export function registerHealthRoutes(app: Application) {
-  app.get(`${API_PREFIX}/v1/csrf-token`, async (_req, res) => {
-    const token = crypto.randomBytes(24).toString('hex');
-    return res.status(200).json({
+  const buildOAuthStatusPayload = () => {
+    const apiPublicUrl = process.env.API_PUBLIC_URL || '';
+    const frontendUrl = process.env.FRONTEND_URL || '';
+
+    const githubClientId = process.env.GITHUB_CLIENT_ID?.trim() || '';
+    const githubClientSecret = process.env.GITHUB_CLIENT_SECRET?.trim() || '';
+    const qqClientId = process.env.QQ_CLIENT_ID?.trim() || '';
+    const qqClientSecret = process.env.QQ_CLIENT_SECRET?.trim() || '';
+
+    const githubBackEnabled = Boolean(githubClientId && githubClientSecret);
+    const qqBackEnabled = Boolean(qqClientId && qqClientSecret);
+    const frontendOAuthCallback = frontendUrl ? `${frontendUrl}/oauth/callback/github?provider=github` : null;
+
+    return {
       status: 'ok',
-      csrfToken: token,
-      token,
-      headerName: 'x-csrf-token',
-      expiresIn: 3600,
       timestamp: new Date().toISOString(),
-    });
+      app: {
+        nodeEnv: process.env.NODE_ENV || 'development',
+        apiPublicUrl,
+        frontendUrl,
+      },
+      providers: {
+        github: {
+          backendEnabled: githubBackEnabled,
+          configuredKeys: {
+            clientId: Boolean(githubClientId),
+            clientSecret: Boolean(githubClientSecret),
+          },
+          expectedCallback: apiPublicUrl ? `${apiPublicUrl}/api/v1/auth/github/callback` : null,
+          frontendCallback: frontendOAuthCallback,
+          loginUrl: apiPublicUrl ? `${apiPublicUrl}/api/v1/auth/github/start` : null,
+          flow: 'manual-local-jwt',
+        },
+        qq: {
+          backendEnabled: qqBackEnabled,
+          configuredKeys: {
+            clientId: Boolean(qqClientId),
+            clientSecret: Boolean(qqClientSecret),
+          },
+          expectedCallback: apiPublicUrl ? `${apiPublicUrl}/auth/callback/qq` : null,
+        },
+      },
+      hints: {
+        frontendFlags: {
+          VITE_GITHUB_LOGIN_ENABLED: process.env.VITE_GITHUB_LOGIN_ENABLED || 'not_set_on_server',
+          VITE_QQ_LOGIN_ENABLED: process.env.VITE_QQ_LOGIN_ENABLED || 'not_set_on_server',
+        },
+        note: 'Frontend now uses backend OAuth status instead of static VITE_GITHUB_OAUTH_URL.',
+      },
+    };
+  };
+
+  app.get(`${API_PREFIX}/v1/csrf-token`, async (_req, res) => {
+    return res.status(200).json(issueCsrfToken(res));
   });
+
+  // Legacy/non-versioned GitHub OAuth routes kept for callback compatibility.
+  app.get('/auth/github/start', startGitHubAuth);
+  app.get('/auth/github/callback', handleGitHubAuthCallback);
+  app.get('/auth/callback/github', handleGitHubAuthCallback);
 
   app.get(`${API_PREFIX}/health`, async (_req, res) => {
     const startTime = Date.now();
@@ -212,7 +307,7 @@ export function registerHealthRoutes(app: Application) {
     try {
       await prisma.$queryRaw`SELECT 1`;
       const cacheStatus = await redisService.ping();
-      const ready = cacheStatus === 'PONG' && metricsService.isReady;
+      const ready = isCacheReadyStatus(cacheStatus) && metricsService.isReady;
 
       return res.status(ready ? 200 : 503).json({
         status: ready ? 'ready' : 'not_ready',
@@ -222,7 +317,7 @@ export function registerHealthRoutes(app: Application) {
         timestamp: new Date().toISOString(),
         checks: {
           database: 'ok',
-          cache: cacheStatus === 'PONG' ? 'ok' : 'failed',
+          cache: isCacheReadyStatus(cacheStatus) ? 'ok' : 'failed',
           metrics: metricsService.isReady ? 'ok' : 'initializing',
         },
       });
@@ -275,62 +370,15 @@ export function registerHealthRoutes(app: Application) {
   });
 
   app.get(`${API_VERSION_PREFIX}/csrf-token`, (_req, res) => {
-    const token = crypto.randomBytes(24).toString('hex');
-    res.status(200).json({
-      csrfToken: token,
-      token,
-      headerName: 'x-csrf-token',
-      expiresInSeconds: 7200,
-      timestamp: new Date().toISOString(),
-    });
+    res.status(200).json(issueCsrfToken(res));
   });
 
   app.get(`${API_PREFIX}/auth/oauth-status`, (_req, res) => {
-    const apiPublicUrl = process.env.API_PUBLIC_URL || '';
-    const frontendUrl = process.env.FRONTEND_URL || '';
+    res.status(200).json(buildOAuthStatusPayload());
+  });
 
-    const githubClientId = process.env.GITHUB_CLIENT_ID?.trim() || '';
-    const githubClientSecret = process.env.GITHUB_CLIENT_SECRET?.trim() || '';
-    const qqClientId = process.env.QQ_CLIENT_ID?.trim() || '';
-    const qqClientSecret = process.env.QQ_CLIENT_SECRET?.trim() || '';
-
-    const githubBackEnabled = Boolean(githubClientId && githubClientSecret);
-    const qqBackEnabled = Boolean(qqClientId && qqClientSecret);
-
-    res.status(200).json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      app: {
-        nodeEnv: process.env.NODE_ENV || 'development',
-        apiPublicUrl,
-        frontendUrl,
-      },
-      providers: {
-        github: {
-          backendEnabled: githubBackEnabled,
-          configuredKeys: {
-            clientId: Boolean(githubClientId),
-            clientSecret: Boolean(githubClientSecret),
-          },
-          expectedCallback: apiPublicUrl ? `${apiPublicUrl}/auth/callback/github` : null,
-        },
-        qq: {
-          backendEnabled: qqBackEnabled,
-          configuredKeys: {
-            clientId: Boolean(qqClientId),
-            clientSecret: Boolean(qqClientSecret),
-          },
-          expectedCallback: apiPublicUrl ? `${apiPublicUrl}/auth/callback/qq` : null,
-        },
-      },
-      hints: {
-        frontendFlags: {
-          VITE_GITHUB_LOGIN_ENABLED: process.env.VITE_GITHUB_LOGIN_ENABLED || 'not_set_on_server',
-          VITE_QQ_LOGIN_ENABLED: process.env.VITE_QQ_LOGIN_ENABLED || 'not_set_on_server',
-        },
-        note: 'Frontend VITE_* values are compiled at build time. Check frontend env separately if buttons do not show.',
-      },
-    });
+  app.get(`${API_VERSION_PREFIX}/auth/oauth-status`, (_req, res) => {
+    res.status(200).json(buildOAuthStatusPayload());
   });
 
   app.get(`${API_PREFIX}/test-mcstatus-direct`, async (req, res) => {

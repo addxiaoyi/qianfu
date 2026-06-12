@@ -1,55 +1,32 @@
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="utf-8">
-        <title>操作成功</title>
-        <meta name="description" content="XPay个人收款支付系统 无需签约 无需第三方SDK 完全免费">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            .main{
-                margin-top: 40px;
-            }
-        </style>
-    </head>
-
-    <body>
-            <div class="main">
-                <table align="center" border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <td height="20"></td>
-                    </tr>
-                    <!-- content -->
-                    <tr>
-                        <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
-                            <img src="https://i.loli.net/2018/07/18/5b4f12fb00713.png" width="50">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
-                            恭喜您，支付成功！
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
-                            昵称：<span th:text="${nickName}"></span>，
-                            支付金额：<span th:text="${money}"></span>，
-                            支付方式：<span th:text="${payType}"></span>，
-                            留言：<span th:text="${info}"></span>，
-                            支付时间：<span th:text="${time}"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
-                            十分感谢您的捐赠，您还可以到XPay官网查看到您的捐赠数据：
-                            <a href="http://xpay.exrick.cn/thanks">http://xpay.exrick.cn/thanks</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:13px; color:#7f8c8d; line-height:26px;" align="center">
-                            Powered By <a href="https://github.com/Exrick/xpay">XPay v3.1</a>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-    </body>
+<head>
+    <meta charset="utf-8">
+    <title>操作成功</title>
+    <meta name="description" content="XPay 发送小程序通知">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css" />
+</head>
+<body class="liandeng-page">
+<main class="liandeng-shell">
+    <section class="liandeng-card liandeng-card--narrow" style="text-align:center;">
+        <span class="liandeng-kicker">QianFu Liandeng / XPay</span>
+        <h1 class="liandeng-title">小程序已发送</h1>
+        <p class="liandeng-subtitle">订单已处理完成，当前支付结果与用户信息如下。</p>
+        <div class="liandeng-status-badge liandeng-status-badge--success">Success</div>
+        <div class="liandeng-grid" style="margin-top:24px; text-align:left;">
+            <div class="liandeng-field"><span>昵称</span><strong th:text="${nickName}"></strong></div>
+            <div class="liandeng-field"><span>金额</span><strong th:text="${money}"></strong></div>
+            <div class="liandeng-field"><span>支付方式</span><strong th:text="${payType}"></strong></div>
+            <div class="liandeng-field"><span>支付时间</span><strong th:text="${time}"></strong></div>
+        </div>
+        <p class="liandeng-note">留言：<span th:text="${info}"></span></p>
+        <p class="liandeng-note">感谢支持，历史捐赠记录仍可在致谢页查看。</p>
+        <div class="liandeng-actions liandeng-actions--center">
+            <a class="liandeng-button liandeng-button--ghost" href="http://xpay.exrick.cn/thanks">查看致谢页</a>
+            <a class="liandeng-button" href="https://github.com/Exrick/xpay">XPay 项目</a>
+        </div>
+    </section>
+</main>
+</body>
 </html>

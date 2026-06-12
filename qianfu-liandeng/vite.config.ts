@@ -16,6 +16,25 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    ...(process.platform === 'win32'
+      ? {
+          // Rolldown's React refresh wrapper is unstable on this Windows workspace.
+          // Disabling HMR keeps the dev server serving modules normally so the UI can render.
+          hmr: false,
+        }
+      : {}),
+    proxy: {
+      '/api': {
+        target: backendTarget,
+        changeOrigin: true,
+      },
+      '/v1': {
+        target: backendTarget,
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     chunkSizeWarningLimit: 1200,
     rollupOptions: {
@@ -30,19 +49,6 @@ export default defineConfig({
             return 'vendor';
           }
         },
-      },
-    },
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: backendTarget,
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-      '/v1': {
-        target: backendTarget,
-        changeOrigin: true,
       },
     },
   },

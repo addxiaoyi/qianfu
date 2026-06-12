@@ -13,6 +13,7 @@ import {
   resolveSortField,
   resolveSortOrder,
 } from '../utils/queryBuilder';
+import { getPrimaryDbProvider } from '../utils/dbProvider';
 
 /**
  * Get audit logs
@@ -250,20 +251,42 @@ export const getAuditTimeSeries = async (req: AuthRequest, res: Response, next: 
       startDate.setDate(startDate.getDate() - days);
       startDate.setHours(0, 0, 0, 0);
 
-      // Use raw SQL for efficient grouping in SQLite
-      // SQLite stores DateTime as ISO8601 strings in Prisma by default
-      const dateFormat = interval === 'hour' ? '%Y-%m-%d %H:00' : '%Y-%m-%d';
-      
-      // SECURITY: 使用参数化查询防止 SQL 注入
-      const results: any[] = await prisma.$queryRawUnsafe(
-        `SELECT strftime(?, created_at) as time, count(*) as count
-         FROM AuditLog
-         WHERE created_at >= ?
-         GROUP BY time
-         ORDER BY time ASC`,
-        dateFormat,
-        startDate.toISOString()
-      );
+      const provider = getPrimaryDbProvider();
+      let results: any[] = [];
+      if (provider === 'sqlite') {
+        const dateFormat = interval === 'hour' ? '%Y-%m-%d %H:00' : '%Y-%m-%d';
+        results = await prisma.$queryRawUnsafe(
+          `SELECT strftime(?, created_at) as time, count(*) as count
+           FROM AuditLog
+           WHERE created_at >= ?
+           GROUP BY time
+           ORDER BY time ASC`,
+          dateFormat,
+          startDate.toISOString()
+        );
+      } else if (provider === 'mysql') {
+        const dateFormat = interval === 'hour' ? '%Y-%m-%d %H:00' : '%Y-%m-%d';
+        results = await prisma.$queryRawUnsafe(
+          `SELECT DATE_FORMAT(created_at, ?) as time, COUNT(*) as count
+           FROM AuditLog
+           WHERE created_at >= ?
+           GROUP BY time
+           ORDER BY time ASC`,
+          dateFormat,
+          startDate
+        );
+      } else {
+        const dateFormat = interval === 'hour' ? 'YYYY-MM-DD HH24:00' : 'YYYY-MM-DD';
+        results = await prisma.$queryRawUnsafe(
+          `SELECT TO_CHAR(created_at, ?) as time, COUNT(*) as count
+           FROM "AuditLog"
+           WHERE created_at >= ?
+           GROUP BY time
+           ORDER BY time ASC`,
+          dateFormat,
+          startDate
+        );
+      }
 
       // Fill in gaps if any
       const timeSeries = [];

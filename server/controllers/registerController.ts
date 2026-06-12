@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import Session from 'supertokens-node/recipe/session';
 import RecipeUserId from 'supertokens-node/lib/build/recipeUserId';
+import crypto from 'crypto';
 
 
 
@@ -11,7 +12,7 @@ import prisma from '../db';
 
 
 
-import { sendSuccess } from '../utils/response';
+import { sendSuccess, toSafeUser } from '../utils/response';
 
 
 
@@ -28,6 +29,9 @@ import { logger } from '../utils/logger';
 
 
 import { getOrCreateSuperTokensUser } from '../services/superTokensUser';
+import { sendEmailLoginCode } from '../services/emailService';
+import { getJwtSecret } from '../utils/securityConfig';
+import { setLocalAuthCookie, signLocalAuthToken } from '../utils/localAuth';
 
 
 
@@ -35,7 +39,7 @@ import { getOrCreateSuperTokensUser } from '../services/superTokensUser';
 
 
 
-interface RegisteredUser {
+interface _RegisteredUser {
 
 
 
@@ -101,6 +105,10 @@ function normalizePhone(phone: string) {
 
 }
 
+function generateCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 
 
 
@@ -109,13 +117,7 @@ function normalizePhone(phone: string) {
 
 function generateCodeHash(identifier: string, code: string): string {
 
-
-
-  const crypto = require('crypto');
-
-
-
-  const secret = process.env.JWT_SECRET || 'change-me';
+  const secret = getJwtSecret();
 
 
 
@@ -155,11 +157,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 
 
-    if (!code || !username || !password) {
+    if (!username || !password) {
 
       throw new AppError(
 
-        'code, username, and password are required (email or phone is required)',
+        'username and password are required (email or phone is required)',
 
         400,
 
@@ -174,6 +176,12 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
     if (!emailStr && !phoneStr) {
 
       throw new AppError('Email or phone is required', 400, ErrorCode.VALIDATION_ERROR);
+
+    }
+
+    if (!emailStr) {
+
+      throw new AppError('Phone-only registration is not supported by the current user schema', 400, ErrorCode.VALIDATION_ERROR);
 
     }
 
@@ -307,7 +315,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     if (!user) {
 
-      // 新用户注册：直接创建用户
+      // 新用户注册：先创建未验证账号，并立即发出邮箱验证码。
 
       let stUserId: string | null = null;
 
@@ -323,27 +331,38 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 
 
+      const passwordHash = await bcrypt.hash(passwordFinal, 12);
+      const verificationCode = generateCode();
+      const verificationToken = generateCodeHash(identifier, verificationCode);
+      const tokenExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
       const newUser = await prisma.user.create({
 
         data: {
 
-          email: type === 'email' ? identifier : undefined,
-
-          phone: type === 'phone' ? identifier : undefined,
+          email: identifier,
 
           username: usernameNorm,
 
           display_name: usernameNorm,
 
-          password_hash: await bcrypt.hash(passwordFinal, 12),
+          password_hash: passwordHash,
 
           supertokens_user_id: stUserId || undefined,
 
-          email_verified: true,
+          email_verified: false,
+
+          verification_token: verificationToken,
+
+          token_expiry: tokenExpiry,
+
+          last_code_send_at: new Date(),
 
         },
 
       });
+
+      await sendEmailLoginCode(identifier, verificationCode);
 
 
 
@@ -373,31 +392,20 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
 
 
+      const token = signLocalAuthToken(newUser.id);
+      setLocalAuthCookie(res, token);
+
       return sendSuccess(res, {
 
-        user: {
+        user: toSafeUser(newUser, { mask: false }),
 
-          id: newUser.id,
-
-          email: newUser.email || undefined,
-
-          phone: newUser.phone || undefined,
-
-          username: newUser.username,
-
-          display_name: newUser.display_name,
-
-          role: newUser.role,
-
-          created_at: newUser.created_at,
-
-        },
+        token,
 
         accessToken,
 
         refreshToken,
 
-      }, 'Registration successful');
+      }, 'Registration successful', 200, undefined, { mask: false });
 
     }
 
@@ -405,7 +413,11 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
     // 已存在用户：验证验证码，如果正确则登录
 
-    const verificationToken = generateCodeHash(identifier, code);
+    const codeStr = typeof code === 'string' ? code.trim() : '';
+    if (!codeStr) {
+      throw new AppError('Verification code is required for existing accounts', 400, ErrorCode.VALIDATION_ERROR);
+    }
+    const verificationToken = generateCodeHash(identifier, codeStr);
 
 
 
@@ -487,7 +499,7 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
       try {
 
-        const session = await Session.createNewSession(req, res, process.env.NEXT_PUBLIC_SUPER_TOKENS_TENANT_ID || '1', stUserId, {}, {});
+        const session = await Session.createNewSession(req, res, process.env.NEXT_PUBLIC_SUPER_TOKENS_TENANT_ID || '1', new RecipeUserId(stUserId), {}, {});
 
         accessToken = session.getAccessToken();
 

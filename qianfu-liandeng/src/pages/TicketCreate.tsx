@@ -30,12 +30,16 @@ const TicketCreate: React.FC = () => {
   const onSubmit = async (values: TicketFormValues) => {
     setLoading(true);
     try {
-      await api.post('/tickets', values);
+      const created = await api.post<any>('/tickets', {
+        title: values.subject,
+        description: `[${values.type}]\n${values.content}`,
+        priority: values.type === 'BILLING' || values.type === 'TECHNICAL' ? 'HIGH' : 'MEDIUM',
+      });
       toast({
         title: t('ticket.status.submitted'),
         description: t('ticket.status.submitted_desc')
       });
-      navigate('/dashboard/tickets');
+      navigate(`/dashboard/tickets/${created?.id ?? ''}`.replace(/\/$/, ''));
     } catch {
       toast({ title: t('common.error'), description: '工单提交失败，请稍后再试', variant: 'destructive' });
     } finally {
@@ -46,6 +50,7 @@ const TicketCreate: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 selection:bg-accent selection:text-white">
       <button 
+        type="button"
         onClick={() => navigate(-1)}
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors mb-6 sm:mb-8 font-semibold uppercase text-[10px] tracking-[0.3em]"
       >

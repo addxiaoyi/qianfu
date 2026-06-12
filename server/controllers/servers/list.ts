@@ -87,7 +87,13 @@ export const listAllServers = async (req: Request, res: Response, next: NextFunc
       return sendListResponse(res, cached.servers, cached.total, page, limit, { resource: 'Server' });
     }
 
-    const where: Record<string, unknown> = { review_status: 'APPROVED' };
+    const where: Record<string, unknown> = {
+      review_status: 'APPROVED',
+      OR: [
+        { listing_expires_at: null },
+        { listing_expires_at: { gt: new Date() } },
+      ],
+    };
     const andConditions: Record<string, unknown>[] = [];
 
     if (keyword) {

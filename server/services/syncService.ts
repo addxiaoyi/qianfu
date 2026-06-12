@@ -4,6 +4,7 @@ import axios from 'axios';
 import type { Prisma } from '../db';
 import prisma from '../db';
 import localPrisma from '../localDb';
+import { isPrimaryAndLocalDatabaseSame } from '../utils/dbProvider';
 
 // SECURITY: CMS configuration must be provided via environment variables
 const CMS_URL = process.env.CMS_URL;
@@ -53,6 +54,10 @@ export const syncServerToMainDB = async (localServerId: number) => {
         review_notes: localServer.review_notes,
         reviewed_by: localServer.reviewed_by,
         reviewed_at: localServer.reviewed_at,
+        listing_plan: localServer.listing_plan,
+        listing_started_at: localServer.listing_started_at,
+        listing_expires_at: localServer.listing_expires_at,
+        listing_price_paid: localServer.listing_price_paid,
         updated_at: localServer.updated_at,
         platform: localServer.platform,
         category: localServer.category,
@@ -80,6 +85,10 @@ export const syncServerToMainDB = async (localServerId: number) => {
         review_notes: localServer.review_notes,
         reviewed_by: localServer.reviewed_by,
         reviewed_at: localServer.reviewed_at,
+        listing_plan: localServer.listing_plan,
+        listing_started_at: localServer.listing_started_at,
+        listing_expires_at: localServer.listing_expires_at,
+        listing_price_paid: localServer.listing_price_paid,
         created_at: localServer.created_at,
         updated_at: localServer.updated_at,
         platform: localServer.platform,
@@ -193,6 +202,11 @@ export const syncServerStatusToMainDB = async (serverId: number) => {
  * Periodically sync all unsynced or updated servers and clean up stale data
  */
 export const startPeriodicSync = () => {
+  if (isPrimaryAndLocalDatabaseSame()) {
+    logger.info('[Sync] Primary DB and local DB point to the same datasource. Periodic sync is disabled.');
+    return;
+  }
+
   const SYNC_INTERVAL = 10 * 60 * 1000; // 10 minutes
   const CONCURRENCY_LIMIT = 5; // Max concurrent sync operations
 
@@ -233,7 +247,7 @@ export const startPeriodicSync = () => {
 
       await processWithConcurrency(
         unsyncedServers,
-        (server) => syncServerToMainDB(server.id),
+        (server: any) => syncServerToMainDB(server.id),
         CONCURRENCY_LIMIT
       );
 
@@ -245,7 +259,7 @@ export const startPeriodicSync = () => {
 
       await processWithConcurrency(
         approvedServers,
-        (server) => syncServerStatusToMainDB(server.id),
+        (server: any) => syncServerStatusToMainDB(server.id),
         CONCURRENCY_LIMIT
       );
 
@@ -256,11 +270,11 @@ export const startPeriodicSync = () => {
 
       const localServerIds = new Set((await localPrisma.server.findMany({
         select: { id: true }
-      })).map(s => s.id));
+      })).map((s: any) => s.id));
 
       const deletedServerIds = mainServerIds
-        .map(s => s.id)
-        .filter(id => !localServerIds.has(id));
+        .map((s: any) => s.id)
+        .filter((id: any) => !localServerIds.has(id));
 
       if (deletedServerIds.length > 0) {
         logger.info(`[Sync] Found ${deletedServerIds.length} stale servers in main DB. Deleting...`);
@@ -272,13 +286,13 @@ export const startPeriodicSync = () => {
       // 4. Cleanup orphaned statuses in main DB
       const currentMainServerIds = new Set((await prisma.server.findMany({
         select: { id: true }
-      })).map(s => s.id));
+      })).map((s: any) => s.id));
 
       const staleStatusIds = (await prisma.serverStatus.findMany({
         select: { serverId: true }
       }))
-        .map(s => s.serverId)
-        .filter(id => !currentMainServerIds.has(id));
+        .map((s: any) => s.serverId)
+        .filter((id: any) => !currentMainServerIds.has(id));
 
       if (staleStatusIds.length > 0) {
         logger.info(`[Sync] Found ${staleStatusIds.length} orphaned statuses in main DB. Deleting...`);

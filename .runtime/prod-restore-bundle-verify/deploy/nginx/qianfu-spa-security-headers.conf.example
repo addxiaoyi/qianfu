@@ -1,0 +1,8 @@
+# Include this only for the React SPA static locations that serve mc-u.top.
+# Do not include it for proxied XPay/admin/payment pages until their CSP is tested.
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "DENY" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()" always;
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://mc-u.top wss://mc-u.top; media-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests" always;

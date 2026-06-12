@@ -1,0 +1,53 @@
+{
+  "startedAt": "2026-06-09T11:55:00.342Z",
+  "finishedAt": "2026-06-09T11:55:21.218Z",
+  "baseUrl": "https://mc-u.top",
+  "plannedRoutes": 3,
+  "passedRoutes": 0,
+  "failedRoutes": 3,
+  "skipped": [],
+  "login": {
+    "username": "dev_local",
+    "role": "ADMIN",
+    "emailVerified": true,
+    "adminProbeOk": true
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "(login)",
+      "label": "desktop-user login",
+      "ok": false,
+      "finalUrl": "about:blank",
+      "error": {
+        "message": "page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/login\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\desktop-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\desktop-user-login.png"
+      }
+    },
+    {
+      "context": "mobile-user",
+      "path": "(login)",
+      "label": "mobile-user login",
+      "ok": false,
+      "finalUrl": "about:blank",
+      "error": {
+        "message": "page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/login\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\mobile-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\mobile-user-login.png"
+      }
+    },
+    {
+      "context": "desktop-admin",
+      "path": "(login)",
+      "label": "desktop-admin login",
+      "ok": false,
+      "finalUrl": "about:blank",
+      "error": {
+        "message": "page.goto: net::ERR_CONNECTION_CLOSED at https://mc-u.top/login\nCall log:\n\u001b[2m  - navigating to \"https://mc-u.top/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\desktop-admin-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\current\\desktop-admin-login.png"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   generateTransactionSignature,
   verifyTransactionIntegrity,
@@ -183,7 +183,7 @@ describe('deposit', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const updatedWallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (fn: any) => {
+    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
       // Simulate the transaction flow
       mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
       mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
@@ -206,7 +206,7 @@ describe('deposit', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const updatedWallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (fn: any) => {
+    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
       mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
       mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
       mockPrisma.transaction.create.mockResolvedValue({
@@ -261,7 +261,7 @@ describe('pay', () => {
       description: 'Payment', created_at: new Date(), signature: 'sig123',
     };
 
-    mockPrisma.$transaction.mockImplementation(async (fn: any) => {
+    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
       mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
       mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
       mockPrisma.transaction.create.mockResolvedValue({
@@ -291,7 +291,7 @@ describe('pay', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const wallet = { id: 1, user_id: 1, balance: 1000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (fn: any) => {
+    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
       mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
       mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
       mockPrisma.transaction.create.mockResolvedValue({
@@ -311,7 +311,7 @@ describe('pay', () => {
 
     const wallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
     // 6000 fen from checkin rewards = nonWithdrawable
-    mockPrisma.$transaction.mockImplementation(async (fn: any) => {
+    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
       mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
       mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 6000 } });
       mockPrisma.transaction.create.mockResolvedValue({

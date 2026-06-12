@@ -1,0 +1,119 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e10]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e11]:
+      - img [ref=e12]
+  - button "设置" [ref=e15]:
+    - img [ref=e16]
+  - generic [ref=e19]:
+    - navigation [ref=e21]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - link "千服联灯 QianFu" [ref=e24] [cursor=pointer]:
+            - /url: "#/"
+            - img [ref=e26]
+            - generic [ref=e47]:
+              - generic [ref=e48]: 千服联灯
+              - generic [ref=e49]: QianFu
+          - generic [ref=e50]:
+            - link "首页" [ref=e51] [cursor=pointer]:
+              - /url: "#/"
+              - generic [ref=e52]:
+                - img [ref=e53]
+                - text: 首页
+            - link "找服" [ref=e56] [cursor=pointer]:
+              - /url: "#/servers"
+              - generic [ref=e57]:
+                - img [ref=e58]
+                - text: 找服
+            - link "资源" [ref=e62] [cursor=pointer]:
+              - /url: "#/resources"
+              - generic [ref=e63]:
+                - img [ref=e64]
+                - text: 资源
+            - link "团队" [ref=e66] [cursor=pointer]:
+              - /url: "#/team"
+              - generic [ref=e67]:
+                - img [ref=e68]
+                - text: 团队
+            - link "规则" [ref=e73] [cursor=pointer]:
+              - /url: "#/rules"
+              - generic [ref=e74]:
+                - img [ref=e75]
+                - text: 规则
+            - link "推广" [ref=e79] [cursor=pointer]:
+              - /url: "#/promotion"
+              - generic [ref=e80]:
+                - img [ref=e81]
+                - text: 推广
+        - generic [ref=e84]:
+          - link "登录" [ref=e85] [cursor=pointer]:
+            - /url: "#/login"
+          - link "快速注册" [ref=e86] [cursor=pointer]:
+            - /url: "#/register"
+    - paragraph [ref=e91]: INITIALIZING_SESSION...
+    - contentinfo [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - link "QianFu" [ref=e97] [cursor=pointer]:
+              - /url: "#/"
+              - img [ref=e99]
+              - generic [ref=e101]: QianFu
+            - paragraph [ref=e102]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e103]:
+              - button [ref=e104]:
+                - img [ref=e105]
+              - button [ref=e107]:
+                - img [ref=e108]
+              - button [ref=e110]:
+                - img [ref=e111]
+          - generic [ref=e114]:
+            - heading "Platform" [level=4] [ref=e115]
+            - list [ref=e116]:
+              - listitem [ref=e117]:
+                - link "浏览服务器" [ref=e118] [cursor=pointer]:
+                  - /url: "#/servers"
+              - listitem [ref=e119]:
+                - link "高级搜索" [ref=e120] [cursor=pointer]:
+                  - /url: "#/search"
+              - listitem [ref=e121]:
+                - link "推广方案" [ref=e122] [cursor=pointer]:
+                  - /url: "#/promotion"
+              - listitem [ref=e123]:
+                - link "资源中心" [ref=e124] [cursor=pointer]:
+                  - /url: "#/resources"
+          - generic [ref=e125]:
+            - heading "Organization" [level=4] [ref=e126]
+            - list [ref=e127]:
+              - listitem [ref=e128]:
+                - link "开发团队" [ref=e129] [cursor=pointer]:
+                  - /url: "#/team"
+              - listitem [ref=e130]:
+                - link "等级规则" [ref=e131] [cursor=pointer]:
+                  - /url: "#/rules"
+              - listitem [ref=e132]:
+                - link "服务条款" [ref=e133] [cursor=pointer]:
+                  - /url: "#/terms"
+              - listitem [ref=e134]:
+                - link "隐私政策" [ref=e135] [cursor=pointer]:
+                  - /url: "#/privacy"
+          - generic [ref=e136]:
+            - heading "Ecosystem" [level=4] [ref=e137]
+            - list [ref=e138]:
+              - listitem [ref=e139] [cursor=pointer]:
+                - generic [ref=e140]: MU Alliance
+                - img [ref=e141]
+              - listitem [ref=e145] [cursor=pointer]:
+                - generic [ref=e146]: QianFu API
+                - img [ref=e147]
+              - listitem [ref=e151] [cursor=pointer]:
+                - generic [ref=e152]: Discord Community
+                - img [ref=e153]
+        - generic [ref=e157]:
+          - generic [ref=e158]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+          - generic [ref=e159]:
+            - generic [ref=e160]: All Systems Operational
+            - button "Back to top ↑" [ref=e163]

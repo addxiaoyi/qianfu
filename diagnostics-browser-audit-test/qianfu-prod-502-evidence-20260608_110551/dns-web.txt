@@ -1,0 +1,13 @@
++ bash -lc getent\ hosts\ \'mc-u.top\'\ \|\|\ nslookup\ \'mc-u.top\'\ \|\|\ true
+bash: line 1: getent: command not found
+Non-authoritative answer:
+DNS request timed out.
+    timeout was 2 seconds.
+Server:  UnKnown
+Address:  fe80::1234
+
+DNS request timed out.
+    timeout was 2 seconds.
+Name:    mc-u.top
+Address:  103.236.92.10
+

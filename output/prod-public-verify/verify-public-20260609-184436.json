@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-06-09T10:45:07.876Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"healthy\",\"ready\":true,\"timestamp\":\"2026-06-09T10:44:45.121Z\",\"version\":\"1.0.0\",\"uptime\":{\"seconds\":578,\"human\":\"9m 38s\"},\"services\":{\"database\":{\"status\":\"healthy\",\"latency\":\"2ms\"},\"local_d...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"ready\",\"ready\":true,\"cache\":\"memory\",\"metrics\":\"ready\",\"timestamp\":\"2026-06-09T10:44:50.216Z\",\"checks\":{\"database\":\"ok\",\"cache\":\"ok\",\"metrics\":\"ok\"}}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/index-BeHZzuik.js",
+    "localBundle": "/assets/index-BeHZzuik.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "false",
+    "manifestError": "The operation was aborted due to timeout",
+    "manifestDistHash": "5982da2007b1a481f5d7670c4bbdcb81bd48d8db4189fdcca177c03fdddfba33",
+    "diagnosis": "dist_manifest_mismatch"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/plain",
+      "bodyPreview": "qianfu-pay-gateway",
+      "error": ""
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": 404,
+      "ok": false,
+      "contentType": "text/html; charset=utf-8",
+      "bodyPreview": "<!DOCTYPE html><html lang=\"zh-CN\" class=\"dark\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"image\" imageSrcSet=\"/_next/imag...",
+      "error": ""
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"ok\":true,\"service\":\"starmc-api\",\"persist\":{\"ok\":true,\"backend\":\"json-file\",\"postgresPlayerState\":true,\"postgresUserProfile\":true,\"postgresSubmission\":true,\"postgresStoreKv\":true,\"lastSaveAt\":\"2026-0...",
+      "error": ""
+    },
+    "probeOk": true,
+    "probeError": "",
+    "tlsStatus": "ok",
+    "certCn": "pay.star-web.top",
+    "certSan": "DNS:pay.star-web.top",
+    "htmlStatus": "200",
+    "looksLikeMainSite": "false",
+    "rootMarkerMatch": "true",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "ok"
+  },
+  "findings": [
+    "主站前端 dist manifest 与本地构建不一致或未部署：The operation was aborted due to timeout。"
+  ],
+  "recommendedActions": [
+    "前端下一步：使用 scripts/linux/deploy-frontend-dist.sh 原子发布完整 dist，确认 /qianfu-dist-manifest.json 返回 JSON 且 dist_hash 与本地一致。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260609-184436.json"
+}

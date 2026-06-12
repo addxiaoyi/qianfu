@@ -97,10 +97,8 @@ export function getEffectiveServerLimit(user: User): number {
     return baseServerLimit(role);
   }
   const merged = getEffectivePermissions(user);
-  if (!merged.includes('publish_servers')) {
-    return 0;
-  }
-  const base = baseServerLimit(role);
+  const hasLegacyPublishPermission = merged.includes('publish_servers');
+  const base = hasLegacyPublishPermission ? Math.max(1, baseServerLimit(role)) : 1;
   const { level } = getLevelProgress(user.experience_points ?? 0);
   const bonus = levelBonusServerSlots(level);
   return base + bonus;
@@ -112,7 +110,7 @@ export function userCanPublishServers(user: User): boolean {
   if (role === 'ADMIN' || role === 'OPERATOR' || role === 'OWNER') {
     return true;
   }
-  return getEffectivePermissions(user).includes('publish_servers');
+  return getEffectiveServerLimit(user) > 0;
 }
 
 export async function invalidateUserCache(userId: number): Promise<void> {

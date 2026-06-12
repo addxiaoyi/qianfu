@@ -1,0 +1,201 @@
+{
+  "timestamp": "2026-06-12T09:02:44.865Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\browser-audit-nonpay-20260612-170154",
+  "plannedTotal": 11,
+  "completed": 3,
+  "partial": true,
+  "missingRoutes": [
+    "resources-history",
+    "rules-history",
+    "login-history",
+    "register-history",
+    "forgot-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash"
+  ],
+  "options": {
+    "navTimeoutMs": 15000,
+    "domReadyTimeoutMs": 5000,
+    "routeReadyTimeoutMs": 8000,
+    "interactionTimeoutMs": 3000,
+    "stableWaitMs": 1000,
+    "waitUntil": "commit",
+    "concurrency": 3
+  },
+  "total": 3,
+  "failed": 3,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "missing_text=千服联灯"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "missing_text=服务器"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "findings": [
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=搜索"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [
+    "search-history"
+  ],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [],
+  "routeNotReadyRoutes": [
+    "home-history",
+    "servers-history"
+  ],
+  "stableWaitWarningRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history"
+  ],
+  "emptyBodyRoutes": [
+    "home-history",
+    "servers-history",
+    "search-history"
+  ],
+  "resourceFailureRoutes": [],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    }
+  ],
+  "commonErrorResponses": [],
+  "allowedAuthProbeResponses": 1,
+  "payRoot": null,
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\browser-audit-nonpay-20260612-170154\\home-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "missing_text=千服联灯"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\browser-audit-nonpay-20260612-170154\\servers-history.png",
+      "ok": false,
+      "findings": [
+        "route_ready_error=page.waitForFunction: Timeout 8000ms exceeded.",
+        "empty_body",
+        "missing_text=服务器"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded."
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 ()"
+        }
+      ],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [
+        {
+          "url": "https://mc-u.top/api/v1/profile",
+          "status": 401,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\browser-audit-nonpay-20260612-170154\\search-history.png",
+      "ok": false,
+      "findings": [
+        "empty_body",
+        "title_mismatch=千服联灯 - Minecraft 服务器发现与发布平台",
+        "missing_text=搜索"
+      ],
+      "warnings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 5000ms exceeded.",
+        "route_ready_late=locator.waitFor: Timeout 8000ms exceeded. Call log: \u001b[2m - waiting for locator('input[placeholder*=\"搜索\"], input[type=\"search\"], input[type=\"text\"]').first() to be visible\u001b[22m"
+      ]
+    }
+  ]
+}

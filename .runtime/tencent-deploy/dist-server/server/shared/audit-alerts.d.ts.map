@@ -1,0 +1,1 @@
+{"version":3,"file":"audit-alerts.d.ts","sourceRoot":"","sources":["../../../server/shared/audit-alerts.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,kBAAkB;;;CAGrB,CAAC;AAEX,MAAM,MAAM,eAAe,GAAG,OAAO,kBAAkB,CAAC,MAAM,OAAO,kBAAkB,CAAC,CAAC;AAEzF,eAAO,MAAM,kBAAkB;;;;;CAKrB,CAAC;AAEX,MAAM,MAAM,gBAAgB,GAAG,OAAO,kBAAkB,CAAC,MAAM,OAAO,kBAAkB,CAAC,CAAC"}

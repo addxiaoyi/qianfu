@@ -238,6 +238,20 @@ router.post('/servers', serversLimiter, authenticate, requireVerifiedEmail, vali
 
 /**
  * @swagger
+ * /api/servers/servers/me:
+ *   get:
+ *     summary: Get current user's server quota / publish permissions
+ *     tags: [Servers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User server management info
+ */
+router.get('/servers/me', serversLimiter, authenticate, getMe);
+
+/**
+ * @swagger
  * /api/servers/servers/{id}:
  *   get:
  *     summary: Get server details

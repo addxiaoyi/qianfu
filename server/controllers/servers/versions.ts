@@ -54,7 +54,7 @@ export const rollbackServer = async (req: AuthRequest, res: Response, next: Next
     }
 
     // Use atomic transaction with proper locking to prevent race conditions during rollback
-    const updatedServer = await localPrisma.$transaction(async (tx) => {
+    const updatedServer = await localPrisma.$transaction(async (tx: any) => {
       // Re-fetch server within transaction to get latest state and lock it if possible
       const currentServer = await tx.server.findUnique({
         where: { id: serverId }
@@ -157,6 +157,18 @@ export const getServer = async (req: Request, res: Response, next: NextFunction)
       throw new AppError('Server not found', 404, ErrorCode.NOT_FOUND);
     }
 
+    const listingExpired = Boolean(
+      server.listing_expires_at &&
+      new Date(server.listing_expires_at).getTime() <= Date.now()
+    );
+    if (listingExpired && server.review_status === 'APPROVED') {
+      const userPermissions = user?.permissions ? JSON.parse(user.permissions) : [];
+      const isAdmin = user?.role === 'ADMIN' || userPermissions.includes('admin') || userPermissions.includes('manage_content');
+      if (!user || (server.owner_id !== user.id && !isAdmin)) {
+        throw new AppError('Server not found', 404, ErrorCode.NOT_FOUND);
+      }
+    }
+
     // Protection: only owner or admin can view rejected/pending servers
     if (server.review_status !== 'APPROVED') {
       const userPermissions = user?.permissions ? JSON.parse(user.permissions) : [];
@@ -184,8 +196,6 @@ export const listVersions = async (req: AuthRequest, res: Response, next: NextFu
       throw new AppError('Invalid server ID', 400, ErrorCode.VALIDATION_ERROR, false, idValidation.error.issues);
     }
     const { id: serverId } = idValidation.data;
-
-    const user = req.user!;
 
     const queryValidation = serverHistoryQuerySchema.safeParse(req.query);
     if (!queryValidation.success) {
@@ -240,8 +250,6 @@ export const compareServerVersions = async (req: AuthRequest, res: Response, nex
       throw new AppError('old and new version must differ', 400, ErrorCode.VALIDATION_ERROR);
     }
 
-    const user = req.user!;
-
     const versions = await localPrisma.serverVersion.findMany({
       where: { server_id: serverId, version: { in: [vOld, vNew] } },
       include: {
@@ -260,8 +268,8 @@ export const compareServerVersions = async (req: AuthRequest, res: Response, nex
       throw new AppError('One or both versions were not found', 404, ErrorCode.NOT_FOUND);
     }
 
-    const left = versions.find((v) => v.version === Math.min(vOld, vNew))!;
-    const right = versions.find((v) => v.version === Math.max(vOld, vNew))!;
+    const left = versions.find((v: any) => v.version === Math.min(vOld, vNew))!;
+    const right = versions.find((v: any) => v.version === Math.max(vOld, vNew))!;
 
     return sendSuccess(res, { left, right, server_id: serverId }, 'Success');
   } catch (error) {

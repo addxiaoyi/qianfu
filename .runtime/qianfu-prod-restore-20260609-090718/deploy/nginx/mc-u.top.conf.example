@@ -1,0 +1,60 @@
+# Production site config for mc-u.top
+# Frontend root: /www/wwwroot/qianfu-app/qianfu-liandeng/dist
+# Node API: 127.0.0.1:3000
+
+upstream qianfu_web_api {
+    server 127.0.0.1:3000;
+    keepalive 64;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name mc-u.top www.mc-u.top;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name mc-u.top www.mc-u.top;
+
+    ssl_certificate     /etc/letsencrypt/live/mc-u.top/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mc-u.top/privkey.pem;
+
+    root /www/wwwroot/qianfu-app/qianfu-liandeng/dist;
+    index index.html;
+
+    location / {
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://qianfu_web_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        proxy_connect_timeout 60s;
+    }
+
+    location /auth/ {
+        proxy_pass http://qianfu_web_api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        proxy_connect_timeout 60s;
+    }
+
+    location = /health {
+        proxy_pass http://qianfu_web_api/health;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+}

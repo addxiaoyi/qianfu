@@ -1,158 +1,209 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import {
-  User, Settings, Shield, CreditCard,
-  MessageSquare, FileText, Bell, LogOut,
-  ChevronRight, Star, Award, Ticket,
-  HelpCircle, Gift
-} from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { cn } from '../../utils/cn';
+import { api } from '@/api/request';
+import { useAuthStore } from '@/store/authStore';
+import { formatUserId, normalizeUser } from '@/utils/user';
+import { toArray } from '@/utils/apiData';
+import type { User as ApiUser } from '@/types/api';
+import { toast } from '@/hooks/use-toast';
+import {
+  Award,
+  Bell,
+  ChevronRight,
+  Gift,
+  LogOut,
+  Mail,
+  MessageCircle,
+  ReceiptText,
+  Server,
+  UserPen,
+  type LucideIcon,
+} from 'lucide-react';
 
 interface MenuItem {
-  icon: React.ElementType;
+  Icon: LucideIcon;
   label: string;
   path: string;
-  badge?: number;
-  color: string;
-  requiresAuth?: boolean;
+  hint: string;
 }
 
+const serviceItems: MenuItem[] = [
+  { Icon: Server, label: '我的服务器', path: '/dashboard/servers', hint: '查看已发布和审核状态' },
+  { Icon: MessageCircle, label: '工单记录', path: '/tickets', hint: '跟进支持请求' },
+  { Icon: ReceiptText, label: '账单记录', path: '/dashboard/billing', hint: '查看充值与奖励流水' },
+  { Icon: Gift, label: '推广中心', path: '/promotion', hint: '任务与奖励领取' },
+];
+
+const accountItems: MenuItem[] = [
+  { Icon: UserPen, label: '编辑资料', path: '/me/edit', hint: '昵称、头像和个人资料' },
+  { Icon: Bell, label: '通知中心', path: '/me/notifications', hint: '查看站内通知和提醒' },
+  { Icon: Mail, label: '邮箱安全', path: '/me/settings', hint: '验证邮箱与账户安全' },
+];
+
 const MobileUserCenter: React.FC = () => {
-  const menuSections: { title: string; items: MenuItem[] }[] = [
-    {
-      title: '我的服务',
-      items: [
-        { icon: MessageSquare, label: '我的消息', path: '/messages', color: 'bg-blue-500', badge: 3 },
-        { icon: Ticket, label: '工单记录', path: '/tickets', color: 'bg-purple-500' },
-        { icon: CreditCard, label: '支付记录', path: '/me/payments', color: 'bg-green-500' },
-        { icon: Gift, label: '推广中心', path: '/promotion', color: 'bg-orange-500' },
-      ],
-    },
-    {
-      title: '我的账户',
-      items: [
-        { icon: Star, label: '我的收藏', path: '/me/favorites', color: 'bg-yellow-500' },
-        { icon: Award, label: '成就系统', path: '/me/achievements', color: 'bg-indigo-500' },
-        { icon: User, label: '编辑资料', path: '/me/edit', color: 'bg-pink-500' },
-      ],
-    },
-    {
-      title: '设置',
-      items: [
-        { icon: Bell, label: '通知设置', path: '/me/notifications', color: 'bg-red-500' },
-        { icon: Shield, label: '安全中心', path: '/me/security', color: 'bg-teal-500' },
-        { icon: Settings, label: '通用设置', path: '/settings', color: 'bg-gray-500' },
-      ],
-    },
+  const queryClient = useQueryClient();
+  const { user, setUser, logout } = useAuthStore();
+  const [checkingIn, setCheckingIn] = React.useState(false);
+
+  const { data: checkinStatus, isFetching: checkinStatusLoading } = useQuery({
+    queryKey: ['checkin-status'],
+    queryFn: () => api.get<{
+      checkedInToday: boolean;
+      streakDays: number;
+      rewardXp: number;
+    }>('/user/checkin/status'),
+    enabled: !!user,
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  const { data: serverInfo } = useQuery({
+    queryKey: ['my-server-info'],
+    queryFn: () => api.get<{ current_cards: number; max_cards: number; can_publish: boolean }>('/servers/me'),
+    enabled: !!user,
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const { data: ticketResponse } = useQuery({
+    queryKey: ['tickets', 'mobile-summary'],
+    queryFn: () => api.get<any>('/tickets', { limit: 50 }),
+    enabled: !!user,
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const tickets = toArray<any>(ticketResponse);
+
+  const handleCheckIn = async () => {
+    if (checkingIn || checkinStatus?.checkedInToday) return;
+    setCheckingIn(true);
+    try {
+      const result = await api.post<any>('/user/checkin');
+      setUser(normalizeUser({
+        ...(user || {}),
+        experience_points: result.totalXp ?? user?.experience_points ?? 0,
+        level: result.level ?? user?.level ?? 1,
+        xp_into_level: result.xp_into_level,
+        xp_for_next_level: result.xp_for_next_level,
+        level_progress: result.level_progress,
+        last_checkin_at: result.checkinAt,
+      } as ApiUser));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['profile'] }),
+        queryClient.invalidateQueries({ queryKey: ['checkin-status'] }),
+      ]);
+      toast({ title: '签到成功', description: `获得 ${result.gainedXp ?? 25} XP` });
+    } catch {
+      toast({ title: '签到失败', description: '请稍后再试', variant: 'destructive' });
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
+  const rawProgress = user?.level_progress ?? 0;
+  const progress = Math.min(100, Math.max(0, Math.round(rawProgress <= 1 ? rawProgress * 100 : rawProgress)));
+  const openTicketCount = tickets.filter((ticket) => ticket.status !== 'CLOSED').length;
+  const menuSections = [
+    { title: '我的服务', items: serviceItems },
+    { title: '账户设置', items: accountItems },
   ];
 
   return (
-    <div className="min-h-screen bg-white pb-24">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-8 bg-gradient-to-b from-black to-gray-900">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-black text-white uppercase tracking-tight">个人中心</h1>
-          <Link to="/settings">
-            <Settings className="w-5 h-5 text-white/80" />
-          </Link>
-        </div>
-
-        {/* Profile Card */}
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl flex items-center justify-center">
-            <User className="w-8 h-8 text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-black text-white">玩家用户</h2>
-            <p className="text-xs text-white/60 font-medium">UID: 123456</p>
-          </div>
-          <Link to="/me/edit">
-            <ChevronRight className="w-5 h-5 text-white/40" />
-          </Link>
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-3 mt-6">
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
-            <p className="text-xl font-black text-white">12</p>
-            <p className="text-[10px] font-bold text-white/60 uppercase">收藏</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
-            <p className="text-xl font-black text-white">3</p>
-            <p className="text-[10px] font-bold text-white/60 uppercase">工单</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 text-center">
-            <p className="text-xl font-black text-white">4.8</p>
-            <p className="text-[10px] font-bold text-white/60 uppercase">评分</p>
+    <div className="bg-white pb-6 text-zinc-900">
+      <section className="border-b border-zinc-100 bg-white pb-6 pt-2">
+        <div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-400">ACCOUNT</p>
+            <h1 className="mt-1 text-2xl font-black tracking-tight">个人中心</h1>
           </div>
         </div>
-      </div>
 
-      {/* Menu Sections */}
-      <div className="px-4 -mt-4 space-y-6">
-        {menuSections.map((section) => (
-          <motion.div
-            key={section.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-          >
-            <div className="px-4 py-3 border-b border-gray-50">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                {section.title}
-              </p>
+        <div className="mt-5 flex items-center gap-4 rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-black text-2xl font-black text-white">
+            {user?.username?.[0] || user?.email?.[0] || 'U'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-lg font-black">{user?.username || user?.email || '未登录用户'}</h2>
+            <p className="mt-1 truncate text-xs font-bold text-zinc-500">UID: {formatUserId(user?.id)}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-zinc-600">Lv.{user?.level ?? 1}</span>
+              <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-zinc-600">{user?.email_verified ? '邮箱已验证' : '待验证邮箱'}</span>
             </div>
-            <div className="divide-y divide-gray-50">
-              {section.items.map((item, index) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className="flex items-center gap-4 p-4 active:bg-gray-50 transition-colors"
-                >
-                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center text-white')}>
-                    <item.icon className="w-5 h-5" />
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-2xl border border-zinc-100 p-3">
+            <p className="text-lg font-black">{serverInfo?.current_cards ?? 0}</p>
+            <p className="text-[10px] font-bold text-zinc-400">服务器</p>
+          </div>
+          <div className="rounded-2xl border border-zinc-100 p-3">
+            <p className="text-lg font-black">{openTicketCount}</p>
+            <p className="text-[10px] font-bold text-zinc-400">未结工单</p>
+          </div>
+          <div className="rounded-2xl border border-zinc-100 p-3">
+            <p className="text-lg font-black">{checkinStatus?.streakDays ?? 0}</p>
+            <p className="text-[10px] font-bold text-zinc-400">连续签到</p>
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-zinc-100 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-400">LEVEL</p>
+              <p className="mt-1 text-sm font-bold">总经验 {user?.experience_points ?? 0} XP</p>
+            </div>
+            <span className="text-sm font-black">{progress}%</span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100">
+            <div className="h-full rounded-full bg-black transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <button
+            type="button"
+            onClick={handleCheckIn}
+            disabled={checkingIn || checkinStatusLoading || !!checkinStatus?.checkedInToday}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-black px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+          >
+            {checkingIn || checkinStatusLoading ? (
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+            ) : (
+              <Award className="h-4 w-4" />
+            )}
+            {checkinStatus?.checkedInToday ? '今日已签到' : `签到 +${checkinStatus?.rewardXp ?? 25} XP`}
+          </button>
+        </div>
+      </section>
+
+      <div className="space-y-5 px-4 py-5">
+        {menuSections.map((section) => (
+          <section key={section.title} className="rounded-2xl border border-zinc-100 bg-white">
+            <div className="border-b border-zinc-100 px-4 py-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">{section.title}</p>
+            </div>
+            <div className="divide-y divide-zinc-100">
+              {section.items.map((item) => (
+                <Link key={item.path + item.label} to={item.path} className="flex items-center gap-3 p-4 active:bg-zinc-50">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-50 text-zinc-700">
+                    <item.Icon className="h-5 w-5" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold">{item.label}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black">{item.label}</p>
+                    <p className="mt-0.5 truncate text-[11px] font-medium text-zinc-400">{item.hint}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {item.badge && (
-                      <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] font-black rounded-full min-w-[18px] text-center">
-                        {item.badge}
-                      </span>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </div>
+                  <ChevronRight className="h-4 w-4 text-zinc-300" />
                 </Link>
               ))}
             </div>
-          </motion.div>
+          </section>
         ))}
-      </div>
 
-      {/* Help & Feedback */}
-      <div className="px-4 mt-6">
-        <div className="bg-gray-50 rounded-2xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-              <HelpCircle className="w-5 h-5 text-gray-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold">帮助与反馈</p>
-              <p className="text-[10px] text-muted-foreground">遇到问题？联系我们</p>
-            </div>
-          </div>
-          <Link to="/support">
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Logout */}
-      <div className="px-4 mt-8">
-        <button className="w-full py-4 text-sm font-bold text-red-500 bg-red-50 rounded-2xl active:bg-red-100 transition-colors flex items-center justify-center gap-2">
-          <LogOut className="w-4 h-4" />
+        <button
+          type="button"
+          onClick={logout}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm font-black text-red-600"
+        >
+          <LogOut className="h-4 w-4" />
           退出登录
         </button>
       </div>

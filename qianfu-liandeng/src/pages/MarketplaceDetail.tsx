@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Star, ShoppingCart, ArrowLeft, Download, BadgeCheck, Send } from 'lucide-react';
 import { api } from '@/api/request';
 import { isImageUrlSafe, isUrlSafe } from '@/utils/urlValidator';
+import PageSeo from '@/components/PageSeo';
 
 type MarketplaceProduct = {
   id: string;
@@ -21,8 +22,21 @@ type MarketplaceProduct = {
 
 type Review = { id: string; rating: number; content?: string | null; createdAt: string };
 
+const stripHtml = (value: unknown) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const truncateText = (value: unknown, maxLength = 155) => {
+  const text = stripHtml(value);
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
+};
+
 export default function MarketplaceDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<MarketplaceProduct | null>(null);
   const [related, setRelated] = useState<MarketplaceProduct[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -34,25 +48,18 @@ export default function MarketplaceDetail() {
   const [favorite, setFavorite] = useState(false);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
 
-  const loadDetail = async () => {
+  const loadDetail = useCallback(async () => {
     if (!id) return;
     const data = await api.get<{ product: MarketplaceProduct & { favorited?: boolean }; related: MarketplaceProduct[]; reviews: Review[]; favorite?: boolean }>(`/qianfu/marketplace/products/${id}`);
     setProduct(data.product);
     setRelated(data.related || []);
     setReviews(data.reviews || []);
     setFavorite(!!data.favorite || !!data.product?.favorited);
-  };
+  }, [id]);
 
   useEffect(() => {
     loadDetail().catch((error) => setMessage(error?.message || '加载详情失败'));
-  }, [id]);
-
-  useEffect(() => {
-    if (!id) return;
-    api.get<{ product: MarketplaceProduct; related: MarketplaceProduct[]; reviews: Review[]; favorite?: boolean }>(`/qianfu/marketplace/products/${id}`)
-      .then((data) => setFavorite(!!data.favorite))
-      .catch(() => undefined);
-  }, [id]);
+  }, [loadDetail]);
 
   const buy = async () => {
     if (!product) return;
@@ -66,7 +73,7 @@ export default function MarketplaceDetail() {
       setMessage(result.downloadUrl ? `购买成功，下载链接：${result.downloadUrl}` : '购买成功');
       await loadDetail();
       if ((result as any)?.order?.id) {
-        window.location.hash = `#/marketplace/orders/${(result as any).order.id}`;
+        navigate(`/marketplace/orders/${(result as any).order.id}`);
       }
     } catch (error: any) {
       setMessage(error?.message || '购买失败');
@@ -104,15 +111,43 @@ export default function MarketplaceDetail() {
     }
   };
 
-  const safeCoverUrl = product.coverUrl && isImageUrlSafe(product.coverUrl) ? product.coverUrl : 'https://picsum.photos/seed/market-default/800/500';
-  const safeDownloadUrl = product.downloadUrl && isUrlSafe(product.downloadUrl) ? product.downloadUrl : null;
-
   if (!product) {
     return <div className="max-w-5xl mx-auto px-6 py-20 text-sm text-muted-foreground">正在加载商品详情...</div>;
   }
 
+  const safeCoverUrl = product.coverUrl && isImageUrlSafe(product.coverUrl) ? product.coverUrl : 'https://picsum.photos/seed/market-default/800/500';
+  const safeDownloadUrl = product.downloadUrl && isUrlSafe(product.downloadUrl) ? product.downloadUrl : null;
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 space-y-8">
+      <PageSeo
+        title={`${product.title} - 玩家资源商品 - 千服联灯`}
+        description={truncateText(product.description || `${product.title}，作者 ${product.author}，分类 ${product.category}，可在千服联灯资源中心查看。`)}
+        canonicalPath={`/marketplace/products/${product.id}`}
+        image={safeCoverUrl.startsWith('http') ? safeCoverUrl : undefined}
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.title,
+          description: truncateText(product.description, 300),
+          category: product.category,
+          brand: {
+            '@type': 'Brand',
+            name: '千服联灯玩家市场',
+          },
+          offers: {
+            '@type': 'Offer',
+            price: product.price,
+            priceCurrency: 'CNY',
+            availability: 'https://schema.org/InStock',
+          },
+          aggregateRating: product.reviewCount > 0 ? {
+            '@type': 'AggregateRating',
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount,
+          } : undefined,
+        }}
+      />
       <Link to="/resources" className="inline-flex items-center gap-2 text-sm font-bold hover:text-black transition-colors">
         <ArrowLeft className="w-4 h-4" />返回资源中心
       </Link>
@@ -141,14 +176,14 @@ export default function MarketplaceDetail() {
 
         <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 md:p-8 space-y-5 lg:sticky lg:top-24">
           <div className="flex items-center gap-3"><BadgeCheck className="w-5 h-5 text-black" /><h2 className="text-xl font-black">购买资源</h2></div>
-          <button onClick={toggleFavorite} className="w-full rounded-xl border border-border px-4 py-3 font-bold text-sm" disabled={favoriteBusy}>
+          <button type="button" onClick={toggleFavorite} className="w-full rounded-xl border border-border px-4 py-3 font-bold text-sm" disabled={favoriteBusy}>
             {favoriteBusy ? '处理中...' : favorite ? '已收藏' : '收藏商品'}
           </button>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             <input className="w-full rounded-xl border border-border px-4 py-3 bg-white" placeholder="买家昵称" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
             <input className="w-full rounded-xl border border-border px-4 py-3 bg-white" placeholder="购买数量" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
           </div>
-          <button onClick={buy} className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm">
+          <button type="button" onClick={buy} className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm">
             <ShoppingCart className="w-4 h-4" />确认下单
           </button>
           {safeDownloadUrl && (
@@ -169,11 +204,11 @@ export default function MarketplaceDetail() {
             </select>
             <input className="rounded-xl border border-border px-4 py-3 bg-white" placeholder="评价内容" value={content} onChange={(e) => setContent(e.target.value)} />
           </div>
-          <button onClick={submitReview} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm">
+          <button type="button" onClick={submitReview} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-black text-white font-bold text-sm">
             <Send className="w-4 h-4" />提交评价
           </button>
           <div className="space-y-3 pt-3">
-            {reviews.length > 0 ? reviews.map((review) => (
+              {reviews.length > 0 ? reviews.map((review) => (
               <div key={review.id} className="rounded-2xl border border-border p-4 bg-muted/20">
                 <div className="text-sm font-bold">{review.rating} 星</div>
                 <div className="text-sm text-muted-foreground mt-2">{review.content || '暂无文字评价'}</div>

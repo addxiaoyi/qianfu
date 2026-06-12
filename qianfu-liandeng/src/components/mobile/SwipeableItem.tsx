@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
 import { cn } from '../../utils/cn';
 
 interface SwipeAction {
@@ -28,8 +28,6 @@ const SwipeableItem: React.FC<SwipeableItemProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const hasSwiped = useRef(false);
-
-  const backgroundX = useTransform(x, [-150, 0, 150], [-150, 0, 150]);
 
   const handleTouchEnd = useCallback(
     (offsetX: number) => {
@@ -74,7 +72,7 @@ const SwipeableItem: React.FC<SwipeableItemProps> = ({
               : 'bg-zinc-400';
 
           return (
-            <motion.button
+            <motion.button type="button"
               key={index}
               onClick={() => {
                 action.onPress();

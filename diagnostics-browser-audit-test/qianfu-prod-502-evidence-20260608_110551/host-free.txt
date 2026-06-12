@@ -1,0 +1,2 @@
++ free -m
+/d/qwq/项目/千服/scripts/linux/collect-prod-502-evidence.sh: line 32: free: command not found

@@ -4,7 +4,15 @@ import { useState, useEffect, useCallback } from 'react';
  * Detect if the current device/breakpoint is considered "mobile".
  * Returns a reactive boolean and a few helper values.
  */
-export const useMobile = (breakpoint = 768) => {
+interface UseMobileOptions {
+  breakpoint?: number;
+  onRefresh?: () => void | Promise<void>;
+}
+
+export const useMobile = (options: number | UseMobileOptions = 768) => {
+  const { breakpoint, onRefresh } = typeof options === 'number'
+    ? { breakpoint: options, onRefresh: undefined }
+    : { breakpoint: options.breakpoint ?? 768, onRefresh: options.onRefresh };
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
 
@@ -18,10 +26,15 @@ export const useMobile = (breakpoint = 768) => {
   }, [breakpoint]);
 
   const [refreshing, setRefreshing] = useState(false);
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
+    if (!onRefresh) return;
     setRefreshing(true);
-    window.location.reload();
-  }, []);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefresh]);
 
   return {
     isMobile,

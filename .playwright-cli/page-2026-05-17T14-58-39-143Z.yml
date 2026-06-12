@@ -1,0 +1,295 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - img [ref=e6]
+      - generic [ref=e8]: "Announcement: Spring Update 2026 is live with new bidding algorithms."
+    - button [ref=e9]:
+      - img [ref=e10]
+  - button "设置" [ref=e13]:
+    - img [ref=e14]
+  - generic [ref=e17]:
+    - navigation [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - link "千服联灯 QianFu" [ref=e22] [cursor=pointer]:
+            - /url: "#/"
+            - img [ref=e24]
+            - generic [ref=e45]:
+              - generic [ref=e46]: 千服联灯
+              - generic [ref=e47]: QianFu
+          - generic [ref=e48]:
+            - link "首页" [ref=e49] [cursor=pointer]:
+              - /url: "#/"
+              - generic [ref=e50]:
+                - img [ref=e51]
+                - text: 首页
+            - link "找服" [ref=e55] [cursor=pointer]:
+              - /url: "#/servers"
+              - generic [ref=e56]:
+                - img [ref=e57]
+                - text: 找服
+            - link "资源" [ref=e61] [cursor=pointer]:
+              - /url: "#/resources"
+              - generic [ref=e62]:
+                - img [ref=e63]
+                - text: 资源
+            - link "团队" [ref=e65] [cursor=pointer]:
+              - /url: "#/team"
+              - generic [ref=e66]:
+                - img [ref=e67]
+                - text: 团队
+            - link "规则" [ref=e72] [cursor=pointer]:
+              - /url: "#/rules"
+              - generic [ref=e73]:
+                - img [ref=e74]
+                - text: 规则
+            - link "推广" [ref=e78] [cursor=pointer]:
+              - /url: "#/promotion"
+              - generic [ref=e79]:
+                - img [ref=e80]
+                - text: 推广
+        - generic [ref=e83]:
+          - link "个人中心" [ref=e389] [cursor=pointer]:
+            - /url: "#/dashboard"
+            - img [ref=e390]
+            - text: 个人中心
+          - button "退出登录" [ref=e395]
+    - generic [ref=e493]:
+      - complementary [ref=e494]:
+        - generic [ref=e495]:
+          - generic [ref=e496]:
+            - generic [ref=e497]: d
+            - generic [ref=e498]:
+              - generic [ref=e499]: dev_local
+              - generic [ref=e500]: "ID: 5"
+          - generic [ref=e501]:
+            - generic [ref=e502]:
+              - generic [ref=e503]: 等级
+              - generic [ref=e504]: Lv.1
+            - generic [ref=e505]:
+              - generic [ref=e506]: 余额
+              - generic [ref=e507]: ¥ 0.00
+        - generic [ref=e511]:
+          - generic [ref=e512]:
+            - generic [ref=e513]: Skin Showcase
+            - generic [ref=e514]: Live
+          - generic [ref=e519]:
+            - img "dev_local 头颅" [ref=e521]
+            - img "dev_local 头颅" [ref=e523]
+            - img "dev_local 头颅" [ref=e525]
+            - img "dev_local 头颅" [ref=e527]
+          - paragraph [ref=e528]: "Player: dev_local"
+        - generic [ref=e530]:
+          - link "控制台概览" [ref=e531] [cursor=pointer]:
+            - /url: "#/dashboard"
+            - img [ref=e532]
+            - text: 控制台概览
+          - link "我的服务器" [ref=e535] [cursor=pointer]:
+            - /url: "#/dashboard/servers"
+            - img [ref=e536]
+            - text: 我的服务器
+          - link "工单系统" [ref=e541] [cursor=pointer]:
+            - /url: "#/dashboard/tickets"
+            - img [ref=e542]
+            - text: 工单系统
+          - link "财务管理" [ref=e545] [cursor=pointer]:
+            - /url: "#/dashboard/billing"
+            - img [ref=e546]
+            - text: 财务管理
+          - link "账号设置" [active] [ref=e550] [cursor=pointer]:
+            - /url: "#/dashboard/profile"
+            - img [ref=e551]
+            - text: 账号设置
+        - button "退出登录" [ref=e555]:
+          - img [ref=e556]
+          - text: 退出登录
+      - generic [ref=e672]:
+        - generic [ref=e673]:
+          - generic [ref=e674]:
+            - generic [ref=e675]:
+              - generic [ref=e676]: d
+              - generic [ref=e677]:
+                - generic [ref=e678]:
+                  - generic [ref=e679]: Profile
+                  - generic [ref=e680]: "ID #5"
+                - heading "dev_local" [level=1] [ref=e681]
+                - generic [ref=e682]:
+                  - generic [ref=e683]:
+                    - img [ref=e684]
+                    - text: 标准节点
+                  - generic [ref=e687]: de***l@example.com
+            - generic [ref=e688]:
+              - button "每日握手" [ref=e689]:
+                - img [ref=e690]
+                - text: 每日握手
+              - link "编辑资料" [ref=e693] [cursor=pointer]:
+                - /url: "#/me/edit"
+                - img [ref=e694]
+                - text: 编辑资料
+          - generic [ref=e698]:
+            - generic [ref=e699]:
+              - generic [ref=e700]:
+                - generic [ref=e701]: 账户状态
+                - generic [ref=e702]: 已绑定邮箱
+              - generic [ref=e703]:
+                - generic [ref=e704]: 等级进度
+                - generic [ref=e705]: Lv.1
+              - generic [ref=e706]:
+                - generic [ref=e707]: 签到状态
+                - generic [ref=e708]: 可签到
+            - generic [ref=e713]:
+              - generic [ref=e714]:
+                - generic [ref=e715]: Skin Showcase
+                - generic [ref=e716]: Live
+              - generic [ref=e721]:
+                - img "dev_local 头颅" [ref=e723]
+                - img "dev_local 头颅" [ref=e725]
+                - img "dev_local 头颅" [ref=e727]
+                - img "dev_local 头颅" [ref=e729]
+              - paragraph [ref=e730]: "Player: dev_local"
+        - generic [ref=e731]:
+          - generic [ref=e732]:
+            - generic [ref=e733]:
+              - generic [ref=e735]: Wallet
+              - generic [ref=e737]:
+                - generic [ref=e738]: ¥ 0.00
+                - paragraph [ref=e739]: 用于协议推广的资源分配
+              - generic [ref=e740]:
+                - button "初始化资金" [ref=e741]
+                - link "账单明细" [ref=e742] [cursor=pointer]:
+                  - /url: "#/billing"
+            - generic [ref=e743]:
+              - generic [ref=e745]: Quick Actions
+              - generic [ref=e746]:
+                - link "订单拓扑 审查历史交易分类账与节点分配。" [ref=e747] [cursor=pointer]:
+                  - /url: "#/payment"
+                  - img [ref=e749]
+                  - heading "订单拓扑" [level=3] [ref=e754]
+                  - paragraph [ref=e755]: 审查历史交易分类账与节点分配。
+                - link "技术矩阵 访问加密的支持网格以获取节点协助。" [ref=e756] [cursor=pointer]:
+                  - /url: "#/tickets"
+                  - img [ref=e758]
+                  - heading "技术矩阵" [level=3] [ref=e762]
+                  - paragraph [ref=e763]: 访问加密的支持网格以获取节点协助。
+            - generic [ref=e764]:
+              - generic [ref=e766]: Account Details
+              - generic [ref=e767]:
+                - generic [ref=e768]:
+                  - generic [ref=e769]: 邮箱
+                  - generic [ref=e770]: de***l@example.com
+                - generic [ref=e771]:
+                  - generic [ref=e772]: 用户ID
+                  - generic [ref=e773]: "5"
+                - generic [ref=e774]:
+                  - generic [ref=e775]: 角色
+                  - generic [ref=e776]: 标准节点
+                - generic [ref=e777]:
+                  - generic [ref=e778]: 签到积分
+                  - generic [ref=e779]: 0 XP
+          - generic [ref=e780]:
+            - generic [ref=e781]:
+              - banner [ref=e782]:
+                - generic [ref=e783]:
+                  - img [ref=e784]
+                  - heading "时间遥测" [level=3] [ref=e787]
+                - generic [ref=e788]: 3 Packets Captured
+              - generic [ref=e789]:
+                - generic [ref=e790]:
+                  - img [ref=e792]
+                  - generic [ref=e796]:
+                    - generic [ref=e797]:
+                      - paragraph [ref=e798]: Handshake_Complete
+                      - generic [ref=e799]: 19h ago
+                    - paragraph [ref=e800]: "System successfully acknowledged daily presence signal. Allocation: +10 XP / +5 CRED"
+                - generic [ref=e801]:
+                  - img [ref=e803]
+                  - generic [ref=e807]:
+                    - generic [ref=e808]:
+                      - paragraph [ref=e809]: Handshake_Complete
+                      - generic [ref=e810]: 18h ago
+                    - paragraph [ref=e811]: "System successfully acknowledged daily presence signal. Allocation: +10 XP / +5 CRED"
+                - generic [ref=e812]:
+                  - img [ref=e814]
+                  - generic [ref=e818]:
+                    - generic [ref=e819]:
+                      - paragraph [ref=e820]: Handshake_Complete
+                      - generic [ref=e821]: 17h ago
+                    - paragraph [ref=e822]: "System successfully acknowledged daily presence signal. Allocation: +10 XP / +5 CRED"
+            - generic [ref=e823]:
+              - generic [ref=e825]: Security Snapshot
+              - generic [ref=e826]:
+                - generic [ref=e827]:
+                  - generic [ref=e828]: 认证状态
+                  - generic [ref=e829]: 邮箱已验证
+                - generic [ref=e830]:
+                  - generic [ref=e831]: 上次签到
+                  - generic [ref=e832]: 今日已签到
+                - generic [ref=e833]:
+                  - generic [ref=e834]: 账户等级
+                  - generic [ref=e835]: Lv.1
+                - generic [ref=e836]:
+                  - generic [ref=e837]: 最近活跃
+                  - generic [ref=e838]: 1 小时内
+    - contentinfo [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - link "QianFu" [ref=e96] [cursor=pointer]:
+              - /url: "#/"
+              - img [ref=e98]
+              - generic [ref=e100]: QianFu
+            - paragraph [ref=e101]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e102]:
+              - button [ref=e103]:
+                - img [ref=e104]
+              - button [ref=e106]:
+                - img [ref=e107]
+              - button [ref=e109]:
+                - img [ref=e110]
+          - generic [ref=e113]:
+            - heading "Platform" [level=4] [ref=e114]
+            - list [ref=e115]:
+              - listitem [ref=e116]:
+                - link "浏览服务器" [ref=e117] [cursor=pointer]:
+                  - /url: "#/servers"
+              - listitem [ref=e118]:
+                - link "高级搜索" [ref=e119] [cursor=pointer]:
+                  - /url: "#/search"
+              - listitem [ref=e120]:
+                - link "推广方案" [ref=e121] [cursor=pointer]:
+                  - /url: "#/promotion"
+              - listitem [ref=e122]:
+                - link "资源中心" [ref=e123] [cursor=pointer]:
+                  - /url: "#/resources"
+          - generic [ref=e124]:
+            - heading "Organization" [level=4] [ref=e125]
+            - list [ref=e126]:
+              - listitem [ref=e127]:
+                - link "开发团队" [ref=e128] [cursor=pointer]:
+                  - /url: "#/team"
+              - listitem [ref=e129]:
+                - link "等级规则" [ref=e130] [cursor=pointer]:
+                  - /url: "#/rules"
+              - listitem [ref=e131]:
+                - link "服务条款" [ref=e132] [cursor=pointer]:
+                  - /url: "#/terms"
+              - listitem [ref=e133]:
+                - link "隐私政策" [ref=e134] [cursor=pointer]:
+                  - /url: "#/privacy"
+          - generic [ref=e135]:
+            - heading "Ecosystem" [level=4] [ref=e136]
+            - list [ref=e137]:
+              - listitem [ref=e138] [cursor=pointer]:
+                - generic [ref=e139]: MU Alliance
+                - img [ref=e140]
+              - listitem [ref=e144] [cursor=pointer]:
+                - generic [ref=e145]: QianFu API
+                - img [ref=e146]
+              - listitem [ref=e150] [cursor=pointer]:
+                - generic [ref=e151]: Discord Community
+                - img [ref=e152]
+        - generic [ref=e156]:
+          - generic [ref=e157]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+          - generic [ref=e158]:
+            - generic [ref=e159]: All Systems Operational
+            - button "Back to top ↑" [ref=e162]

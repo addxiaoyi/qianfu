@@ -11,6 +11,7 @@ const violations: string[] = [];
 
 const ROUTER_DECLARATION_RE = /router\.(get|post|put|patch|delete)\(\s*['"`]([^'"`]+)['"`]/g;
 const SEGMENT_RE = /^[a-z0-9-]+$/;
+const PUBLIC_FILE_SEGMENT_RE = /^[a-z0-9-]+\.(txt|xml|json)$/;
 const READ_METHODS = new Set(['get']);
 const WRITE_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 const VERB_SEGMENTS = new Set([
@@ -72,6 +73,7 @@ function validateRoutePath(file: string, method: string, path: string, line: num
   const segments = normalizedSegments(path);
   for (const segment of segments) {
     if (isParamSegment(segment)) continue;
+    if (method === 'get' && PUBLIC_FILE_SEGMENT_RE.test(segment)) continue;
     if (!SEGMENT_RE.test(segment)) {
       violations.push(`${file}:${line} 路径段必须为 kebab-case：${method.toUpperCase()} ${path} (invalid: ${segment})`);
     }

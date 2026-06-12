@@ -1,0 +1,31 @@
++ bash -lc QIANFU_BASE_URL=\'https://mc-u.top\'\ PAY_DOMAIN_HOST=\'pay.star-web.top\'\ bash\ scripts/linux/qianfu-prod-healthcheck.sh\ --public-only
+
+== HTTP ==
+FAIL: https://mc-u.top/api/health returned HTTP 502: 
+FAIL: https://mc-u.top/api/ready returned HTTP 502: 
+
+== Frontend freshness ==
+PASS: https://mc-u.top/ returned HTTP 200 for frontend probe
+FAIL: Remote frontend bundle does not match the local dist build
+FAIL: Remote frontend HTML still contains legacy hash-route markers: https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+FAIL: Remote SearchAction target does not match the local dist build
+
+== Pay domain ==
+FAIL: https://pay.star-web.top/ returned 200 but did not contain qianfu-pay-gateway: <!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link 
+FAIL: https://pay.star-web.top/health returned HTTP 502: 
+FAIL: https://pay.star-web.top/api/health returned HTTP 502: 
+FAIL: pay.star-web.top is presenting a certificate for another host
+FAIL: pay.star-web.top is serving HTML that looks like the main site
+FAIL: pay.star-web.top root marker does not match qianfu-pay-gateway
+
+== Host checks ==
+INFO: Skipped MySQL / PM2 / memory checks because --public-only is enabled.
+
+== Summary ==
+ERROR: 11 check(s) failed for https://mc-u.top

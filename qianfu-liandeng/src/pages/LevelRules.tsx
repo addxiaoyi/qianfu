@@ -45,16 +45,10 @@ const LevelRules: React.FC = () => {
     },
   ];
 
-  const rulesHeader = {
-    badge: 'PROGRESSION_MATRIX',
-    title: '等级与经验规则',
-    desc: '用户通过站内互动积累成长经验，最高可达 100 级。等级与角色权限合并计算，部分权益需达到对应等级后解锁。',
-  };
-
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-3xl mx-auto px-6 pt-12">
-        <button 
+        <button type="button" 
           onClick={() => navigate(-1)}
           className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12"
         >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { request } from '@/api/request';
@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import GeometricLantern from '@/components/icons/GeometricLantern';
 import { useT } from '@/store/uiStore';
+import PageSeo from '@/components/PageSeo';
 
 const tabs = [
   { id: 'overview', labelKey: 'detail.tabs.overview', icon: Activity },
@@ -23,13 +24,40 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]['id'];
 
+const formatServerMetric = (value: unknown, fallback = '暂无') => {
+  if (value === null || value === undefined || value === '') return fallback;
+  return String(value);
+};
+
+const parseServerTags = (tags: unknown): string[] => {
+  if (Array.isArray(tags)) return tags.map(String).filter(Boolean);
+  if (typeof tags !== 'string' || !tags.trim()) return [];
+  try {
+    const parsed = JSON.parse(tags);
+    return Array.isArray(parsed) ? parsed.map(String).filter(Boolean) : [];
+  } catch {
+    return tags.split(',').map((tag) => tag.trim()).filter(Boolean);
+  }
+};
+
+const stripHtml = (value: unknown) =>
+  String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const truncateText = (value: unknown, maxLength = 150) => {
+  const text = stripHtml(value);
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}…`;
+};
+
 const ServerDetail: React.FC = () => {
   const { id } = useParams();
   const { user, isAuthenticated } = useAuthStore();
   const t = useT();
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState('');
-  const [commentLength, setCommentLength] = useState(0);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const COMMENT_MAX_LENGTH = 2000;
@@ -58,6 +86,32 @@ const ServerDetail: React.FC = () => {
       return await request<any>(`/servers/${id}`);
     },
   });
+  const serverTags = useMemo(() => parseServerTags(server?.tags), [server?.tags]);
+  const latestComments = Array.isArray(server?.comments) ? server.comments : [];
+  const serverName = server?.name || `Minecraft 服务器 ${id || ''}`.trim();
+  const serverDescription = truncateText(
+    server?.description ||
+      [
+        serverName,
+        server?.category,
+        server?.supported_versions || server?.version,
+        serverTags.length ? serverTags.join('、') : '',
+      ].filter(Boolean).join('，'),
+    155,
+  );
+  const safeSeoImage = getSafeImageUrl(server?.image);
+  const technicalCards = [
+    { label: t('detail.tech.latency'), value: formatServerMetric(server?.latency ?? server?.status?.latency), icon: Globe, status: server?.online === false ? 'OFFLINE' : 'LIVE' },
+    { label: t('detail.tech.uptime'), value: formatServerMetric(server?.uptime), icon: Activity, status: server?.online === false ? 'OFFLINE' : 'RECORDED' },
+    { label: t('detail.tech.integrity'), value: server?.review_status || 'UNKNOWN', icon: Shield, status: 'AUDIT' },
+  ];
+  const rules = [
+    server?.online_mode ? { title: '在线模式', desc: String(server.online_mode) } : null,
+    server?.network_env ? { title: '网络环境', desc: String(server.network_env) } : null,
+    server?.supported_versions ? { title: '支持版本', desc: String(server.supported_versions) } : null,
+    server?.category ? { title: '服务器分类', desc: String(server.category) } : null,
+    ...serverTags.slice(0, 4).map((tag) => ({ title: '标签规则', desc: tag })),
+  ].filter(Boolean) as Array<{ title: string; desc: string }>;
 
   const handleCopy = () => {
     if (server?.ip) {
@@ -72,7 +126,7 @@ const ServerDetail: React.FC = () => {
     mutationFn: () => request(`/servers/${id}/like`, { method: 'POST' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['server', id] });
-      toast({ title: 'NODE_ENDORSED' });
+      toast({ title: '已点赞该服务器' });
     }
   });
 
@@ -80,17 +134,17 @@ const ServerDetail: React.FC = () => {
     mutationFn: (text: string) => request(`/servers/${id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify({ body: text }),
     }),
     onSuccess: () => {
       setCommentText('');
       queryClient.invalidateQueries({ queryKey: ['server', id] });
-      toast({ title: 'MESSAGE_BROADCASTED' });
+      toast({ title: '评论已发布' });
     }
   });
 
   const TabButton = ({ id, labelKey, icon: Icon, count }: { id: TabId; labelKey: any; icon: any; count?: number }) => (
-    <button
+    <button type="button"
       onClick={() => setActiveTab(id)}
       className={`flex items-center gap-4 px-8 py-4 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] italic transition-all duration-500 relative overflow-hidden group ${
         activeTab === id ? 'bg-black text-white shadow-2xl shadow-black/20' : 'text-zinc-400 hover:bg-zinc-50 hover:text-black'
@@ -111,6 +165,25 @@ const ServerDetail: React.FC = () => {
 
   return (
     <StatusWrapper isLoading={isLoading} isError={isError}>
+      {server && (
+        <PageSeo
+          title={`${serverName} - Minecraft 服务器详情 - 千服联灯`}
+          description={serverDescription || `${serverName} 的 Minecraft 服务器资料、状态、版本、标签和玩家评论。`}
+          canonicalPath={`/server/${id}`}
+          image={safeSeoImage.startsWith('http') ? safeSeoImage : undefined}
+          schema={{
+            '@context': 'https://schema.org',
+            '@type': 'VideoGameServer',
+            name: serverName,
+            description: serverDescription,
+            game: 'Minecraft',
+            serverStatus: server?.online === false ? 'Offline' : 'Online',
+            playersOnline: Number(server?.players ?? server?.playersOnline ?? server?.status?.playersOnline ?? 0),
+            keywords: serverTags,
+            url: `https://mc-u.top/server/${id}`,
+          }}
+        />
+      )}
       <div className="max-w-[1400px] mx-auto px-8 pt-20 pb-16 bg-white selection:bg-black selection:text-white">
         {/* Breadcrumb */}
         <div className="flex items-center justify-between mb-10">
@@ -154,7 +227,7 @@ const ServerDetail: React.FC = () => {
                            className="mb-2 px-6 py-3 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest italic flex items-center gap-3 hover:bg-accent hover:text-white transition-all shadow-2xl active:scale-95"
                          >
                             <Settings className="w-4 h-4" />
-编辑节点
+编辑服务器
                          </Link>
                        )}
                     </div>
@@ -162,7 +235,7 @@ const ServerDetail: React.FC = () => {
               </div>
               
               <div className="absolute top-12 right-12 flex gap-4">
-                 <button className="w-14 h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[1.2rem] flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-90">
+                 <button type="button" className="w-14 h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[1.2rem] flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-90">
                     <Share2 className="w-6 h-6" />
                  </button>
                  <div className="w-14 h-14 bg-white text-black rounded-[1.2rem] flex items-center justify-center shadow-2xl">
@@ -180,7 +253,7 @@ const ServerDetail: React.FC = () => {
                        <label className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">{t('detail.side.endpoint')}</label>
                        <div className="flex items-center justify-between p-6 bg-zinc-900/50 border border-zinc-800 rounded-3xl group/ip">
                           <span className="text-2xl font-black font-mono tracking-tight italic">{server?.ip}</span>
-                          <button onClick={handleCopy} className="p-4 bg-white text-black rounded-xl hover:bg-accent hover:text-white transition-all shadow-xl">
+                          <button type="button" onClick={handleCopy} className="p-4 bg-white text-black rounded-xl hover:bg-accent hover:text-white transition-all shadow-xl">
                              {copied ? <Award className="w-5 h-5" /> : <Globe className="w-5 h-5" />}
                           </button>
                        </div>
@@ -190,7 +263,7 @@ const ServerDetail: React.FC = () => {
                           <span className="text-6xl font-black font-mono italic leading-none">{server?.players}</span>
                           <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest italic">{t('detail.side.nodes_active')}</p>
                        </div>
-                       <button 
+                       <button type="button" 
                          onClick={() => likeMutation.mutate()}
                          disabled={likeMutation.isPending}
                          className={`p-6 rounded-[1.5rem] border ${server?.isLiked ? 'bg-accent border-accent text-white' : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-500'} transition-all ${likeMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -212,15 +285,15 @@ const ServerDetail: React.FC = () => {
                  <div className="grid grid-cols-3 gap-6 pt-8 border-t border-zinc-100">
                     <div className="space-y-1">
                        <span className="text-[9px] font-black text-zinc-300 uppercase italic">{t('detail.tech.latency')}</span>
-                       <p className="text-xl font-black italic">14ms</p>
+                       <p className="text-xl font-black italic">{formatServerMetric(server?.latency ?? server?.status?.latency)}</p>
                     </div>
                     <div className="space-y-1">
                        <span className="text-[9px] font-black text-zinc-300 uppercase italic">{t('detail.tech.uptime')}</span>
-                       <p className="text-xl font-black italic">99%</p>
+                       <p className="text-xl font-black italic">{formatServerMetric(server?.uptime)}</p>
                     </div>
                     <div className="space-y-1">
                        <span className="text-[9px] font-black text-zinc-300 uppercase italic">{t('detail.tabs.online')}</span>
-                       <p className="text-xl font-black italic">Lv.5</p>
+                       <p className="text-xl font-black italic">{formatServerMetric(server?.review_status)}</p>
                     </div>
                  </div>
               </div>
@@ -234,15 +307,10 @@ const ServerDetail: React.FC = () => {
            <TabButton id="technical" labelKey="detail.tabs.technical" icon={Cpu} />
            <TabButton id="rules" labelKey="detail.tabs.rules" icon={Shield} />
            
-           <div className="ml-auto flex items-center gap-4 px-6 border-l border-zinc-100 lg:flex hidden">
-              <div className="flex -space-x-4">
-                 {[1,2,3].map(i => (
-                   <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-zinc-100 overflow-hidden shadow-sm">
-                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} className="w-full h-full object-cover grayscale" />
-                   </div>
-                 ))}
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300 italic">+{server?.players % 100} {t('detail.tabs.online')}</span>
+           <div className="ml-auto hidden items-center gap-4 px-6 border-l border-zinc-100 lg:flex">
+              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300 italic">
+                {formatServerMetric(server?.players ?? server?.playersOnline ?? 0, '0')} {t('detail.tabs.online')}
+              </span>
            </div>
         </div>
 
@@ -282,7 +350,9 @@ const ServerDetail: React.FC = () => {
                                 <span className="text-[10px] font-black text-zinc-200 uppercase tracking-widest italic">{t('detail.overview.feat_primary')}</span>
                              </div>
                              <h3 className="text-2xl font-black italic uppercase tracking-tighter">{t('detail.overview.feat_latency')}</h3>
-                             <p className="text-zinc-400 font-bold italic leading-relaxed text-sm">体验矩阵级响应，所有主节点均保持 20ms 以下的超低延迟。</p>
+                             <p className="text-zinc-400 font-bold italic leading-relaxed text-sm">
+                               {server?.ip ? `当前连接地址：${server.ip}` : '该服务器暂未公开连接地址。'}
+                             </p>
                           </div>
                           <div className="p-12 border border-zinc-100 rounded-[3rem] space-y-6 bg-white shadow-xl shadow-black/5 hover:-translate-y-2 transition-transform duration-500">
                              <div className="flex items-center justify-between">
@@ -290,7 +360,9 @@ const ServerDetail: React.FC = () => {
                                 <span className="text-[10px] font-black text-zinc-200 uppercase tracking-widest italic">{t('detail.overview.feat_dist')}</span>
                              </div>
                              <h3 className="text-2xl font-black italic uppercase tracking-tighter">{t('detail.overview.feat_dist')}</h3>
-                             <p className="text-zinc-400 font-bold italic leading-relaxed text-sm">冗余集群节点确保 99.9% 在线率与零丢包同步。</p>
+                             <p className="text-zinc-400 font-bold italic leading-relaxed text-sm">
+                               {serverTags.length > 0 ? serverTags.join(' / ') : '服务器标签暂未配置。'}
+                             </p>
                           </div>
                        </section>
                     </motion.div>
@@ -328,18 +400,18 @@ const ServerDetail: React.FC = () => {
                             <textarea 
                               value={commentText}
                               onChange={(e) => setCommentText(e.target.value)}
-                              maxLength={500}
+                              maxLength={COMMENT_MAX_LENGTH}
                               className="w-full bg-zinc-50/50 border border-transparent rounded-[2.5rem] p-10 min-h-[300px] text-xl font-black italic tracking-tight focus:bg-white focus:border-black outline-hidden transition-all duration-700 shadow-xs resize-none relative z-10"
                               placeholder={t('detail.comm.placeholder')}
                             />
-                            <div className="text-xs text-zinc-400 text-right mt-4">{commentText.length}/500</div>
+                            <div className="text-xs text-zinc-400 text-right mt-4">{commentText.length}/{COMMENT_MAX_LENGTH}</div>
                             <div className="flex justify-between items-center relative z-10">
                                <div className="flex items-center gap-4 text-zinc-300">
-                                  <button className="p-4 hover:text-black transition-colors"><Zap className="w-5 h-5" /></button>
-                                  <button className="p-4 hover:text-black transition-colors"><Globe className="w-5 h-5" /></button>
-                                  <button className="p-4 hover:text-black transition-colors"><Shield className="w-5 h-5" /></button>
+                                  <button type="button" className="p-4 hover:text-black transition-colors"><Zap className="w-5 h-5" /></button>
+                                  <button type="button" className="p-4 hover:text-black transition-colors"><Globe className="w-5 h-5" /></button>
+                                  <button type="button" className="p-4 hover:text-black transition-colors"><Shield className="w-5 h-5" /></button>
                                </div>
-                               <button 
+                               <button type="button" 
                                  onClick={() => commentMutation.mutate(commentText)}
                                  disabled={!commentText.trim() || commentMutation.isPending}
                                  className="group px-16 py-8 bg-black text-white rounded-[3rem] font-black text-[12px] uppercase tracking-[0.6em] flex items-center gap-6 hover:bg-accent transition-all italic active:scale-95 shadow-2xl shadow-black/20"
@@ -380,7 +452,11 @@ const ServerDetail: React.FC = () => {
                           </header>
 
                           <div className="space-y-10">
-                             {server?.comments?.map((comment: any, idx: number) => (
+                             {latestComments.length === 0 ? (
+                               <div className="rounded-[3rem] border border-dashed border-zinc-100 bg-zinc-50/50 p-12 text-center text-sm font-bold text-zinc-400">
+                                 暂无真实评论
+                               </div>
+                             ) : latestComments.map((comment: any, idx: number) => (
                                <motion.div 
                                  key={comment.id} 
                                  initial={{ opacity: 0, y: 30 }}
@@ -390,42 +466,44 @@ const ServerDetail: React.FC = () => {
                                >
                                  <div className="flex flex-col items-center gap-6 shrink-0 pt-4">
                                     <div className="w-20 h-20 rounded-[2rem] bg-white border-2 border-zinc-100 flex items-center justify-center font-black text-3xl italic shadow-xl group-hover:rotate-6 transition-all duration-700 group-hover:border-black group-hover:text-accent">
-                                       {comment.author?.[0]}
+                                       {(comment.user?.display_name || comment.user?.username || comment.author || 'U')?.[0]}
                                     </div>
                                     <div className="flex flex-col items-center gap-4 bg-zinc-50 p-3 rounded-[2rem] border border-zinc-100 opacity-20 group-hover:opacity-100 transition-opacity">
-                                       <button className="text-zinc-400 hover:text-black active:scale-110 transition-all"><ThumbsUp className="w-4 h-4" /></button>
-                                       <span className="text-[10px] font-black font-mono">14</span>
-                                       <button className="text-zinc-400 hover:text-red-500 active:scale-110 transition-all"><ThumbsDown className="w-4 h-4" /></button>
+                                       <button type="button" className="text-zinc-400 hover:text-black active:scale-110 transition-all"><ThumbsUp className="w-4 h-4" /></button>
+                                       <span className="text-[10px] font-black font-mono">0</span>
+                                       <button type="button" className="text-zinc-400 hover:text-red-500 active:scale-110 transition-all"><ThumbsDown className="w-4 h-4" /></button>
                                     </div>
                                  </div>
                                  <div className="flex-grow space-y-6 py-4 pr-12">
                                     <div className="flex justify-between items-start">
                                        <div className="space-y-2">
                                           <div className="flex items-center gap-6">
-                                             <span className="text-3xl font-black italic tracking-tighter uppercase group-hover:translate-x-2 transition-transform duration-500">{comment.author}</span>
+                                             <span className="text-3xl font-black italic tracking-tighter uppercase group-hover:translate-x-2 transition-transform duration-500">
+                                               {comment.user?.display_name || comment.user?.username || comment.author || '用户'}
+                                             </span>
                                              <div className="flex items-center gap-3 px-3 py-1 bg-black text-white text-[8px] font-black uppercase tracking-widest rounded-sm italic">
                                                 <Award className="w-3 h-3" /> {t('detail.comm.verified')}
                                              </div>
                                           </div>
                                           <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-zinc-300 italic">
-                                             <Clock className="w-3.5 h-3.5" /> {comment.time}
+                                             <Clock className="w-3.5 h-3.5" /> {comment.created_at ? new Date(comment.created_at).toLocaleString() : comment.time}
                                              <span className="opacity-20">|</span>
-                                             <UserCheck className="w-3.5 h-3.5" /> Lv. 24 {t('detail.comm.supporter')}
+                                             <UserCheck className="w-3.5 h-3.5" /> {comment.user?.tier_badge || t('detail.comm.supporter')}
                                           </div>
                                        </div>
-                                       <button className="text-zinc-200 hover:text-black transition-colors"><Share2 className="w-5 h-5" /></button>
+                                       <button type="button" className="text-zinc-200 hover:text-black transition-colors"><Share2 className="w-5 h-5" /></button>
                                     </div>
                                     <div className="relative">
                                        <div className="absolute left-[-2rem] top-0 bottom-0 w-[2px] bg-zinc-50 group-hover:bg-accent/20 transition-colors" />
                                        <p className="text-xl font-bold leading-relaxed italic text-zinc-500 group-hover:text-zinc-800 transition-colors">
-                                          {comment.content}
+                                          {comment.content || comment.body}
                                        </p>
                                     </div>
                                     <div className="flex items-center gap-8 pt-4">
-                                       <button className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-all flex items-center gap-2 italic">
+                                       <button type="button" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-all flex items-center gap-2 italic">
                                           <MessageSquare className="w-3.5 h-3.5" /> {t('detail.comm.reply')}
                                        </button>
-                                       <button className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-all flex items-center gap-2 italic">
+                                       <button type="button" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black transition-all flex items-center gap-2 italic">
                                           <Shield className="w-3.5 h-3.5" /> {t('detail.comm.report')}
                                        </button>
                                     </div>
@@ -447,9 +525,7 @@ const ServerDetail: React.FC = () => {
                     >
                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
                           {[
-                            { label: t('detail.tech.latency'), value: '14MS', icon: Globe, status: t('detail.tech.excellent') },
-                            { label: t('detail.tech.uptime'), value: '99.98%', icon: Activity, status: t('detail.tech.stable') },
-                            { label: t('detail.tech.integrity'), value: 'CERTIFIED', icon: Shield, status: t('detail.tech.secure') },
+                            ...technicalCards,
                           ].map(item => (
                             <div key={item.label} className="p-10 border border-zinc-100 rounded-[3rem] bg-white space-y-6 shadow-xl shadow-black/5">
                                <div className="flex items-center justify-between">
@@ -471,12 +547,11 @@ const ServerDetail: React.FC = () => {
                           </header>
                           <div className="space-y-4 font-mono text-[11px] text-zinc-400">
                              {[
-                               "> INITIALIZING_GRID_SYNC_04:30:12",
-                               "> PORT_ENCRYPTION_LAYER_5_ACTIVE",
-                               "> NODE_CLUSTER_OMEGA_REACHABLE",
-                               "> BROADCAST_BUFFER_CLEAR_OK",
-                               "> LATENCY_STABILIZED_AT_14.2MS",
-                               "> ALL_SYSTEMS_OPTIMAL_FOR_JOIN"
+                               `> SERVER_ID ${formatServerMetric(server?.id)}`,
+                               `> HOST ${formatServerMetric(server?.ip)}`,
+                               `> VERSION ${formatServerMetric(server?.version ?? server?.supported_versions)}`,
+                               `> REVIEW_STATUS ${formatServerMetric(server?.review_status)}`,
+                               `> UPDATED_AT ${server?.updated_at ? new Date(server.updated_at).toLocaleString() : '暂无'}`,
                              ].map((line, i) => (
                                <motion.div 
                                  key={i} 
@@ -502,12 +577,7 @@ const ServerDetail: React.FC = () => {
                       exit={{ opacity: 0, x: 20 }}
                       className="grid grid-cols-1 md:grid-cols-2 gap-8"
                     >
-                       {[
-                         { title: '禁止矩阵漏洞利用', desc: '任何绕过节点安全或利用网格漏洞的行为都将被永久封禁。' },
-                         { title: '零负面协议', desc: '通信内容必须保持高握手完整性，系统会过滤恶意情绪洪流。' },
-                         { title: '资产完整性', desc: '请尊重所有节点资产与网格结构，未经授权的篡改将被严格禁止。' },
-                         { title: '身份同步', desc: '所有集群交互需保持一致的身份矩阵，冒充行为将触发安全警报。' },
-                       ].map((rule, i) => (
+                       {(rules.length > 0 ? rules : [{ title: '规则未配置', desc: '该服务器暂未填写公开规则，请以服务器内公告为准。' }]).map((rule, i) => (
                          <div key={i} className="p-12 border border-zinc-100 rounded-[3rem] bg-white space-y-6 hover:bg-black hover:text-white transition-all duration-700 group shadow-xl shadow-black/5">
                             <div className="flex items-center justify-between">
                                <div className="w-12 h-12 rounded-2xl bg-zinc-50 text-black flex items-center justify-center group-hover:bg-white/10 group-hover:text-white transition-all">
@@ -532,30 +602,31 @@ const ServerDetail: React.FC = () => {
                     <Award className="w-5 h-5 text-zinc-100 group-hover/sidebar:rotate-12 transition-transform duration-700" />
                  </div>
                  <div className="space-y-8">
-                    {[
-                      { name: 'Matrix_Overlord', level: 'Lv. 99', avatar: '1' },
-                      { name: 'Redstone_Architect', level: 'Lv. 84', avatar: '2' },
-                      { name: 'Node_Guardian_01', level: 'Lv. 76', avatar: '3' },
-                    ].map((user, i) => (
+                    {server?.owner ? [server.owner].map((owner: any, i: number) => (
                       <div key={i} className="flex items-center justify-between group/user cursor-pointer">
                          <div className="flex items-center gap-6">
-                            <div className="w-12 h-12 rounded-2xl bg-zinc-50 border border-zinc-100 overflow-hidden group-hover/user:scale-110 transition-transform">
-                               <img src={`https://i.pravatar.cc/100?img=${i+5}`} className="w-full h-full object-cover grayscale" />
+                            <div className="w-12 h-12 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-center overflow-hidden group-hover/user:scale-110 transition-transform">
+                               {owner.avatar_url ? (
+                                 <img src={owner.avatar_url} className="w-full h-full object-cover grayscale" alt={owner.display_name || owner.username || 'owner'} />
+                               ) : (
+                                 <span className="font-black text-zinc-500">{(owner.display_name || owner.username || 'O')[0]}</span>
+                               )}
                             </div>
                             <div className="flex flex-col -space-y-1">
-                               <span className="text-lg font-black italic tracking-tighter uppercase group-hover/user:text-accent transition-colors">{user.name}</span>
-                               <span className="text-[9px] font-black text-zinc-300 uppercase italic">{user.level} {t('detail.comm.authority')}</span>
+                               <span className="text-lg font-black italic tracking-tighter uppercase group-hover/user:text-accent transition-colors">{owner.display_name || owner.username || '服务器主'}</span>
+                               <span className="text-[9px] font-black text-zinc-300 uppercase italic">OWNER</span>
                             </div>
                          </div>
                          <div className="flex items-center gap-2 px-3 py-1 bg-zinc-50 rounded-sm text-[8px] font-black italic text-zinc-400 group-hover/user:bg-black group-hover/user:text-white transition-all">
-                            PRO_REP
+                            OWNER
                          </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="rounded-[2rem] border border-dashed border-zinc-100 p-6 text-center text-xs font-bold text-zinc-400">
+                        暂无公开成员数据
+                      </div>
+                    )}
                  </div>
-                 <button className="w-full py-6 border border-zinc-100 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.5em] hover:bg-black hover:text-white transition-all italic shadow-xs">
-                    {t('detail.side.leaderboard')}
-                 </button>
               </section>
 
               <section className="p-12 border border-zinc-100 rounded-[4rem] bg-zinc-900 text-white space-y-8 relative overflow-hidden group">

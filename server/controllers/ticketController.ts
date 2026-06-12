@@ -245,10 +245,29 @@ export const cleanupOldTickets = async () => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const result = await prisma.ticket.deleteMany({
+        const staleTicketIds = await prisma.ticket.findMany({
             where: {
                 updated_at: { lt: thirtyDaysAgo },
-                status: { not: 'CLOSED' } 
+                status: { not: 'CLOSED' }
+            },
+            select: { id: true }
+        });
+
+        if (staleTicketIds.length === 0) {
+            return;
+        }
+
+        const ids = staleTicketIds.map((row) => row.id);
+
+        await prisma.ticketMessage.deleteMany({
+            where: {
+                ticket_id: { in: ids }
+            }
+        });
+
+        const result = await prisma.ticket.deleteMany({
+            where: {
+                id: { in: ids }
             }
         });
         

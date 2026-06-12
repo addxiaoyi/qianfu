@@ -29,6 +29,10 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if ("/admin/login".equals(requestUri)) {
+            return true;
+        }
+
         if (!requestUri.startsWith("/admin/")) {
             return true;
         }

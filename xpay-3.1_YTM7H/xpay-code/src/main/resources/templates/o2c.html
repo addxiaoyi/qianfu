@@ -1,3 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>OAuth 回调处理中</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css" />
+</head>
+<body class="liandeng-page">
+<main class="liandeng-shell">
+    <section class="liandeng-card liandeng-card--narrow" style="text-align:center;">
+        <span class="liandeng-kicker">QianFu Liandeng / OAuth</span>
+        <h1 class="liandeng-title">授权结果处理中</h1>
+        <p class="liandeng-subtitle">窗口将在完成回调后自动关闭。请勿手动刷新当前页面。</p>
+    </section>
+</main>
 <script>
 var qp = null;
 if(/code|token|error/.test(window.location.hash)) {
@@ -18,3 +34,5 @@ else
 
 window.close();
 </script>
+</body>
+</html>

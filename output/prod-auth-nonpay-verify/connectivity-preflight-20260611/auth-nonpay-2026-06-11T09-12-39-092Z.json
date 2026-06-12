@@ -1,0 +1,32 @@
+{
+  "startedAt": "2026-06-11T09:12:34.058Z",
+  "finishedAt": "2026-06-11T09:12:39.091Z",
+  "baseUrl": "https://mc-u.top",
+  "kind": "reachability_preflight",
+  "ok": false,
+  "host": "mc-u.top",
+  "port": 443,
+  "browser": {
+    "proxyMode": "direct",
+    "navTimeoutMs": 30000,
+    "fetchTimeoutMs": 30000,
+    "connectTimeoutMs": 5000,
+    "reachabilityPreflight": "failed"
+  },
+  "plannedRoutes": 0,
+  "passedRoutes": 0,
+  "failedRoutes": 1,
+  "skipped": [],
+  "results": [
+    {
+      "context": "preflight",
+      "path": "(tcp)",
+      "label": "reachability preflight",
+      "ok": false,
+      "finalUrl": "",
+      "error": {
+        "message": "TCP connection failed: mc-u.top:443 after 5000ms"
+      }
+    }
+  ]
+}

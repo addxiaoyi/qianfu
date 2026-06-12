@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-server/
+dist-server-build/
+prisma/generated/
+qianfu-liandeng/dist/
+qianfu-liandeng/dist-mobilefix/
+qianfu-liandeng/dist-mobilefix-2/
+qianfu-liandeng/public/tinymce/
+qianfu-liandeng/server/
+_backup_root_cleanup_20260504-214218/
+tmp/
+output/
+logs/
+test-results/

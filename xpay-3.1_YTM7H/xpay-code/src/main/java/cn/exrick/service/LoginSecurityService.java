@@ -8,6 +8,7 @@ import cn.exrick.dao.AdminUserDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,7 @@ public class LoginSecurityService {
     @Autowired
     private AdminProperties adminProperties;
 
+    @Lazy
     @Autowired
     private WechatMessageService wechatMessageService;
 

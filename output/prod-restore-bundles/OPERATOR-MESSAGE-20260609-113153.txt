@@ -1,0 +1,30 @@
+请上传并在生产机执行以下恢复包：
+
+文件：
+qianfu-prod-restore-20260609-113153.tar.gz
+
+SHA-256：
+94e7dfa8f7cfa34c88f50068628c3a2d296141707a4962557936cd274b7259a4
+
+建议上传路径：
+/www/wwwroot/qianfu-prod-restore-20260609-113153.tar.gz
+
+生产机终端执行：
+
+cd /www/wwwroot/qianfu-app
+tar -xzf /www/wwwroot/qianfu-prod-restore-20260609-113153.tar.gz -C /www/wwwroot/qianfu-app
+bash scripts/linux/prod-terminal-snapshot.sh
+bash scripts/linux/prod-terminal-minimal-repair.sh --preflight-only
+bash scripts/linux/prod-terminal-minimal-repair.sh --dry-run --no-strict
+sudo bash scripts/linux/prod-terminal-minimal-repair.sh
+
+恢复后请回传终端输出，或在本机执行：
+npm run prod:verify:public:win
+
+成功标准：
+- https://mc-u.top/api/health 返回 200
+- https://mc-u.top/api/ready 返回 200
+- https://mc-u.top/qianfu-dist-manifest.json 返回 JSON
+- https://mc-u.top/assets/index-CHZmvcH-.js 返回 200
+- https://pay.star-web.top/ 返回 qianfu-pay-gateway
+- npm run prod:verify:public:win 输出 failed_count=0

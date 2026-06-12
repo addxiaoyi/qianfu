@@ -1,5 +1,9 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { execFile as execFileCallback } from 'node:child_process';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { promisify } from 'node:util';
+
+const execFile = promisify(execFileCallback);
 
 type EndpointCheck = {
   name: string;
@@ -32,6 +36,7 @@ function parseArgs() {
   const args = process.argv.slice(2);
   let cliBase: string | undefined;
   let strictReady = process.env.SMOKE_READY_STRICT === '1';
+  let skipFrontendFreshness = false;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--base' && args[i + 1]) {
@@ -43,9 +48,13 @@ function parseArgs() {
       strictReady = true;
       continue;
     }
+    if (args[i] === '--skip-frontend-freshness') {
+      skipFrontendFreshness = true;
+      continue;
+    }
   }
 
-  return { cliBase, strictReady };
+  return { cliBase, strictReady, skipFrontendFreshness };
 }
 
 function buildCandidateBases(cliBase?: string): string[] {
@@ -57,7 +66,11 @@ function buildCandidateBases(cliBase?: string): string[] {
   ].filter(Boolean) as string[];
 
   const defaults = ['http://127.0.0.1:3000', 'http://localhost:3000'];
-  return [...new Set([...envCandidates.map(normalizeBase), ...defaults])];
+  if (envCandidates.length > 0) {
+    return [...new Set(envCandidates.map(normalizeBase))];
+  }
+
+  return [...new Set(defaults.map(normalizeBase))];
 }
 
 async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Response> {
@@ -66,6 +79,24 @@ async function fetchWithTimeout(url: string, timeoutMs = 12000): Promise<Respons
 
 function truncateText(text: string, max = 180): string {
   return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
+function parseKv(text: string) {
+  const values: Record<string, string> = {};
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf('=');
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    values[line.slice(0, separatorIndex)] = line.slice(separatorIndex + 1);
+  }
+  return values;
 }
 
 async function checkEndpoint(check: EndpointCheck, bases: string[]): Promise<CheckResult> {
@@ -134,8 +165,130 @@ async function checkEndpoint(check: EndpointCheck, bases: string[]): Promise<Che
   };
 }
 
+async function checkFrontendFreshness(cliBase?: string): Promise<CheckResult> {
+  const frontendBase = normalizeBase(
+    cliBase ||
+      process.env.SMOKE_API_BASE_URL ||
+      process.env.SMOKE_WEB_BASE_URL ||
+      process.env.QIANFU_BASE_URL ||
+      process.env.SMOKE_BASE_URL ||
+      'https://mc-u.top',
+  );
+  const tsxCliPath = resolve(process.cwd(), 'node_modules', 'tsx', 'dist', 'cli.mjs');
+
+  try {
+    if (!existsSync(tsxCliPath)) {
+      throw new Error(`tsx cli not found at ${tsxCliPath}`);
+    }
+
+    const { stdout } = await execFile(
+      process.execPath,
+      [tsxCliPath, 'scripts/probe-frontend-deploy.ts', '--report-only', '--kv', '--base', frontendBase],
+      {
+        cwd: process.cwd(),
+        maxBuffer: 1024 * 1024,
+      },
+    );
+    const values = parseKv(stdout);
+    const remoteUrl = values.remote_url || `${frontendBase}/`;
+    const remoteStatus = Number(values.remote_root_status || '0');
+    const attempts: ProbeAttempt[] = [
+      {
+        url: remoteUrl,
+        ok: true,
+        status: Number.isFinite(remoteStatus) && remoteStatus > 0 ? remoteStatus : undefined,
+        detail: `remoteBundle=${values.remote_bundle || 'unknown'} localBundle=${values.local_bundle || 'unknown'} assets=${values.asset_content_match || 'unknown'}`,
+      },
+    ];
+
+    if (values.remote_root_status !== '200') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: `Frontend root ${remoteUrl} returned HTTP ${values.remote_root_status || 'unknown'}`,
+        attempts,
+      };
+    }
+
+    if (values.bundle_match === 'false') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: `Remote bundle ${values.remote_bundle || 'unknown'} does not match local build ${values.local_bundle || 'unknown'}`,
+        attempts,
+      };
+    }
+
+    if (values.remote_legacy_hash_markers && values.remote_legacy_hash_markers !== 'none') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: `Remote HTML still contains legacy hash-route markers: ${values.remote_legacy_hash_markers}`,
+        attempts,
+      };
+    }
+
+    if (values.search_target_match === 'false') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: `Remote SearchAction target ${values.remote_search_target || 'unknown'} does not match local build ${values.local_search_target || 'unknown'}`,
+        attempts,
+      };
+    }
+
+    if (values.asset_reference_match === 'false') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: 'Remote entry asset references do not match the local dist build',
+        attempts,
+      };
+    }
+
+    if (values.asset_content_match === 'false') {
+      return {
+        name: 'frontend-freshness',
+        ok: false,
+        optional: false,
+        status: remoteStatus || undefined,
+        detail: `Remote entry assets are missing or different: ${values.missing_or_mismatched_assets || 'unknown'}`,
+        attempts,
+      };
+    }
+
+    return {
+      name: 'frontend-freshness',
+      ok: true,
+      optional: false,
+      status: remoteStatus || undefined,
+      detail: `Frontend root and entry assets match current build (${values.local_bundle || values.remote_bundle || 'unknown'})`,
+      attempts,
+    };
+  } catch (error) {
+    const stdout = typeof error === 'object' && error && 'stdout' in error ? String((error as { stdout?: string }).stdout || '') : '';
+    return {
+      name: 'frontend-freshness',
+      ok: false,
+      optional: false,
+      detail: stdout ? `${error instanceof Error ? error.message : String(error)} | ${stdout}` : error instanceof Error ? error.message : String(error),
+      attempts: [{ url: frontendBase, ok: false, detail: error instanceof Error ? error.message : String(error) }],
+    };
+  }
+}
+
 async function main() {
-  const { cliBase, strictReady } = parseArgs();
+  const { cliBase, strictReady, skipFrontendFreshness } = parseArgs();
   const bases = buildCandidateBases(cliBase);
 
   const checks: EndpointCheck[] = [
@@ -188,6 +341,9 @@ async function main() {
   ];
 
   const results = await Promise.all(checks.map((check) => checkEndpoint(check, bases)));
+  if (!skipFrontendFreshness) {
+    results.push(await checkFrontendFreshness(cliBase));
+  }
   const failedRequired = results.filter((r) => !r.ok && !r.optional);
   const failedOptional = results.filter((r) => !r.ok && r.optional);
 
@@ -220,12 +376,11 @@ async function main() {
 
   if (failedRequired.length > 0) {
     console.error(`[smoke:deploy] Required checks failed: ${failedRequired.map((r) => r.name).join(', ')}`);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
 main().catch((error) => {
   console.error('[smoke:deploy] Unexpected error:', error);
-  process.exit(1);
+  process.exitCode = 1;
 });
-

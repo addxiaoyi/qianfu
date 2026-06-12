@@ -1,0 +1,2 @@
++ bash -lc pgrep\ -af\ \'node\|pm2\|java\'\ \|\|\ true
+bash: line 1: pgrep: command not found

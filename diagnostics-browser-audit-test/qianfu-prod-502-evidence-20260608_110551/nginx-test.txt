@@ -1,0 +1,2 @@
++ bash -lc nginx\ -t
+bash: line 1: nginx: command not found

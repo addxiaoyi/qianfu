@@ -85,8 +85,14 @@ export function registerFoundationLayer(app: Application): void {
   }
 
   // JSON/URL 解析
-  app.use(express.json({ limit: '1mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  app.use(express.json({
+    limit: '1mb',
+    strict: true,
+    verify: (req, _res, buf) => {
+      ((req as unknown) as { rawBody?: string }).rawBody = buf.toString('utf8');
+    },
+  }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 100 }));
 
   // Swagger 文档
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -128,7 +134,7 @@ export function registerBusinessPrepLayer(app: Application): void {
     '/api',
     createRequestTimeoutMiddleware({
       timeoutMs: Number.parseInt(process.env.API_REQUEST_TIMEOUT_MS || '15000', 10),
-      excludePaths: ['/api/health', '/api-docs'],
+      excludePaths: ['/api/health', '/api-docs', '/api/v1/auth/github/callback', '/api/auth/github/callback', '/auth/callback/github'],
     }),
   );
 

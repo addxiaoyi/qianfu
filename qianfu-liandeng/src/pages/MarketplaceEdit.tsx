@@ -20,6 +20,7 @@ export default function MarketplaceEdit() {
   const [form, setForm] = useState({ title: '', category: 'map', description: '', price: '0', author: '', coverUrl: '', downloadUrl: '' });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [resourceFile, setResourceFile] = useState<File | null>(null);
+  const [coverObjectUrl, setCoverObjectUrl] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [pulse, setPulse] = useState(0);
@@ -36,17 +37,27 @@ export default function MarketplaceEdit() {
 
   const uploadAsset = async (file: File, kind: 'image' | 'asset' = 'image') => {
     const formData = new FormData();
-    formData.append('file', file);
     formData.append('kind', kind);
+    formData.append('file', file);
     const result = await api.post<{ data?: { url: string }; url?: string }>('/upload', formData, { skipCsrf: false, useAuth: true });
     return result?.data?.url || result?.url || '';
   };
 
+  useEffect(() => {
+    if (!coverFile) {
+      setCoverObjectUrl('');
+      return;
+    }
+    const objectUrl = URL.createObjectURL(coverFile);
+    setCoverObjectUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [coverFile]);
+
   const coverPreview = useMemo(() => {
-    if (coverFile) return URL.createObjectURL(coverFile);
-    if (form.coverUrl && isImageUrlSafe(form.coverUrl)) return form.coverUrl;
+    if (coverObjectUrl) return coverObjectUrl;
+    if (form.coverUrl && isImageUrlSafe(form.coverUrl)) return sanitizeUrl(form.coverUrl);
     return 'https://picsum.photos/seed/product-cover/900/600';
-  }, [coverFile, form.coverUrl]);
+  }, [coverObjectUrl, form.coverUrl]);
 
   const resourcePreview = useMemo(() => {
     if (resourceFile) return resourceFile.name;
@@ -57,8 +68,14 @@ export default function MarketplaceEdit() {
     if (!id) return;
     setSaving(true);
     try {
-      const coverUrl = coverFile ? await uploadAsset(coverFile, 'image') : form.coverUrl;
-      const downloadUrl = resourceFile ? await uploadAsset(resourceFile, 'asset') : form.downloadUrl;
+      if (!coverFile && form.coverUrl && !isImageUrlSafe(form.coverUrl)) {
+        throw new Error('封面地址不安全或不是允许的图片 URL');
+      }
+      if (!resourceFile && form.downloadUrl && !isUrlSafe(form.downloadUrl)) {
+        throw new Error('下载地址不安全');
+      }
+      const coverUrl = coverFile ? await uploadAsset(coverFile, 'image') : sanitizeUrl(form.coverUrl);
+      const downloadUrl = resourceFile ? await uploadAsset(resourceFile, 'asset') : sanitizeUrl(form.downloadUrl);
       await api.patch(`/qianfu/marketplace/products/${id}`, { ...form, price: Number(form.price), coverUrl, downloadUrl });
       setMessage('保存成功，已同步到市场');
       setPulse((n) => n + 1);
@@ -75,7 +92,7 @@ export default function MarketplaceEdit() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-16 space-y-6">
       <div className="rounded-3xl border border-border bg-card p-6 md:p-8 shadow-sm space-y-3">
-        <div className="text-[10px] font-black uppercase tracking-[0.45em] italic text-accent">EDIT_PRODUCT</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.45em] italic text-accent">编辑商品</div>
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">编辑商品</h1>
         <p className="text-sm text-muted-foreground">更新商品信息、封面图和资源附件，保存后会立即同步到市场。</p>
         {message && (
@@ -108,7 +125,7 @@ export default function MarketplaceEdit() {
             <textarea className="rounded-xl border border-border px-4 py-3 md:col-span-2 min-h-40 bg-background" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="描述" />
           </div>
           <div className="flex gap-3 flex-wrap">
-            <button onClick={save} disabled={saving} className="px-5 py-3 rounded-xl bg-black text-white font-bold disabled:opacity-60">{saving ? '保存中...' : '保存修改'}</button>
+            <button type="button" onClick={save} disabled={saving} className="px-5 py-3 rounded-xl bg-black text-white font-bold disabled:opacity-60">{saving ? '保存中...' : '保存修改'}</button>
             <Link to="/marketplace/manage" className="px-5 py-3 rounded-xl border border-border font-bold">返回管理</Link>
           </div>
         </div>

@@ -17,12 +17,14 @@ const isCriticalCoverage = coverageScope === 'critical';
  * 3) 不要为临时放行而随意删减此清单。
  */
 const CRITICAL_COVERAGE_INCLUDE = [
-  'src/hooks/useBufferedFetch.ts',
-  'src/hooks/usePaymentStatusPolling.ts',
-  'src/components/ui/use-toast.tsx',
-  'src/lib/api-utils.ts',
-  'src/stores/serverStore.ts',
-  'src/stores/userStore.ts',
+  'server/contracts/responseEnvelope.ts',
+  'server/contracts/responseSemantics.ts',
+  'server/middleware/idempotency.ts',
+  'server/middleware/requestTimeout.ts',
+  'server/middleware/requestValidation.ts',
+  'server/services/moderationService.ts',
+  'server/services/notificationQueue.ts',
+  'server/utils/queryBuilder.ts',
 ] as const;
 
 export default defineConfig({

@@ -6,6 +6,15 @@ import { handleError } from '../utils/errors';
 
 const DEFAULT_ROLE_UPGRADE_PERMISSIONS = ['sponsor_badge', 'priority_support', 'early_access'];
 
+const LISTING_PLAN_CANONICAL: Record<string, 'basic-monthly' | 'pro-quarterly' | 'vip-yearly'> = {
+  'basic-monthly': 'basic-monthly',
+  'pro-quarterly': 'pro-quarterly',
+  'vip-yearly': 'vip-yearly',
+  'listing-basic-monthly': 'basic-monthly',
+  'listing-pro-quarterly': 'pro-quarterly',
+  'listing-vip-yearly': 'vip-yearly',
+};
+
 
 /**
  * Handle payment success side effects
@@ -19,6 +28,20 @@ eventService.on(EVENTS.PAYMENT_SUCCESS, async (payment: any) => {
 
     // Process plan-specific role upgrades
     if (planId && planId !== 'custom' && planId !== 'server_slot') {
+      const listingPlan = LISTING_PLAN_CANONICAL[planId];
+      if (listingPlan) {
+        await prisma.notification.create({
+          data: {
+            user_id: userId,
+            title: 'Wallet Recharge Received',
+            content: `Your ${listingPlan} recharge order has been completed. Funds are now available in your wallet for server publishing.`,
+            type: 'SUCCESS',
+          }
+        });
+        logger.info(`[PaymentHandler] Listing recharge order ${listingPlan} completed for user ${userId}`);
+        return;
+      }
+
       let planName = 'Premium Plan';
       
       // Upgrade user role if it's a sponsor plan

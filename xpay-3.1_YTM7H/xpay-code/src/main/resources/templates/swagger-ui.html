@@ -6,6 +6,7 @@
   <title>Swagger UI</title>
   <link rel="icon" type="image/png" href="swagger/images/favicon-32x32.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="swagger/images/favicon-16x16.png" sizes="16x16" />
+  <link rel="stylesheet" href="/assets/css/liandeng-theme.css" />
   <link href='swagger/css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
   <link href='swagger/css/reset.css' media='screen' rel='stylesheet' type='text/css'/>
   <link href='swagger/css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
@@ -87,6 +88,59 @@
       }
   });
   </script>
+  <style>
+    body.swagger-section {
+      background:
+        radial-gradient(circle at top, rgba(190, 163, 115, 0.16), transparent 28%),
+        #f5f1e8;
+      color: #121212;
+    }
+    #header {
+      background: rgba(255, 253, 248, 0.92);
+      border-bottom: 1px solid #ddd1bb;
+      box-shadow: 0 16px 50px rgba(18, 18, 18, 0.06);
+    }
+    .swagger-ui-wrap {
+      max-width: 1240px;
+    }
+    #logo span,
+    #logo span.logo__title {
+      color: #121212 !important;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-style: italic;
+    }
+    .swagger-section #header a#logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .swagger-section input[type=text] {
+      border-radius: 999px;
+      border: 1px solid #d5c7af;
+      background: #fffdf8;
+      box-shadow: none;
+    }
+    .swagger-section .header__btn,
+    .swagger-section .authorize__btn {
+      border-radius: 999px;
+      border-color: #121212;
+      background: #121212;
+      color: #f7f3ea;
+    }
+    .swagger-section .swagger-ui-wrap .info_title,
+    .swagger-section .swagger-ui-wrap .info hgroup.main a {
+      color: #121212;
+    }
+    .swagger-section .opblock,
+    .swagger-section .model-box,
+    .swagger-section .scheme-container {
+      border-radius: 24px;
+      border-color: #dfd3bf;
+      box-shadow: 0 16px 36px rgba(18, 18, 18, 0.05);
+      background: rgba(255, 253, 248, 0.96);
+    }
+  </style>
 </head>
 
 <body class="swagger-section">

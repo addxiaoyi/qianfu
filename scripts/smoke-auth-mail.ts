@@ -78,12 +78,20 @@ async function verifyBrevoApi() {
     return;
   }
 
-  const res = await axios.get(`${apiBaseUrl}/account`, {
-    headers: { 'api-key': apiKey },
-    timeout: 12000,
-  });
-
-  pushResult('Brevo API', 'pass', `ok (${res.status})`);
+  try {
+    const res = await axios.get(`${apiBaseUrl}/account`, {
+      headers: { 'api-key': apiKey },
+      timeout: 12000,
+    });
+    pushResult('Brevo API', 'pass', `ok (${res.status})`);
+  } catch (error: unknown) {
+    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+    if (status === 401 || status === 403) {
+      pushResult('Brevo API', 'warn', `auth failed (${status}), SMTP fallback should be used`);
+      return;
+    }
+    throw error;
+  }
 }
 
 async function verifySuperTokensCore() {

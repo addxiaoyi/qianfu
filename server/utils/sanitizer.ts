@@ -38,7 +38,6 @@ const sqlInjectionPatterns = [
 ];
 
 const suspiciousKeywords = [
-  'script',
   'javascript:',
   'vbscript:',
   'onload=',
@@ -203,7 +202,12 @@ export function sanitizeRequestBody(req: Request, _res: Response, next: NextFunc
 export function createSQLInjectionProtection(enabled: boolean = true) {
   const whitelistedPaths = [
     '/api/csrf-token',
+    '/api/v1/csrf-token',
+    '/api/auth/csrf-token',
+    '/api/v1/auth/csrf-token',
     '/health',
+    '/api/ready',
+    '/api/v1/ready',
     '/api/health',
   ];
 

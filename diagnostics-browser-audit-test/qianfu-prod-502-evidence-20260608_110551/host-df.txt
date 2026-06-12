@@ -1,0 +1,5 @@
++ df -h
+Filesystem            Size  Used Avail Use% Mounted on
+C:/Program Files/Git  401G  358G   43G  90% /
+D:                    552G  262G  291G  48% /d
+M:                    1.9T  811G  1.1T  43% /m

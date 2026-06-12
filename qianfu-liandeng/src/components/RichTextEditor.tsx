@@ -104,15 +104,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
         {/* Table Toolbar (Floating when inside table) */}
         {editor.isActive('table') && (
            <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 p-3 bg-white border border-zinc-100 rounded-[2.5rem] shadow-2xl backdrop-blur-xl">
-              <button onClick={() => editor.chain().focus().addColumnBefore().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Column Before"><Plus className="w-4 h-4" /></button>
-              <button onClick={() => editor.chain().focus().deleteColumn().run()} className="p-3 hover:bg-red-50 text-red-500 rounded-xl transition-colors" title="Delete Column"><Minus className="w-4 h-4" /></button>
-              <button onClick={() => editor.chain().focus().addColumnAfter().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Column After"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().addColumnBefore().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Column Before"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().deleteColumn().run()} className="p-3 hover:bg-red-50 text-red-500 rounded-xl transition-colors" title="Delete Column"><Minus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().addColumnAfter().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Column After"><Plus className="w-4 h-4" /></button>
               <div className="w-px h-6 bg-zinc-200 mx-2" />
-              <button onClick={() => editor.chain().focus().addRowBefore().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Row Before"><Plus className="w-4 h-4" /></button>
-              <button onClick={() => editor.chain().focus().deleteRow().run()} className="p-3 hover:bg-red-50 text-red-500 rounded-xl transition-colors" title="Delete Row"><Minus className="w-4 h-4" /></button>
-              <button onClick={() => editor.chain().focus().addRowAfter().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Row After"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().addRowBefore().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Row Before"><Plus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().deleteRow().run()} className="p-3 hover:bg-red-50 text-red-500 rounded-xl transition-colors" title="Delete Row"><Minus className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().addRowAfter().run()} className="p-3 hover:bg-zinc-50 rounded-xl transition-colors" title="Add Row After"><Plus className="w-4 h-4" /></button>
               <div className="w-px h-6 bg-zinc-200 mx-2" />
-              <button onClick={() => editor.chain().focus().deleteTable().run()} className="p-3 hover:bg-black text-white rounded-xl transition-colors" title="Delete Table"><Trash2 className="w-4 h-4" /></button>
+              <button type="button" onClick={() => editor.chain().focus().deleteTable().run()} className="p-3 hover:bg-black text-white rounded-xl transition-colors" title="Delete Table"><Trash2 className="w-4 h-4" /></button>
            </div>
         )}
       </div>

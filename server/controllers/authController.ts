@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Session from 'supertokens-node/recipe/session';
 import EmailPassword from 'supertokens-node/recipe/emailpassword';
+import crypto from 'crypto';
 import prisma from '../db';
 import { changePasswordSchema, devAuthLoginSchema, sessionIdParamSchema } from '../utils/validation';
 import { logAction, logDataChange } from '../services/auditService';
@@ -8,7 +9,17 @@ import { sendSuccess, toSafeUser } from '../utils/response';
 import { logger } from '../utils/logger';
 import { AppError, ErrorCode, handleError } from '../utils/errors';
 import { withCache } from '../services/cache';
-import type { AuthRequest } from '../middleware/auth';
+import { invalidateUserCache, type AuthRequest } from '../middleware/auth';
+import { buildSuccessEnvelope, getRequestId } from '../contracts/responseEnvelope';
+import bcrypt from 'bcrypt';
+import { getJwtSecret } from '../utils/securityConfig';
+import { sendPasswordResetEmail } from '../services/emailService';
+import {
+  clearLocalAuthCookie,
+  LOCAL_AUTH_COOKIE_NAME,
+  setLocalAuthCookie,
+  signLocalAuthToken,
+} from '../utils/localAuth';
 import {
   DEV_AUTH_COOKIE_NAME,
   getDevAuthPassword,
@@ -18,6 +29,112 @@ import {
 } from '../services/devAuth';
 
 const REGISTRATION_STATS_CACHE_KEY = 'admin:registration_stats';
+const RESET_CODE_TTL_MINUTES = 10;
+const RESET_LINK_TTL_MS = 60 * 60 * 1000;
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function isEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function generateCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function generateCodeHash(identifier: string, code: string): string {
+  return crypto.createHmac('sha256', getJwtSecret()).update(`${identifier}:${code}`).digest('hex');
+}
+
+function generateResetToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function hashResetToken(token: string): string {
+  return crypto.createHmac('sha256', getJwtSecret()).update(`password-reset:${token}`).digest('hex');
+}
+
+function readNewPassword(body: Record<string, unknown>): string {
+  return String(body?.newPassword || body?.password || '').trim();
+}
+
+function ensurePasswordPolicy(password: string): void {
+  if (password.length < 8) {
+    throw new AppError('Password must be at least 8 characters', 400, ErrorCode.VALIDATION_ERROR);
+  }
+}
+
+async function updateLocalPassword(userId: number, password: string) {
+  const passwordHash = await bcrypt.hash(password, 12);
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      password_hash: passwordHash,
+      password_changed_at: new Date(),
+      verification_token: null,
+      token_expiry: null,
+      reset_token: null,
+      reset_token_expiry: null,
+      login_count: 0,
+      login_lockout_at: null,
+    },
+  });
+}
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const identifier = String(req.body?.identifier || req.body?.email || '').trim();
+    const password = String(req.body?.password || '');
+    if (!identifier || !password) {
+      throw new AppError('identifier and password are required', 400, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier.toLowerCase() },
+          { username: identifier },
+        ],
+      },
+    });
+
+    if (!user?.password_hash) {
+      throw new AppError('Invalid credentials', 401, ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) {
+      throw new AppError('Invalid credentials', 401, ErrorCode.INVALID_CREDENTIALS);
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        last_login_at: new Date(),
+        login_count: { increment: 1 },
+      },
+    });
+
+    const token = signLocalAuthToken(user.id);
+    setLocalAuthCookie(res, token);
+
+    return res.status(200).json(
+      buildSuccessEnvelope(
+        {
+          token,
+          user: toSafeUser(user, { mask: false }),
+          mode: 'local-auth',
+        },
+        'Login successful',
+        getRequestId(req),
+      ),
+    );
+  } catch (error) {
+    next(handleError(error));
+  }
+};
 
 /**
  * 开发环境降级登录（不依赖 SuperTokens Core）
@@ -151,15 +268,131 @@ export const checkUsernameAvailability = async (req: Request, res: Response, nex
   }
 };
 
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const rawEmail = String(req.body?.email || '').trim();
+    if (!rawEmail || !isEmail(rawEmail)) {
+      throw new AppError('Invalid email format', 400, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const email = normalizeEmail(rawEmail);
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const code = generateCode();
+      const resetToken = generateResetToken();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          verification_token: generateCodeHash(email, code),
+          token_expiry: new Date(Date.now() + RESET_CODE_TTL_MINUTES * 60 * 1000),
+          reset_token: hashResetToken(resetToken),
+          reset_token_expiry: new Date(Date.now() + RESET_LINK_TTL_MS),
+          last_code_send_at: new Date(),
+        },
+      });
+      await sendPasswordResetEmail(email, resetToken, code);
+    }
+
+    return sendSuccess(
+      res,
+      { email },
+      'If the account exists, password reset instructions have been sent',
+      200,
+      undefined,
+      { mask: false },
+    );
+  } catch (error) {
+    next(handleError(error));
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const email = normalizeEmail(String(req.body?.email || ''));
+    const code = String(req.body?.code || '').trim();
+    const password = readNewPassword(req.body || {});
+    ensurePasswordPolicy(password);
+
+    if (!email || !isEmail(email) || !code) {
+      throw new AppError('Invalid reset request', 400, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (
+      !user?.verification_token ||
+      !user.token_expiry ||
+      user.token_expiry < new Date() ||
+      user.verification_token !== generateCodeHash(email, code)
+    ) {
+      throw new AppError('Invalid or expired reset code', 400, ErrorCode.BAD_REQUEST);
+    }
+
+    const updated = await updateLocalPassword(user.id, password);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { email_verified: true },
+    });
+    await invalidateUserCache(String(user.id));
+
+    return sendSuccess(
+      res,
+      { user: toSafeUser({ ...updated, email_verified: true }, { mask: false }) },
+      'Password reset successfully',
+      200,
+      undefined,
+      { mask: false },
+    );
+  } catch (error) {
+    next(handleError(error));
+  }
+};
+
+export const resetPasswordWithToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = String(req.body?.token || '').trim();
+    const password = readNewPassword(req.body || {});
+    ensurePasswordPolicy(password);
+
+    if (!token) {
+      throw new AppError('Reset token is required', 400, ErrorCode.VALIDATION_ERROR);
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        reset_token: hashResetToken(token),
+        reset_token_expiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new AppError('Invalid or expired reset token', 400, ErrorCode.BAD_REQUEST);
+    }
+
+    const updated = await updateLocalPassword(user.id, password);
+    await invalidateUserCache(String(user.id));
+
+    return sendSuccess(
+      res,
+      { user: toSafeUser(updated, { mask: false }) },
+      'Password reset successfully',
+      200,
+      undefined,
+      { mask: false },
+    );
+  } catch (error) {
+    next(handleError(error));
+  }
+};
+
 /**
- * 修改密码（凭证由 SuperTokens EmailPassword 管理）
+ * 修改密码。优先使用本地 password_hash；旧 SuperTokens 账号保留兼容路径。
  */
 export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const ar = req as AuthRequest;
     const stSession = ar.stSession;
     const user = ar.user;
-    if (!stSession || !user) {
+    if (!user) {
       throw new AppError('Authentication required', 401, ErrorCode.UNAUTHORIZED);
     }
 
@@ -169,7 +402,25 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
         issues: validation.error.issues,
       });
     }
-    const { newPassword, oldPassword } = validation.data;
+    const oldPassword = String(req.body?.oldPassword || req.body?.currentPassword || '');
+    const newPassword = readNewPassword(req.body || {});
+    ensurePasswordPolicy(newPassword);
+
+    if (user.password_hash) {
+      const ok = await bcrypt.compare(oldPassword, user.password_hash);
+      if (!ok) {
+        throw new AppError('Invalid old password', 400, ErrorCode.BAD_REQUEST);
+      }
+
+      await updateLocalPassword(user.id, newPassword);
+      await invalidateUserCache(String(user.id));
+      await logAction(user.id, 'CHANGE_PASSWORD_SUCCESS', 'auth', req, {});
+      return sendSuccess(res, null, 'Password updated successfully.');
+    }
+
+    if (!stSession || !user.email) {
+      throw new AppError('Password credentials are not available for this account', 400, ErrorCode.BAD_REQUEST);
+    }
 
     const verify = await EmailPassword.verifyCredentials('public', user.email, oldPassword);
     if (verify.status !== 'OK') {
@@ -203,8 +454,6 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
       }
     }
 
-    // Ensure cached auth/user data is invalidated after a password change.
-    const { invalidateUserCache } = await import('../middleware/auth');
     await invalidateUserCache(String(user.id));
 
     await logAction(user.id, 'CHANGE_PASSWORD_SUCCESS', 'auth', req, {});
@@ -309,18 +558,18 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
       await logAction(user.id, 'USER_LOGOUT', 'auth', req, {});
     }
 
-    const isSecure = process.env.NODE_ENV === 'production';
-    const sameSite = process.env.NODE_ENV === 'production' ? 'strict' : 'lax';
-    const domain = process.env.COOKIE_DOMAIN || undefined;
-
-    for (const name of ['mu_token', 'mu_refresh_token']) {
-      res.clearCookie(name, {
-        httpOnly: true,
-        secure: isSecure,
-        sameSite: sameSite as 'strict' | 'lax' | 'none',
-        path: '/',
-        domain,
-      });
+    for (const name of ['mu_token', 'mu_refresh_token', LOCAL_AUTH_COOKIE_NAME]) {
+      if (name === LOCAL_AUTH_COOKIE_NAME) {
+        clearLocalAuthCookie(res);
+      } else {
+        res.clearCookie(name, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+          path: '/',
+          domain: process.env.COOKIE_DOMAIN || undefined,
+        });
+      }
     }
 
     return sendSuccess(res, null, 'Logout successful');

@@ -70,6 +70,8 @@ const MatrixDialog: React.FC<MatrixDialogProps> = ({
                      className="matrix-input !py-6 !text-2xl"
                      onKeyDown={(e) => {
                        if (e.key === 'Enter') {
+                         e.preventDefault();
+                         e.stopPropagation();
                          handleConfirm();
                        }
                      }}
@@ -77,13 +79,15 @@ const MatrixDialog: React.FC<MatrixDialogProps> = ({
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                   <button 
+                   <button
+                     type="button"
                      onClick={handleConfirm}
                      className="flex-grow py-5 bg-black text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-accent transition-all italic"
                    >
                      EXECUTE_COMMAND
                    </button>
-                   <button 
+                   <button
+                     type="button"
                      onClick={onClose}
                      className="px-10 py-5 border border-zinc-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-zinc-50 transition-all italic"
                    >

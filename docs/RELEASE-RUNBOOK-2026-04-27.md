@@ -98,6 +98,19 @@
   - `SMOKE_API_BASE_URL=https://your-domain.example npm run smoke:deploy`
 - 就绪探针严格模式（要求 `ready=200`）：
   - `SMOKE_API_BASE_URL=https://your-domain.example npm run smoke:deploy -- --strict-ready`
+- 前端新鲜度已默认并入 `smoke:deploy`：
+  - 会顺带检查远端首页 bundle 是否与本地 `qianfu-liandeng/dist/index.html` 一致
+  - 也会检查远端 HTML 是否还残留 `#/search`、`#/servers`、`#/resources` 旧 hash 路由 SEO 标记
+- 如只想临时跳过前端新鲜度检查：
+  - `SMOKE_API_BASE_URL=https://your-domain.example npm run smoke:deploy -- --skip-frontend-freshness`
+- 如生产还带独立支付域，额外执行：
+  - `npm run probe:pay-domain`
+  - 若部署脚本走 `scripts/linux/deploy-bt-oneclick.sh`，建议在 `.env` 中补 `PAY_DOMAIN_HOST=pay.star-web.top` 或至少写明 `XPAY_PUBLIC_URL`
+  - 这样发布尾声也会自动检查支付域证书是否命中自己、是否误回落到主站 HTML，以及根路径是否仍返回 `qianfu-pay-gateway`
+- 如需从非生产机环境复核已部署站点：
+  - `QIANFU_BASE_URL=https://your-domain.example PAY_DOMAIN_HOST=pay.star-web.top bash scripts/linux/qianfu-prod-healthcheck.sh --public-only`
+  - 或 `QIANFU_BASE_URL=https://your-domain.example PAY_DOMAIN_HOST=pay.star-web.top npm run prod:healthcheck:public`
+  - 该检查现会同时覆盖主站 API、主站前端 freshness，以及支付域证书/回站状态
 - 检查报告默认输出到 `logs/`，可用 `SMOKE_REPORT_PATH` 自定义路径。
 
 ## 4. 回滚预案（最小化）

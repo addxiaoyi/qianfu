@@ -1,1 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>StarMC XPay</title>
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css">
+</head>
+<body class="liandeng-body">
+    <div class="ld-shell">
+        <div class="ld-page">
+            <header class="ld-topbar">
+                <div class="ld-brand">
+                    <div class="ld-brand-mark">SM</div>
+                    <div class="ld-brand-copy">
+                        <h1>StarMC XPay</h1>
+                        <div class="ld-kicker">Independent Payment Workspace</div>
+                    </div>
+                </div>
+                <nav class="ld-nav">
+                    <a href="/starmc-pay.html" class="ld-nav-link is-active">支付</a>
+                    <a href="/starmc-confirm.html" class="ld-nav-link">记录</a>
+                    <a href="/starmc-settings.html" class="ld-nav-link">设置</a>
+                </nav>
+            </header>
+
+            <main class="ld-grid ld-grid-hero">
+                <section class="ld-card ld-card-soft">
+                    <p class="ld-kicker">Landing</p>
+                    <h1 class="ld-hero-title" style="margin: 16px 0 18px;">Pay Better, Look Cleaner</h1>
+                    <p class="ld-copy">这里是重构后的 XPay 主页入口。现在它不仅是一个静态收款页，而是一个可切换官方支付宝/微信 API、多租户回调和个人码监听中间层的统一支付工作台。</p>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top: 24px;">
+                        <a href="/starmc-pay.html" class="ld-button">进入支付台</a>
+                        <a href="/admin/login" class="ld-button-secondary">进入后台</a>
+                    </div>
+                </section>
+
+                <section class="ld-card">
+                    <p class="ld-kicker">Quick Links</p>
+                    <div class="ld-list" style="margin-top: 10px;">
+                        <div class="ld-list-item">
+                            <div>
+                                <div style="font-weight:700;">桌面支付页</div>
+                                <div class="ld-copy">新的 StarMC 主支付体验。</div>
+                            </div>
+                            <a href="/starmc-pay.html" class="ld-button-secondary">打开</a>
+                        </div>
+                        <div class="ld-list-item">
+                            <div>
+                                <div style="font-weight:700;">移动支付页</div>
+                                <div class="ld-copy">移动端支付与设置入口。</div>
+                            </div>
+                            <a href="/starmc-pay-mobile.html" class="ld-button-secondary">打开</a>
+                        </div>
+                        <div class="ld-list-item">
+                            <div>
+                                <div style="font-weight:700;">订单确认</div>
+                                <div class="ld-copy">订单查询与支付状态检查。</div>
+                            </div>
+                            <a href="/starmc-confirm.html" class="ld-button-secondary">打开</a>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <section class="ld-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 24px;">
+                <section class="ld-card">
+                    <p class="ld-kicker">Mode A</p>
+                    <h3 class="ld-card-title" style="font-size:1.5rem;">官方 API</h3>
+                    <p class="ld-copy">适合你当前这套付费版。XPay 可以直接发起支付宝当面付和微信 Native 下单，并接官方异步回调自动入账。</p>
+                </section>
+                <section class="ld-card">
+                    <p class="ld-kicker">Mode B</p>
+                    <h3 class="ld-card-title" style="font-size:1.5rem;">多租户中台</h3>
+                    <p class="ld-copy">每个项目拥有自己的 tenantKey、accessToken、callbackSecret 和支付方式，不再把所有业务混在同一套订单里。</p>
+                </section>
+                <section class="ld-card">
+                    <p class="ld-kicker">Mode C</p>
+                    <h3 class="ld-card-title" style="font-size:1.5rem;">个人码监听</h3>
+                    <p class="ld-copy">当官方接口不可用时，仍然可以保留个人码监听中间层，把到账事件推给 Node 再桥接回 XPay 完成业务回调。</p>
+                </section>
+            </section>
+        </div>
+    </div>
+</body>
 </html>

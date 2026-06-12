@@ -4,9 +4,9 @@ import crypto from 'crypto';
 
 import Session from 'supertokens-node/recipe/session';
 
-import prisma, { User } from '../db';
+import prisma from '../db';
 
-import { sendSuccess } from '../utils/response';
+import { sendSuccess, toSafeUser } from '../utils/response';
 
 import { AppError, ErrorCode } from '../utils/errors';
 
@@ -19,12 +19,12 @@ import { sendEmailLoginCode } from '../services/emailService';
 import { sendPhoneLoginCode } from '../services/smsService';
 
 import { getOrCreateSuperTokensUser } from '../services/superTokensUser';
+import { getJwtSecret } from '../utils/securityConfig';
+import { setLocalAuthCookie, signLocalAuthToken } from '../utils/localAuth';
 
 
 
 const CODE_TTL_MINUTES = 10;
-
-const CODE_RATE_LIMIT_MINUTES = 1;
 
 const MAX_VERIFY_ATTEMPTS = 5;
 
@@ -36,7 +36,6 @@ const CODE_SEND_INTERVAL_MS = 60 * 1000; // 60 秒内不可重复发送
 
 const USER_CACHE_PREFIX = 'user:cache:';
 
-const USER_CACHE_TTL = 30;
 
 
 
@@ -63,6 +62,34 @@ function isPhone(value: string): boolean {
 }
 
 
+function isEmail(value: string): boolean {
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+}
+
+
+function maskIdentifier(value: string, type: 'email' | 'phone'): string {
+
+  if (type === 'email') {
+
+    const [name = '', domain = ''] = value.split('@');
+
+    const maskedName = name.length <= 2 ? `${name[0] || '*'}***` : `${name.slice(0, 2)}***`;
+
+    return domain ? `${maskedName}@${domain}` : maskedName;
+
+  }
+
+  const normalized = normalizePhone(value);
+
+  if (normalized.length <= 4) return '****';
+
+  return `${normalized.slice(0, 3)}****${normalized.slice(-2)}`;
+
+}
+
+
 
 function generateCode() {
 
@@ -74,7 +101,7 @@ function generateCode() {
 
 function generateCodeHash(identifier: string, code: string) {
 
-  const secret = process.env.JWT_SECRET || 'change-me';
+  const secret = getJwtSecret();
 
   return crypto.createHmac('sha256', secret).update(`${identifier}:${code}`).digest('hex');
 
@@ -97,11 +124,23 @@ function parseIdentifier(body: Record<string, unknown>) {
 
   if (email) {
 
+    if (!isEmail(email)) {
+
+      throw new AppError('Invalid email format', 400, ErrorCode.VALIDATION_ERROR);
+
+    }
+
     return { identifier: normalizeEmail(email), type: 'email' as const, address: normalizeEmail(email) };
 
   }
 
   if (phone) {
+
+    if (!isPhone(phone)) {
+
+      throw new AppError('Invalid phone format', 400, ErrorCode.VALIDATION_ERROR);
+
+    }
 
     return { identifier: normalizePhone(phone), type: 'phone' as const, address: normalizePhone(phone) };
 
@@ -152,7 +191,7 @@ export const sendLoginCode = async (req: Request, res: Response, next: NextFunct
 
     const { identifier, type, address } = parseIdentifier(req.body);
 
-    logger.debug(`[AuthCode] sendLoginCode: identifier=${identifier} type=${type}`);
+    logger.debug(`[AuthCode] sendLoginCode: identifier=${maskIdentifier(address, type)} type=${type}`);
 
 
 
@@ -160,15 +199,7 @@ export const sendLoginCode = async (req: Request, res: Response, next: NextFunct
 
     if (!user) {
 
-      return sendSuccess(
-
-        res,
-
-        { needsRegistration: true, [type]: address },
-
-        'Account not registered — please register first'
-
-      );
+      return sendSuccess(res, { [type]: maskIdentifier(address, type) }, 'If the account exists, a verification code has been sent');
 
     }
 
@@ -256,7 +287,7 @@ export const sendLoginCode = async (req: Request, res: Response, next: NextFunct
 
 
 
-    return sendSuccess(res, { [type]: address }, 'Verification code sent');
+    return sendSuccess(res, { [type]: maskIdentifier(address, type) }, 'If the account exists, a verification code has been sent');
 
   } catch (error) {
 
@@ -294,7 +325,7 @@ export const verifyLoginCode = async (req: Request, res: Response, next: NextFun
 
 
 
-    logger.debug(`[AuthCode] verifyLoginCode: identifier=${identifier} type=${type}`);
+    logger.debug(`[AuthCode] verifyLoginCode: identifier=${maskIdentifier(address, type)} type=${type}`);
 
 
 
@@ -302,15 +333,7 @@ export const verifyLoginCode = async (req: Request, res: Response, next: NextFun
 
     if (!user) {
 
-      return sendSuccess(
-
-        res,
-
-        { needsRegistration: true, [type]: address },
-
-        'Account not registered — please register first'
-
-      );
+      throw new AppError('Invalid code', 400, ErrorCode.BAD_REQUEST);
 
     }
 
@@ -378,7 +401,7 @@ export const verifyLoginCode = async (req: Request, res: Response, next: NextFun
 
     // 验证成功：更新用户状态
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
 
       where: { id: user.id },
 
@@ -450,7 +473,15 @@ export const verifyLoginCode = async (req: Request, res: Response, next: NextFun
 
 
 
-    return sendSuccess(res, { [type]: address }, 'Code verified and logged in');
+    const token = signLocalAuthToken(user.id);
+    setLocalAuthCookie(res, token);
+
+    return sendSuccess(res, {
+      [type]: address,
+      token,
+      user: toSafeUser({ ...updatedUser, supertokens_user_id: stUserId || updatedUser.supertokens_user_id }, { mask: false }),
+      mode: 'code-auth',
+    }, 'Code verified and logged in', 200, undefined, { mask: false });
 
   } catch (error) {
 

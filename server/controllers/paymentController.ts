@@ -27,6 +27,7 @@ import {
   resolveSortOrder,
 } from '../utils/queryBuilder';
 import { logger } from '../utils/logger';
+import { isTrustedHost } from '../utils/securityConfig';
 import {
   EXTERNAL_PAYMENT_METHODS,
   evaluatePaymentGuardrails,
@@ -35,16 +36,27 @@ import {
 } from '../services/paymentGuardrails';
 import { resolvePaymentCancelAction } from '../services/paymentCancelPolicy';
 import {
+  buildHupijiaoNotifyReplayKey,
   buildPayProNotifyReplayKey,
+  buildQiuPayNotifyReplayKey,
+  buildTpayNotifyReplayKey,
   buildXpayNotifyReplayKey,
+  buildXpayTenantNotifyReplayKey,
   extractRequestClientIp,
   isNotifyIpAllowed,
   resolveNotifyIpAllowlist,
 } from '../services/paymentCallbackSecurity';
+import { assertSafeOutboundCallbackUrl } from '../core/task/callbackOutboundPolicy';
 
 const XPAY_TOKEN = process.env.XPAY_TOKEN;
 const XPAY_API_URL = process.env.XPAY_API_URL || 'http://localhost:8080/api/pay';
 const XPAY_NOTIFY_URL = process.env.XPAY_NOTIFY_URL || 'http://localhost:3000/api/payment/xpay/notify';
+const XPAY_TENANT_CALLBACK_SECRET = process.env.XPAY_TENANT_CALLBACK_SECRET || '';
+const CREEM_API_KEY = process.env.CREEM_API_KEY || '';
+const CREEM_WEBHOOK_SECRET = process.env.CREEM_WEBHOOK_SECRET || '';
+const CREEM_PRODUCT_ID = process.env.CREEM_PRODUCT_ID || '';
+const CREEM_API_BASE_URL = (process.env.CREEM_API_BASE_URL || '').replace(/\/+$/, '');
+const CREEM_RETURN_URL = process.env.CREEM_RETURN_URL || '';
 const PAYPRO_ENABLED = String(process.env.PAYPRO_ENABLED || 'false').toLowerCase() === 'true';
 const PAYPRO_API_URL = (process.env.PAYPRO_API_URL || '').replace(/\/+$/, '');
 const PAYPRO_OPENAPI_SECRET = process.env.PAYPRO_OPENAPI_SECRET || '';
@@ -103,14 +115,225 @@ const PAYPRO_NOTIFY_IP_ALLOWLIST = resolveNotifyIpAllowlist(
   process.env.PAYPRO_NOTIFY_IP_ALLOWLIST,
   process.env.PAYMENT_NOTIFY_IP_ALLOWLIST,
 );
+const TPAY_NOTIFY_IP_ALLOWLIST = resolveNotifyIpAllowlist(
+  process.env.TPAY_NOTIFY_IP_ALLOWLIST,
+  process.env.PAYMENT_NOTIFY_IP_ALLOWLIST,
+);
+const HUPIJIAO_NOTIFY_IP_ALLOWLIST = resolveNotifyIpAllowlist(
+  process.env.HUPIJIAO_NOTIFY_IP_ALLOWLIST,
+  process.env.PAYMENT_NOTIFY_IP_ALLOWLIST,
+);
 
-// Prices stored in fen (yuan * 100) for precision
-// NOTE: These should match the frontend PaymentPlans.tsx defaultPlanConfigs
-const PLAN_PRICES_FEN: Record<string, number> = {
-  'basic-monthly': 700,      // 7 yuan
-  'premium-quarterly': 2000, // 20 yuan
-  'premium-yearly': 6300,    // 63 yuan
-  'server_slot': 500          // 5 yuan
+// Keep backend pricing aligned with the currently deployed frontend payment page.
+const CANONICAL_PLAN_IDS = {
+  'basic-monthly': 'basic-monthly',
+  'pro-quarterly': 'pro-quarterly',
+  'vip-yearly': 'vip-yearly',
+  custom: 'custom',
+  server_slot: 'server_slot',
+  'listing-basic-monthly': 'listing-basic-monthly',
+  'listing-pro-quarterly': 'listing-pro-quarterly',
+  'listing-vip-yearly': 'listing-vip-yearly',
+  'premium-quarterly': 'pro-quarterly',
+  'premium-yearly': 'vip-yearly',
+} as const;
+
+type CanonicalPlanId = keyof typeof CANONICAL_PLAN_IDS;
+
+// Prices stored in fen (yuan * 100) for precision.
+export const PLAN_PRICES_FEN: Record<string, number> = {
+  'basic-monthly': 700,          // 7 yuan
+  'pro-quarterly': 2000,         // 20 yuan
+  'vip-yearly': 9000,            // 90 yuan
+  'listing-basic-monthly': 700,  // 7 yuan
+  'listing-pro-quarterly': 2000, // 20 yuan
+  'listing-vip-yearly': 9000,    // 90 yuan
+  server_slot: 500,      // 5 yuan
+};
+
+export const normalizePlanId = (planId: string): string => {
+  return CANONICAL_PLAN_IDS[planId as CanonicalPlanId] || planId;
+};
+
+const PAYMENT_PROJECT_CONFIG_PREFIX = 'payment_project:';
+const DEFAULT_PAYMENT_PROJECT_KEY = process.env.DEFAULT_PAYMENT_PROJECT_KEY?.trim() || 'qianfu';
+
+const sanitizeProjectKey = (raw: string | null | undefined): string => {
+  const value = (raw || '').trim().toLowerCase();
+  if (!value) {
+    return DEFAULT_PAYMENT_PROJECT_KEY;
+  }
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(value)) {
+    throw new AppError('Invalid project key', 400, ErrorCode.VALIDATION_ERROR);
+  }
+  return value;
+};
+
+export const buildProjectScopedPaymentId = (projectKey: string): string => {
+  return `${projectKey}_${crypto.randomUUID()}`;
+};
+
+export const parseProjectKeyFromPaymentId = (paymentId: string): string | null => {
+  const separatorIndex = paymentId.indexOf('_');
+  if (separatorIndex <= 0) {
+    return null;
+  }
+  return sanitizeProjectKey(paymentId.slice(0, separatorIndex));
+};
+
+type UpstreamProvider = 'paypro' | 'xpay' | 'tpay' | 'hupijiao' | 'creem' | 'qiupay';
+
+const isSupportedUpstreamProvider = (value: string): value is UpstreamProvider =>
+  value === 'paypro' || value === 'xpay' || value === 'tpay' || value === 'hupijiao' || value === 'creem' || value === 'qiupay';
+
+const parsePaymentProjectConfig = (
+  projectKey: string,
+  raw: string | null | undefined,
+): PaymentProjectConfig => {
+  if (!raw?.trim()) {
+    throw new AppError(`Payment project config missing: ${projectKey}`, 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new AppError(`Payment project config is invalid JSON: ${projectKey}`, 500, ErrorCode.INTERNAL_ERROR);
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new AppError(`Payment project config must be an object: ${projectKey}`, 500, ErrorCode.INTERNAL_ERROR);
+  }
+
+  const record = parsed as Record<string, unknown>;
+  const upstreamProvider = String(record.upstreamProvider || '').trim().toLowerCase();
+  if (!isSupportedUpstreamProvider(upstreamProvider)) {
+    throw new AppError(`Unsupported upstream provider for project ${projectKey}`, 500, ErrorCode.INTERNAL_ERROR);
+  }
+
+  const backupUpstreamProviderRaw = String(record.backupUpstreamProvider || '').trim().toLowerCase();
+  const backupUpstreamProvider = backupUpstreamProviderRaw
+    ? (isSupportedUpstreamProvider(backupUpstreamProviderRaw)
+      ? backupUpstreamProviderRaw
+      : (() => {
+          throw new AppError(`Unsupported backup upstream provider for project ${projectKey}`, 500, ErrorCode.INTERNAL_ERROR);
+        })())
+    : undefined;
+
+  const config: PaymentProjectConfig = {
+    key: sanitizeProjectKey(String(record.key || projectKey)),
+    displayName: String(record.displayName || projectKey).trim() || projectKey,
+    upstreamProvider,
+    backupUpstreamProvider,
+    downstreamNotifyUrl: String(record.downstreamNotifyUrl || '').trim() || undefined,
+    downstreamNotifySecret: String(record.downstreamNotifySecret || '').trim() || undefined,
+    bridgeNotifySecret: String(record.bridgeNotifySecret || '').trim() || undefined,
+    personalQrListenerSecret: String(record.personalQrListenerSecret || '').trim() || undefined,
+    payProApiUrl: String(record.payProApiUrl || '').trim() || undefined,
+    payProOpenApiSecret: String(record.payProOpenApiSecret || '').trim() || undefined,
+    payProNotifyUrl: String(record.payProNotifyUrl || '').trim() || undefined,
+    xpayApiUrl: String(record.xpayApiUrl || '').trim() || undefined,
+    xpayToken: String(record.xpayToken || '').trim() || undefined,
+    xpayNotifyUrl: String(record.xpayNotifyUrl || '').trim() || undefined,
+    xpayGatewayBaseUrl: String(record.xpayGatewayBaseUrl || '').trim() || undefined,
+    xpayGatewayNotifySecret: String(record.xpayGatewayNotifySecret || '').trim() || undefined,
+    xpayTenantKey: String(record.xpayTenantKey || '').trim() || undefined,
+    xpayTenantCallbackSecret: String(record.xpayTenantCallbackSecret || '').trim() || undefined,
+    creemApiBaseUrl: String(record.creemApiBaseUrl || '').trim() || undefined,
+    creemApiKey: String(record.creemApiKey || '').trim() || undefined,
+    creemWebhookSecret: String(record.creemWebhookSecret || '').trim() || undefined,
+    creemProductId: String(record.creemProductId || '').trim() || undefined,
+    creemReturnUrl: String(record.creemReturnUrl || '').trim() || undefined,
+    qiupayBaseUrl: String(record.qiupayBaseUrl || '').trim() || undefined,
+    qiupayPid: String(record.qiupayPid || '').trim() || undefined,
+    qiupayKey: String(record.qiupayKey || '').trim() || undefined,
+    qiupayNotifyUrl: String(record.qiupayNotifyUrl || '').trim() || undefined,
+    qiupayReturnUrl: String(record.qiupayReturnUrl || '').trim() || undefined,
+    tpayGatewayUrl: String(record.tpayGatewayUrl || '').trim() || undefined,
+    tpayAppId: String(record.tpayAppId || '').trim() || undefined,
+    tpayAppSecret: String(record.tpayAppSecret || '').trim() || undefined,
+    tpayQueryUrl: String(record.tpayQueryUrl || '').trim() || undefined,
+    hupijiaoGatewayUrl: String(record.hupijiaoGatewayUrl || '').trim() || undefined,
+    hupijiaoBackupGatewayUrl: String(record.hupijiaoBackupGatewayUrl || '').trim() || undefined,
+    hupijiaoAppId: String(record.hupijiaoAppId || '').trim() || undefined,
+    hupijiaoAppSecret: String(record.hupijiaoAppSecret || '').trim() || undefined,
+    hupijiaoNotifyUrl: String(record.hupijiaoNotifyUrl || '').trim() || undefined,
+    hupijiaoReturnUrl: String(record.hupijiaoReturnUrl || '').trim() || undefined,
+    hupijiaoPlugins: String(record.hupijiaoPlugins || '').trim() || undefined,
+    hupijiaoVersion: String(record.hupijiaoVersion || '').trim() || undefined,
+  };
+
+  if (config.downstreamNotifyUrl) {
+    assertSafeOutboundCallbackUrl(config.downstreamNotifyUrl);
+  }
+
+  return config;
+};
+
+const buildLegacyDefaultProjectConfig = (): PaymentProjectConfig => ({
+  key: DEFAULT_PAYMENT_PROJECT_KEY,
+  displayName: 'QianFu',
+  upstreamProvider: process.env.DEFAULT_PAYMENT_UPSTREAM_PROVIDER?.trim().toLowerCase() === 'tpay'
+    ? 'tpay'
+    : process.env.DEFAULT_PAYMENT_UPSTREAM_PROVIDER?.trim().toLowerCase() === 'hupijiao'
+      ? 'hupijiao'
+      : process.env.DEFAULT_PAYMENT_UPSTREAM_PROVIDER?.trim().toLowerCase() === 'creem'
+        ? 'creem'
+        : process.env.DEFAULT_PAYMENT_UPSTREAM_PROVIDER?.trim().toLowerCase() === 'qiupay'
+          ? 'qiupay'
+        : PAYPRO_ENABLED || PAYPRO_DEV_MOCK_ENABLED ? 'paypro' : 'xpay',
+  payProApiUrl: PAYPRO_API_URL || undefined,
+  payProOpenApiSecret: PAYPRO_OPENAPI_SECRET || undefined,
+  payProNotifyUrl: PAYPRO_NOTIFY_URL?.trim() || undefined,
+  bridgeNotifySecret: process.env.XPAY_BRIDGE_NOTIFY_SECRET?.trim() || undefined,
+  personalQrListenerSecret: process.env.PERSONAL_QR_LISTENER_SECRET?.trim() || undefined,
+  xpayApiUrl: XPAY_API_URL || undefined,
+  xpayToken: XPAY_TOKEN || undefined,
+  xpayNotifyUrl: XPAY_NOTIFY_URL || undefined,
+  xpayGatewayBaseUrl: process.env.XPAY_GATEWAY_BASE_URL?.trim() || undefined,
+  xpayGatewayNotifySecret: process.env.XPAY_GATEWAY_NOTIFY_SECRET?.trim() || undefined,
+  xpayTenantKey: process.env.XPAY_TENANT_KEY?.trim() || undefined,
+  xpayTenantCallbackSecret: XPAY_TENANT_CALLBACK_SECRET.trim() || undefined,
+  creemApiBaseUrl: CREEM_API_BASE_URL || undefined,
+  creemApiKey: CREEM_API_KEY.trim() || undefined,
+  creemWebhookSecret: CREEM_WEBHOOK_SECRET.trim() || undefined,
+  creemProductId: CREEM_PRODUCT_ID.trim() || undefined,
+  creemReturnUrl: CREEM_RETURN_URL.trim() || undefined,
+  qiupayBaseUrl: process.env.QIUPAY_BASE_URL?.trim() || undefined,
+  qiupayPid: process.env.QIUPAY_PID?.trim() || undefined,
+  qiupayKey: process.env.QIUPAY_KEY?.trim() || undefined,
+  qiupayNotifyUrl: process.env.QIUPAY_NOTIFY_URL?.trim() || undefined,
+  qiupayReturnUrl: process.env.QIUPAY_RETURN_URL?.trim() || undefined,
+  tpayGatewayUrl: process.env.TPAY_GATEWAY_URL?.trim() || undefined,
+  tpayAppId: process.env.TPAY_APP_ID?.trim() || undefined,
+  tpayAppSecret: process.env.TPAY_APP_SECRET?.trim() || undefined,
+  tpayQueryUrl: process.env.TPAY_QUERY_URL?.trim() || undefined,
+  hupijiaoGatewayUrl: process.env.HUPIJIAO_GATEWAY_URL?.trim() || undefined,
+  hupijiaoBackupGatewayUrl: process.env.HUPIJIAO_BACKUP_GATEWAY_URL?.trim() || undefined,
+  hupijiaoAppId: process.env.HUPIJIAO_APP_ID?.trim() || undefined,
+  hupijiaoAppSecret: process.env.HUPIJIAO_APP_SECRET?.trim() || undefined,
+  hupijiaoNotifyUrl: process.env.HUPIJIAO_NOTIFY_URL?.trim() || undefined,
+  hupijiaoReturnUrl: process.env.HUPIJIAO_RETURN_URL?.trim() || undefined,
+  hupijiaoPlugins: process.env.HUPIJIAO_PLUGINS?.trim() || undefined,
+  hupijiaoVersion: process.env.HUPIJIAO_VERSION?.trim() || undefined,
+});
+
+export const getPaymentProjectConfig = async (projectKeyRaw?: string): Promise<PaymentProjectConfig> => {
+  const projectKey = sanitizeProjectKey(projectKeyRaw);
+
+  const stored = await prisma.systemConfig.findUnique({
+    where: { key: `${PAYMENT_PROJECT_CONFIG_PREFIX}${projectKey}` },
+  });
+
+  if (stored?.value) {
+    return parsePaymentProjectConfig(projectKey, stored.value);
+  }
+
+  if (projectKey === DEFAULT_PAYMENT_PROJECT_KEY) {
+    return buildLegacyDefaultProjectConfig();
+  }
+
+  throw new AppError(`Payment project not found: ${projectKey}`, 404, ErrorCode.NOT_FOUND);
 };
 
 // NOTE: XPay's callback protocol currently defines an MD5 signature scheme.
@@ -138,11 +361,71 @@ interface PayProCreateResult {
   provider?: 'paypro' | 'paypro-mock';
 }
 
+interface PaymentProjectConfig {
+  key: string;
+  displayName: string;
+  upstreamProvider: UpstreamProvider;
+  backupUpstreamProvider?: UpstreamProvider;
+  downstreamNotifyUrl?: string;
+  downstreamNotifySecret?: string;
+  bridgeNotifySecret?: string;
+  personalQrListenerSecret?: string;
+  payProApiUrl?: string;
+  payProOpenApiSecret?: string;
+  payProNotifyUrl?: string;
+  xpayApiUrl?: string;
+  xpayToken?: string;
+  xpayNotifyUrl?: string;
+  xpayGatewayBaseUrl?: string;
+  xpayGatewayNotifySecret?: string;
+  xpayTenantKey?: string;
+  xpayTenantCallbackSecret?: string;
+  creemApiBaseUrl?: string;
+  creemApiKey?: string;
+  creemWebhookSecret?: string;
+  creemProductId?: string;
+  creemReturnUrl?: string;
+  qiupayBaseUrl?: string;
+  qiupayPid?: string;
+  qiupayKey?: string;
+  qiupayNotifyUrl?: string;
+  qiupayReturnUrl?: string;
+  tpayGatewayUrl?: string;
+  tpayAppId?: string;
+  tpayAppSecret?: string;
+  tpayQueryUrl?: string;
+  hupijiaoGatewayUrl?: string;
+  hupijiaoBackupGatewayUrl?: string;
+  hupijiaoAppId?: string;
+  hupijiaoAppSecret?: string;
+  hupijiaoNotifyUrl?: string;
+  hupijiaoReturnUrl?: string;
+  hupijiaoPlugins?: string;
+  hupijiaoVersion?: string;
+}
+
 type ExternalNotifyResult = 'COMPLETED' | 'ALREADY_COMPLETED' | 'NOT_FOUND' | 'AMOUNT_MISMATCH';
 
 interface CompleteExternalPaymentOptions {
   expectedAmountFen?: number;
   metadata?: Record<string, unknown>;
+  projectConfig?: PaymentProjectConfig;
+}
+
+interface XpayTenantNotifyPayload {
+  tenantKey: string;
+  orderId: string;
+  outOrderId?: string;
+  amount: string | number;
+  subject?: string;
+  status: string | number;
+  payType?: string;
+  tradeNo?: string;
+  paidAt?: string | number;
+  timestamp: string;
+  nonce: string;
+  metadata?: unknown;
+  sign: string;
 }
 
 const normalizeAmountToFen = (raw: string | number): number | null => {
@@ -157,10 +440,81 @@ const normalizePayProAmount = (raw: string | number): string | null => {
   return parsed.toFixed(2);
 };
 
+const isXpayTenantSuccessStatus = (raw: unknown): boolean => {
+  const status = String(raw ?? '').trim().toUpperCase();
+  return status === '1' || status === 'SUCCESS' || status === 'PAID' || status === 'COMPLETED';
+};
+
 const timingSafeEqualText = (left: string, right: string): boolean => {
   const leftDigest = crypto.createHash('sha256').update(left).digest();
   const rightDigest = crypto.createHash('sha256').update(right).digest();
   return crypto.timingSafeEqual(leftDigest, rightDigest);
+};
+
+const buildSortedSignBase = (params: Record<string, unknown>): string =>
+  Object.keys(params)
+    .filter((key) => key !== 'sign')
+    .sort()
+    .map((key) => `${key}=${String(params[key] ?? '').trim()}`)
+    .join('&');
+
+const generateBase64Hmac = (payload: string, secret: string): string =>
+  crypto.createHmac('sha256', secret).update(payload).digest('base64');
+
+const generateDownstreamNotifySignature = (payload: string, secret: string): string => {
+  return crypto.createHmac('sha256', secret).update(payload).digest('hex');
+};
+
+const notifyDownstreamProject = async (
+  payment: {
+    id: string;
+    user_id: number;
+    amount: number;
+    currency: string;
+    status: string;
+    plan_id: string;
+    payment_method: string;
+    created_at: Date;
+    updated_at: Date;
+  },
+  projectConfig?: PaymentProjectConfig,
+): Promise<void> => {
+  if (!projectConfig?.downstreamNotifyUrl) {
+    return;
+  }
+
+  const body = JSON.stringify({
+    event: 'payment.completed',
+    projectKey: projectConfig.key,
+    orderId: payment.id,
+    userId: payment.user_id,
+    amountFen: payment.amount,
+    currency: payment.currency,
+    planId: payment.plan_id,
+    paymentMethod: payment.payment_method,
+    status: payment.status,
+    createdAt: payment.created_at.toISOString(),
+    completedAt: payment.updated_at.toISOString(),
+  });
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-QianFu-Project': projectConfig.key,
+  };
+
+  if (projectConfig.downstreamNotifySecret) {
+    headers['X-QianFu-Signature'] = generateDownstreamNotifySignature(body, projectConfig.downstreamNotifySecret);
+  }
+
+  const response = await fetch(projectConfig.downstreamNotifyUrl, {
+    method: 'POST',
+    headers,
+    body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Downstream callback failed with HTTP ${response.status}`);
+  }
 };
 
 const resolveTodayWindow = () => {
@@ -262,7 +616,11 @@ const ensurePaymentGuardrails = async (
   );
 };
 
-const buildPayProNotifyUrl = (req: Request): string => {
+const buildPayProNotifyUrl = (req: Request, projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.payProNotifyUrl?.trim()) {
+    return projectConfig.payProNotifyUrl.trim();
+  }
+
   if (PAYPRO_NOTIFY_URL?.trim()) {
     return PAYPRO_NOTIFY_URL.trim();
   }
@@ -280,6 +638,27 @@ const buildPayProNotifyUrl = (req: Request): string => {
   return `${protocol}://${host}/api/v1/payment/paypro/notify`;
 };
 
+const resolveFrontendBaseUrl = (req: Request): string => {
+  const configured = process.env.FRONTEND_URL?.trim();
+  if (configured) {
+    return configured;
+  }
+
+  const origin = String(req.get('origin') || '').trim();
+  if (origin) {
+    try {
+      const parsed = new URL(origin);
+      if (isTrustedHost(parsed.host)) {
+        return `${parsed.protocol}//${parsed.host}`;
+      }
+    } catch {
+      // ignore invalid origin header
+    }
+  }
+
+  return 'http://localhost:4123';
+};
+
 const buildPayProMockPaymentUrl = (
   req: Request,
   paymentId: string,
@@ -294,7 +673,7 @@ const buildPayProMockPaymentUrl = (
     return customUrl;
   }
 
-  const origin = req.get('origin') || process.env.FRONTEND_URL || 'http://localhost:4123';
+  const origin = resolveFrontendBaseUrl(req);
   const mockUrl = new URL('/mock-pay-qr.html', origin);
   mockUrl.searchParams.set('orderId', paymentId);
   mockUrl.searchParams.set('amount', amount.toFixed(2));
@@ -333,6 +712,7 @@ const generatePayProSignature = (params: Record<string, unknown>, secret: string
 const createPayProPayment = async (
   req: AuthRequest,
   payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
   amount: number,
   paymentMethod: 'wechat' | 'alipay',
 ): Promise<PayProCreateResult> => {
@@ -344,11 +724,14 @@ const createPayProPayment = async (
     return createPayProMockResult(req, payment, amount, paymentMethod);
   }
 
-  if (!PAYPRO_ENABLED) {
+  if (!PAYPRO_ENABLED && projectConfig.upstreamProvider !== 'paypro') {
     throw new AppError('PayPro payment channel is disabled', 503, ErrorCode.SERVICE_UNAVAILABLE);
   }
 
-  if (!PAYPRO_API_URL || !PAYPRO_OPENAPI_SECRET) {
+  const payProApiUrl = projectConfig.payProApiUrl || PAYPRO_API_URL;
+  const payProSecret = projectConfig.payProOpenApiSecret || PAYPRO_OPENAPI_SECRET;
+
+  if (!payProApiUrl || !payProSecret) {
     throw new AppError('PayPro payment channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
   }
 
@@ -359,19 +742,19 @@ const createPayProPayment = async (
     amount: amountText,
     payType: paymentMethod,
     timestamp,
-    notifyUrl: buildPayProNotifyUrl(req),
-    description: `QianFu ${payment.plan_id} order`,
+    notifyUrl: buildPayProNotifyUrl(req, projectConfig),
+    description: `${projectConfig.displayName} ${payment.plan_id} order`,
     userId: String(req.user?.id || ''),
     nickName: req.user?.username || '',
     email: req.user?.email || '',
   };
-  const sign = generatePayProSignature(payloadForSign, PAYPRO_OPENAPI_SECRET);
+  const sign = generatePayProSignature(payloadForSign, payProSecret);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Math.max(PAYPRO_TIMEOUT_MS, 3000));
 
   try {
-    const response = await fetch(`${PAYPRO_API_URL}/api/openapi/add`, {
+    const response = await fetch(`${payProApiUrl}/api/openapi/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -419,6 +802,691 @@ const createPayProPayment = async (
   } finally {
     clearTimeout(timeout);
   }
+};
+
+const generateUppercaseMd5 = (payload: string): string =>
+  crypto.createHash('md5').update(payload).digest('hex').toUpperCase();
+
+const generateLowercaseMd5 = (payload: string): string =>
+  crypto.createHash('md5').update(payload).digest('hex').toLowerCase();
+
+const generateTpaySignature = (params: {
+  orderNo: string;
+  subject: string;
+  payType: string;
+  money: string;
+  appId: string;
+  extra: string;
+}, secret: string): string => {
+  const signBase =
+    `order_no=${params.orderNo}` +
+    `&subject=${params.subject}` +
+    `&pay_type=${params.payType}` +
+    `&money=${params.money}` +
+    `&app_id=${params.appId}` +
+    `&extra=${params.extra}` +
+    `&${secret}`;
+  return generateUppercaseMd5(signBase);
+};
+
+const mapTpayPayType = (paymentMethod: 'wechat' | 'alipay'): string =>
+  paymentMethod === 'alipay' ? '43' : '44';
+
+interface TpayCreateResponse {
+  msg?: string;
+  xddpay_order?: string;
+  pay_type?: string;
+  money?: string;
+  realmoney?: string;
+  is_any_money?: string;
+  qr?: string;
+  qr_img?: string;
+  expires_in?: string;
+  return_url?: string;
+}
+
+interface TpayCreateResult {
+  paymentUrl: string;
+  provider: 'tpay';
+  upstreamOrderId?: string;
+  qrImagePath?: string;
+}
+
+interface QiuPayCreateResponse {
+  code?: number | string;
+  msg?: string;
+  trade_no?: string;
+  qrcode?: string;
+  code_url?: string;
+  payurl?: string;
+  url?: string;
+  money?: string;
+}
+
+interface QiuPayCreateResult {
+  paymentUrl: string;
+  provider: 'qiupay';
+  paymentQrContent?: string;
+  upstreamOrderId?: string;
+  qrImagePath?: string;
+}
+
+interface CreemCheckoutResponse {
+  id?: string;
+  checkout_id?: string;
+  request_id?: string;
+  checkout_url?: string;
+  url?: string;
+  product?: {
+    id?: string;
+  };
+}
+
+interface CreemCreateResult {
+  paymentUrl: string;
+  provider: 'creem';
+  upstreamOrderId?: string;
+}
+
+interface CreemWebhookEvent {
+  eventType?: string;
+  object?: {
+    id?: string;
+    checkout_id?: string;
+    request_id?: string;
+    metadata?: Record<string, unknown> | null;
+    product?: {
+      id?: string;
+    } | null;
+    order?: {
+      id?: string;
+      amount?: number | string;
+      currency?: string;
+      status?: string;
+    } | null;
+    customer?: {
+      id?: string;
+      email?: string;
+    } | null;
+  } | null;
+}
+
+const resolveCreemApiBaseUrl = (projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.creemApiBaseUrl?.trim()) {
+    return projectConfig.creemApiBaseUrl.replace(/\/+$/, '');
+  }
+  if (CREEM_API_BASE_URL) {
+    return CREEM_API_BASE_URL;
+  }
+  const apiKey = projectConfig.creemApiKey || CREEM_API_KEY;
+  if (apiKey.startsWith('creem_test')) {
+    return 'https://test-api.creem.io';
+  }
+  return 'https://api.creem.io';
+};
+
+const buildCreemReturnUrl = (req: Request, projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.creemReturnUrl?.trim()) {
+    return projectConfig.creemReturnUrl.trim();
+  }
+  if (CREEM_RETURN_URL?.trim()) {
+    return CREEM_RETURN_URL.trim();
+  }
+  const host = req.get('host');
+  if (!host) {
+    return 'http://localhost:3001/api/v1/payment/creem/return';
+  }
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const protocol = typeof forwardedProto === 'string'
+    ? forwardedProto.split(',')[0].trim()
+    : req.protocol;
+  return `${protocol}://${host}/api/v1/payment/creem/return`;
+};
+
+const buildCreemFrontendSuccessUrl = (req: Request, orderId: string): string => {
+  const base = resolveFrontendBaseUrl(req);
+  return `${base.replace(/\/+$/, '')}/payment/success?orderId=${encodeURIComponent(orderId)}&provider=creem`;
+};
+
+const buildCreemFrontendFailUrl = (req: Request, orderId: string, reason?: string): string => {
+  const base = resolveFrontendBaseUrl(req);
+  const url = new URL(`${base.replace(/\/+$/, '')}/payment/fail`);
+  url.searchParams.set('orderId', orderId);
+  if (reason) {
+    url.searchParams.set('reason', reason);
+  }
+  return url.toString();
+};
+
+const buildCreemRedirectSignBase = (params: Record<string, string>): string =>
+  Object.entries(params)
+    .filter(([key, value]) => key !== 'signature' && value !== '')
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+const generateCreemHmacHex = (payload: string, secret: string): string =>
+  crypto.createHmac('sha256', secret).update(payload).digest('hex');
+
+const createCreemPayment = async (
+  req: AuthRequest,
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+): Promise<CreemCreateResult> => {
+  const apiKey = projectConfig.creemApiKey || CREEM_API_KEY;
+  const productId = projectConfig.creemProductId || CREEM_PRODUCT_ID;
+  if (!apiKey || !productId) {
+    throw new AppError('Creem payment channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const baseUrl = resolveCreemApiBaseUrl(projectConfig);
+  const returnUrl = buildCreemReturnUrl(req, projectConfig);
+
+  const response = await fetch(`${baseUrl}/v1/checkouts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
+    body: JSON.stringify({
+      product_id: productId,
+      request_id: payment.id,
+      success_url: returnUrl,
+      metadata: {
+        paymentId: payment.id,
+        projectKey: projectConfig.key,
+        userId: String(req.user?.id || ''),
+        planId: payment.plan_id,
+        amount: amount.toFixed(2),
+      },
+    }),
+  });
+
+  let parsed: CreemCheckoutResponse;
+  try {
+    parsed = await response.json() as CreemCheckoutResponse;
+  } catch {
+    throw new AppError('Creem response is invalid', 502, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const paymentUrl = parsed.checkout_url || parsed.url;
+  if (!response.ok || !paymentUrl) {
+    throw new AppError(`Creem create checkout failed: HTTP ${response.status}`, 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  return {
+    paymentUrl,
+    provider: 'creem',
+    upstreamOrderId: parsed.checkout_id || parsed.id || parsed.request_id,
+  };
+};
+
+const createTpayPayment = async (
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  paymentMethod: 'wechat' | 'alipay',
+): Promise<TpayCreateResult> => {
+  const gatewayUrl = (projectConfig.tpayGatewayUrl || process.env.TPAY_GATEWAY_URL || 'https://gateway.xddpay.com').replace(/\/+$/, '');
+  const appId = projectConfig.tpayAppId || process.env.TPAY_APP_ID || '';
+  const appSecret = projectConfig.tpayAppSecret || process.env.TPAY_APP_SECRET || '';
+  if (!appId || !appSecret) {
+    throw new AppError('Tpay payment channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const subject = `${projectConfig.displayName} ${payment.plan_id} order`;
+  const extra = payment.id;
+  const money = amount.toFixed(2);
+  const payType = mapTpayPayType(paymentMethod);
+  const sign = generateTpaySignature({
+    orderNo: payment.id,
+    subject,
+    payType,
+    money,
+    appId,
+    extra,
+  }, appSecret);
+
+  const body = new URLSearchParams({
+    order_no: payment.id,
+    subject,
+    pay_type: payType,
+    money,
+    app_id: appId,
+    extra,
+    sign,
+  });
+
+  const response = await fetch(`${gatewayUrl}?format=json`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  let parsed: TpayCreateResponse;
+  try {
+    parsed = await response.json() as TpayCreateResponse;
+  } catch {
+    throw new AppError('Tpay response is invalid', 502, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  if (!response.ok || !parsed.qr) {
+    throw new AppError(`Tpay create order failed: ${parsed.msg || `HTTP ${response.status}`}`, 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  return {
+    paymentUrl: parsed.qr,
+    provider: 'tpay',
+    upstreamOrderId: parsed.xddpay_order,
+    qrImagePath: parsed.qr_img || undefined,
+  };
+};
+
+const buildQiuPayNotifyUrl = (req: Request, projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.qiupayNotifyUrl?.trim()) {
+    return projectConfig.qiupayNotifyUrl.trim();
+  }
+  const host = req.get('host');
+  if (!host) {
+    return 'http://localhost:3001/api/v1/payment/qiupay/notify';
+  }
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const protocol = typeof forwardedProto === 'string'
+    ? forwardedProto.split(',')[0].trim()
+    : req.protocol;
+  return `${protocol}://${host}/api/v1/payment/qiupay/notify`;
+};
+
+const createQiuPaySignature = (params: Record<string, string>, key: string): string => {
+  const filtered = Object.keys(params)
+    .filter((field) => field !== 'sign' && field !== 'sign_type' && params[field] !== undefined && params[field] !== null && String(params[field]).trim() !== '')
+    .sort()
+    .map((field) => `${field}=${params[field]}`)
+    .join('&');
+  return generateLowercaseMd5(filtered + key);
+};
+
+const createQiuPayPayment = async (
+  req: AuthRequest,
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  paymentMethod: 'wechat' | 'alipay',
+): Promise<QiuPayCreateResult> => {
+  const baseUrl = (projectConfig.qiupayBaseUrl || process.env.QIUPAY_BASE_URL || '').replace(/\/+$/, '');
+  const pid = projectConfig.qiupayPid || process.env.QIUPAY_PID || '';
+  const key = projectConfig.qiupayKey || process.env.QIUPAY_KEY || '';
+  if (!baseUrl || !pid || !key) {
+    throw new AppError('QiuPay payment channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const qiuPayType = paymentMethod === 'wechat' ? 'wxpay' : 'alipay';
+
+  const params: Record<string, string> = {
+    pid,
+    type: qiuPayType,
+    out_trade_no: payment.id,
+    name: `${projectConfig.displayName} ${payment.plan_id} order`,
+    money: amount.toFixed(2),
+    notify_url: buildQiuPayNotifyUrl(req, projectConfig),
+    return_url: projectConfig.qiupayReturnUrl || '',
+    param: payment.id,
+    sign_type: 'MD5',
+  };
+  params.sign = createQiuPaySignature(params, key);
+
+  const body = new URLSearchParams(params);
+  const createEndpoint = /\/(submit|mapi)\.php$/i.test(baseUrl)
+    ? baseUrl
+    : `${baseUrl}/mapi.php`;
+
+  const response = await fetch(createEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  let parsed: QiuPayCreateResponse;
+  try {
+    parsed = await response.json() as QiuPayCreateResponse;
+  } catch {
+    throw new AppError('QiuPay response is invalid', 502, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const rawCodeUrl = String(parsed.code_url || '').trim();
+  const qrImagePath = rawCodeUrl
+    ? (/^https?:\/\//i.test(rawCodeUrl)
+        ? rawCodeUrl
+        : `${new URL(createEndpoint).origin}/${rawCodeUrl.replace(/^\/+/, '')}`)
+    : undefined;
+  const paymentUrl = String(parsed.qrcode || parsed.payurl || parsed.url || qrImagePath || '').trim();
+  const successCode = String(parsed.code ?? '').trim();
+  if (!response.ok || !['1', '200', 'success', 'SUCCESS'].includes(successCode) || !paymentUrl) {
+    throw new AppError(`QiuPay create order failed: ${parsed.msg || `HTTP ${response.status}`}`, 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  return {
+    paymentUrl,
+    paymentQrContent: paymentUrl,
+    provider: 'qiupay',
+    upstreamOrderId: parsed.trade_no,
+    qrImagePath,
+  };
+};
+
+const generateHupijiaoSignature = (params: Record<string, string>, secret: string): string => {
+  const signBase = Object.keys(params)
+    .sort()
+    .map((key) => [key, params[key]] as const)
+    .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '')
+    .map(([key, value]) => `${key}=${String(value).trim()}`)
+    .join('&');
+  return generateLowercaseMd5(`${signBase}&${secret}`);
+};
+
+interface HupijiaoCreateResponse {
+  errcode?: number | string;
+  errmsg?: string;
+  url_qrcode?: string;
+  url?: string;
+  hash?: string;
+  nonce_str?: string;
+  appid?: string;
+  trade_order_id?: string;
+  total_fee?: string;
+  plugins?: string;
+  time?: string | number;
+}
+
+interface HupijiaoCreateResult {
+  paymentUrl: string;
+  provider: 'hupijiao';
+  qrImagePath?: string;
+  upstreamOrderId?: string;
+}
+
+const buildHupijiaoNotifyUrl = (req: Request, projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.hupijiaoNotifyUrl?.trim()) {
+    return projectConfig.hupijiaoNotifyUrl.trim();
+  }
+  const host = req.get('host');
+  if (!host) {
+    return 'http://localhost:3001/api/v1/payment/hupijiao/notify';
+  }
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const protocol = typeof forwardedProto === 'string'
+    ? forwardedProto.split(',')[0].trim()
+    : req.protocol;
+  return `${protocol}://${host}/api/v1/payment/hupijiao/notify`;
+};
+
+const buildHupijiaoReturnUrl = (req: Request, paymentId: string, projectConfig: PaymentProjectConfig): string => {
+  if (projectConfig.hupijiaoReturnUrl?.trim()) {
+    return projectConfig.hupijiaoReturnUrl.trim();
+  }
+  const base = resolveFrontendBaseUrl(req);
+  return `${base.replace(/\/+$/, '')}/payment/success?orderId=${encodeURIComponent(paymentId)}`;
+};
+
+const verifyHupijiaoResponse = (payload: HupijiaoCreateResponse, secret: string): boolean => {
+  if (!payload.hash) {
+    return true;
+  }
+  const signSource: Record<string, string> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (key === 'hash' || value === undefined || value === null) continue;
+    signSource[key] = String(value);
+  }
+  const expected = generateHupijiaoSignature(signSource, secret);
+  return timingSafeEqualText(String(payload.hash).toLowerCase(), expected.toLowerCase());
+};
+
+const createHupijiaoPaymentAgainstGateway = async (
+  req: AuthRequest,
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  gatewayUrl: string,
+): Promise<HupijiaoCreateResult> => {
+  const appId = projectConfig.hupijiaoAppId || process.env.HUPIJIAO_APP_ID || '';
+  const appSecret = projectConfig.hupijiaoAppSecret || process.env.HUPIJIAO_APP_SECRET || '';
+  if (!appId || !appSecret) {
+    throw new AppError('HuPiJiao payment channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const nonce = crypto.randomBytes(8).toString('hex');
+  const signSource: Record<string, string> = {
+    version: projectConfig.hupijiaoVersion || process.env.HUPIJIAO_VERSION || '1.1',
+    appid: appId,
+    trade_order_id: payment.id,
+    total_fee: amount.toFixed(2),
+    title: `${projectConfig.displayName} ${payment.plan_id} order`,
+    time: timestamp,
+    notify_url: buildHupijiaoNotifyUrl(req, projectConfig),
+    return_url: buildHupijiaoReturnUrl(req, payment.id, projectConfig),
+    callback_url: buildHupijiaoReturnUrl(req, payment.id, projectConfig),
+    plugins: projectConfig.hupijiaoPlugins || process.env.HUPIJIAO_PLUGINS || 'alipay',
+    nonce_str: nonce,
+    attach: payment.id,
+  };
+  const hash = generateHupijiaoSignature(signSource, appSecret);
+
+  const body = new URLSearchParams({
+    ...signSource,
+    hash,
+  });
+
+  const response = await fetch(gatewayUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  let parsed: HupijiaoCreateResponse;
+  try {
+    parsed = await response.json() as HupijiaoCreateResponse;
+  } catch {
+    throw new AppError('HuPiJiao response is invalid', 502, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  if (!verifyHupijiaoResponse(parsed, appSecret)) {
+    throw new AppError('HuPiJiao response signature mismatch', 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  if (!response.ok || String(parsed.errcode) !== '0' || !parsed.url) {
+    throw new AppError(`HuPiJiao create order failed: ${parsed.errmsg || `HTTP ${response.status}`}`, 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  return {
+    paymentUrl: parsed.url,
+    provider: 'hupijiao',
+    qrImagePath: parsed.url_qrcode || undefined,
+    upstreamOrderId: parsed.trade_order_id,
+  };
+};
+
+const createHupijiaoPayment = async (
+  req: AuthRequest,
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+): Promise<HupijiaoCreateResult> => {
+  const primaryGateway = projectConfig.hupijiaoGatewayUrl || process.env.HUPIJIAO_GATEWAY_URL || 'https://api.xunhupay.com/payment/do.html';
+  const backupGateway = projectConfig.hupijiaoBackupGatewayUrl || process.env.HUPIJIAO_BACKUP_GATEWAY_URL || '';
+  try {
+    return await createHupijiaoPaymentAgainstGateway(req, payment, projectConfig, amount, primaryGateway);
+  } catch (error) {
+    if (!backupGateway || backupGateway === primaryGateway) {
+      throw error;
+    }
+    logger.warn('[Payment] HuPiJiao primary gateway failed, retrying backup gateway', {
+      paymentId: payment.id,
+      primaryGateway,
+      backupGateway,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return createHupijiaoPaymentAgainstGateway(req, payment, projectConfig, amount, backupGateway);
+  }
+};
+
+interface XpayTenantCreateResponse {
+  success?: boolean;
+  code?: number | string;
+  message?: string;
+  data?: {
+    orderId?: string;
+    payUrl?: string;
+    paymentQrContent?: string;
+    provider?: string;
+    providerMode?: string;
+    paymentMethod?: {
+      qrImagePath?: string;
+      payType?: string;
+      displayName?: string;
+    };
+    status?: number | string;
+  };
+  result?: XpayTenantCreateResponse['data'];
+}
+
+interface XpayCreateResult {
+  paymentUrl: string;
+  provider: 'xpay' | 'xpay-tenant';
+  tenantKey?: string;
+  upstreamOrderId?: string;
+  qrImagePath?: string;
+  paymentQrContent?: string;
+}
+
+const buildAbsoluteUrl = (baseUrl: string, pathOrUrl: string): string => {
+  if (/^https?:\/\//i.test(pathOrUrl)) {
+    return pathOrUrl;
+  }
+  const base = baseUrl.replace(/\/+$/, '');
+  const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+  return `${base}${path}`;
+};
+
+const createXpayTenantPayment = async (
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  paymentMethod: 'wechat' | 'alipay',
+): Promise<XpayCreateResult> => {
+  const xpayBaseUrl = projectConfig.xpayGatewayBaseUrl?.replace(/\/+$/, '');
+  const xpayTenantKey = projectConfig.xpayTenantKey?.trim();
+  const xpayToken = projectConfig.xpayToken || XPAY_TOKEN;
+
+  if (!xpayBaseUrl || !xpayTenantKey || !xpayToken) {
+    throw new AppError('XPay tenant channel is not configured', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const response = await fetch(`${xpayBaseUrl}/open/tenants/${encodeURIComponent(xpayTenantKey)}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${xpayToken}`,
+    },
+    body: JSON.stringify({
+      orderId: payment.id,
+      outOrderId: payment.id,
+      payType: paymentMethod,
+      amount: amount.toFixed(2),
+      subject: `${projectConfig.displayName} ${payment.plan_id} order`,
+      body: `QianFu payment ${payment.id}`,
+      metadata: {
+        projectKey: projectConfig.key,
+        paymentId: payment.id,
+        planId: payment.plan_id,
+      },
+    }),
+  });
+
+  let parsed: XpayTenantCreateResponse;
+  try {
+    parsed = await response.json() as XpayTenantCreateResponse;
+  } catch {
+    throw new AppError('XPay tenant response is invalid', 502, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const payload = parsed.data || parsed.result;
+  const code = parsed.code === undefined ? undefined : String(parsed.code);
+  const ok = response.ok && (parsed.success === true || code === '200' || code === '0' || payload);
+  if (!ok || !payload?.orderId) {
+    throw new AppError(`XPay tenant create order failed: ${parsed.message || `HTTP ${response.status}`}`, 502, ErrorCode.PAYMENT_FAILED);
+  }
+
+  return {
+    paymentUrl: buildAbsoluteUrl(xpayBaseUrl, payload.payUrl || `/open/tenants/${xpayTenantKey}/orders/${payment.id}/pay`),
+    provider: 'xpay-tenant',
+    tenantKey: xpayTenantKey,
+    upstreamOrderId: payload.orderId,
+    qrImagePath: payload.paymentMethod?.qrImagePath
+      ? buildAbsoluteUrl(xpayBaseUrl, payload.paymentMethod.qrImagePath)
+      : undefined,
+    paymentQrContent: payload.paymentQrContent || undefined,
+  };
+};
+
+const createLegacyXpayPayment = (
+  payment: { id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  paymentMethod: 'wechat' | 'alipay',
+): XpayCreateResult => {
+  const xpayToken = projectConfig.xpayToken || XPAY_TOKEN;
+  const xpayApiUrl = projectConfig.xpayApiUrl || XPAY_API_URL;
+  const xpayNotifyUrl = projectConfig.xpayNotifyUrl || XPAY_NOTIFY_URL;
+
+  if (!xpayToken || !xpayApiUrl || !xpayNotifyUrl) {
+    throw new AppError('Payment service unavailable', 503, ErrorCode.SERVICE_UNAVAILABLE);
+  }
+
+  const dt = Date.now().toString();
+  const mark = payment.id;
+  const sign = generateSignature({ money: amount.toFixed(2), mark, type: paymentMethod, dt }, xpayToken);
+  return {
+    provider: 'xpay',
+    paymentUrl: `${xpayApiUrl}?type=${paymentMethod}&money=${amount.toFixed(2)}&mark=${mark}&dt=${dt}&sign=${sign}&notify_url=${encodeURIComponent(xpayNotifyUrl)}`,
+  };
+};
+
+type ExternalCreateResult = PayProCreateResult | XpayCreateResult | TpayCreateResult | HupijiaoCreateResult | CreemCreateResult | QiuPayCreateResult;
+
+export const createExternalPaymentByProvider = async (
+  req: AuthRequest,
+  payment: { id: string; plan_id: string },
+  projectConfig: PaymentProjectConfig,
+  amount: number,
+  paymentMethod: 'wechat' | 'alipay',
+  provider: UpstreamProvider,
+): Promise<ExternalCreateResult> => {
+  if (provider === 'paypro') {
+    return createPayProPayment(req, payment, projectConfig, amount, paymentMethod);
+  }
+  if (provider === 'tpay') {
+    return createTpayPayment(payment, projectConfig, amount, paymentMethod);
+  }
+  if (provider === 'hupijiao') {
+    return createHupijiaoPayment(req, payment, projectConfig, amount);
+  }
+  if (provider === 'creem') {
+    return createCreemPayment(req, payment, projectConfig, amount);
+  }
+  if (provider === 'qiupay') {
+    return createQiuPayPayment(req, payment, projectConfig, amount, paymentMethod);
+  }
+  return projectConfig.xpayGatewayBaseUrl && projectConfig.xpayTenantKey
+    ? createXpayTenantPayment(payment, projectConfig, amount, paymentMethod)
+    : createLegacyXpayPayment(payment, projectConfig, amount, paymentMethod);
 };
 
 /**
@@ -505,7 +1573,7 @@ const completeDevMockPayment = async (paymentId: string): Promise<void> => {
   });
 };
 
-const completeExternalPayment = async (
+export const completeExternalPayment = async (
   req: Request,
   paymentId: string,
   options: CompleteExternalPaymentOptions = {},
@@ -525,7 +1593,19 @@ const completeExternalPayment = async (
       return 'ALREADY_COMPLETED';
     }
 
-    const updatedPayment = await prisma.$transaction(async (tx) => {
+    const {
+      paymentRecord: updatedPayment,
+      walletAuditEntry,
+      paymentAuditEntry,
+    } = await prisma.$transaction(async (tx) => {
+      let walletAuditEntry:
+        | {
+            userId: number;
+            target: string;
+            before: Record<string, unknown>;
+            after: Record<string, unknown>;
+          }
+        | null = null;
       const beforePayment = await tx.payment.findUnique({ where: { id: paymentId } });
       const paymentRecord = await tx.payment.update({
         where: { id: paymentId },
@@ -576,15 +1656,52 @@ const completeExternalPayment = async (
             data: { signature },
           });
 
-          await logDataChange(paymentRecord.user_id, 'WALLET_DEPOSIT', `wallet_${wallet.id}`, req, beforeWallet, updatedWallet);
+          walletAuditEntry = {
+            userId: paymentRecord.user_id,
+            target: `wallet_${wallet.id}`,
+            before: beforeWallet,
+            after: updatedWallet,
+          };
         }
       }
 
-      await logDataChange(paymentRecord.user_id, 'PAYMENT_COMPLETED', `payment_${paymentRecord.id}`, req, beforePayment, paymentRecord);
-      return paymentRecord;
+      const paymentAuditEntry = {
+        userId: paymentRecord.user_id,
+        target: `payment_${paymentRecord.id}`,
+        before: beforePayment,
+        after: paymentRecord,
+      };
+      return {
+        paymentRecord,
+        walletAuditEntry,
+        paymentAuditEntry,
+      };
     });
 
+    if (walletAuditEntry) {
+      await logDataChange(
+        walletAuditEntry.userId,
+        'WALLET_DEPOSIT',
+        walletAuditEntry.target,
+        req,
+        walletAuditEntry.before,
+        walletAuditEntry.after,
+      );
+    }
+    if (paymentAuditEntry) {
+      await logDataChange(
+        paymentAuditEntry.userId,
+        'PAYMENT_COMPLETED',
+        paymentAuditEntry.target,
+        req,
+        paymentAuditEntry.before,
+        paymentAuditEntry.after,
+      );
+    }
     eventService.emitEvent(EVENTS.PAYMENT_SUCCESS, updatedPayment);
+    if (options.projectConfig) {
+      await notifyDownstreamProject(updatedPayment, options.projectConfig);
+    }
     return 'COMPLETED';
   });
 };
@@ -610,18 +1727,20 @@ export const createPayment = async (req: AuthRequest, res: Response, next: NextF
           issues: validation.error.issues,
         });
       }
-      const { amount, planId, paymentMethod, currency = 'CNY' } = validation.data;
+      const { amount, planId, projectKey, provider, paymentMethod, currency = 'CNY' } = validation.data;
+      const normalizedPlanId = normalizePlanId(planId);
+      const projectConfig = await getPaymentProjectConfig(projectKey);
 
       // Convert yuan to fen for storage
       const amountFen = yuanToFen(amount);
 
-      if (planId !== 'custom') {
-        const expectedPriceFen = PLAN_PRICES_FEN[planId];
+      if (normalizedPlanId !== 'custom') {
+        const expectedPriceFen = PLAN_PRICES_FEN[normalizedPlanId];
         if (expectedPriceFen === undefined) {
           throw new AppError(`Invalid plan ID: ${planId}`, 400, ErrorCode.VALIDATION_ERROR);
         }
         if (amountFen !== expectedPriceFen) {
-          throw new AppError(`Invalid amount for ${planId}. Expected ${expectedPriceFen / 100} yuan, got ${amount}`, 400, ErrorCode.VALIDATION_ERROR);
+          throw new AppError(`Invalid amount for ${normalizedPlanId}. Expected ${expectedPriceFen / 100} yuan, got ${amount}`, 400, ErrorCode.VALIDATION_ERROR);
         }
       } else if (amount < 0.1) {
         throw new AppError('Minimum recharge amount is 0.1', 400, ErrorCode.VALIDATION_ERROR);
@@ -631,9 +1750,10 @@ export const createPayment = async (req: AuthRequest, res: Response, next: NextF
 
       const payment = await prisma.payment.create({
         data: {
+          id: buildProjectScopedPaymentId(projectConfig.key),
           user_id: userId,
           amount: amountFen, // Store as fen
-          plan_id: planId,
+          plan_id: normalizedPlanId,
           payment_method: paymentMethod,
           currency,
           status: 'PENDING',
@@ -671,7 +1791,7 @@ export const createPayment = async (req: AuthRequest, res: Response, next: NextF
                 amount: -amountFen, // Negative fen for deduction
                 type: 'PAYMENT',
                 status: 'COMPLETED',
-                description: `Plan: ${planId}`,
+                description: `Plan: ${normalizedPlanId}`,
                 metadata: JSON.stringify({ paymentId: payment.id })
               },
             });
@@ -731,37 +1851,56 @@ export const createPayment = async (req: AuthRequest, res: Response, next: NextF
       const xpayType = paymentMethod === 'wechat' ? 'wechat' : 'alipay';
       let responseData: Record<string, unknown>;
       try {
-        if (PAYPRO_ENABLED || PAYPRO_DEV_MOCK_ENABLED) {
-          const payProResult = await createPayProPayment(req, payment, amount, xpayType);
-          if (payProResult.provider === 'paypro-mock' && PAYPRO_DEV_MOCK_MARK_COMPLETED) {
-            await completeDevMockPayment(payment.id);
+        const providersToTry: UpstreamProvider[] = [];
+        const pushProvider = (candidate?: UpstreamProvider) => {
+          if (candidate && !providersToTry.includes(candidate)) {
+            providersToTry.push(candidate);
           }
-          responseData = {
-            success: true,
-            paymentId: payment.id,
-            orderId: payment.id,
-            id: payment.id,
-            paymentUrl: payProResult.paymentUrl,
-            payNum: payProResult.payNum,
-            provider: payProResult.provider || 'paypro',
-          };
-        } else {
-          if (!XPAY_TOKEN) {
-            throw new AppError('Payment service unavailable', 503, ErrorCode.SERVICE_UNAVAILABLE);
-          }
+        };
+        pushProvider(provider as UpstreamProvider | undefined);
+        pushProvider(projectConfig.upstreamProvider);
+        pushProvider(projectConfig.backupUpstreamProvider);
 
-          const dt = Date.now().toString();
-          const mark = payment.id;
-          const sign = generateSignature({ money: amount.toFixed(2), mark, type: xpayType, dt }, XPAY_TOKEN);
-          responseData = {
-            success: true,
-            paymentId: payment.id,
-            orderId: payment.id,
-            id: payment.id,
-            provider: 'xpay',
-            paymentUrl: `${XPAY_API_URL}?type=${xpayType}&money=${amount.toFixed(2)}&mark=${mark}&dt=${dt}&sign=${sign}&notify_url=${encodeURIComponent(XPAY_NOTIFY_URL)}`,
-          };
+        let externalResult: ExternalCreateResult | null = null;
+        let lastCreateError: unknown = null;
+        for (const provider of providersToTry) {
+          try {
+            externalResult = await createExternalPaymentByProvider(req, payment, projectConfig, amount, xpayType, provider);
+            break;
+          } catch (error) {
+            lastCreateError = error;
+            logger.warn('[Payment] external provider create order failed', {
+              paymentId: payment.id,
+              provider,
+              projectKey: projectConfig.key,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
         }
+
+        if (!externalResult) {
+          throw lastCreateError instanceof Error
+            ? lastCreateError
+            : new AppError('No payment provider available', 503, ErrorCode.SERVICE_UNAVAILABLE);
+        }
+
+        if (externalResult.provider === 'paypro-mock' && PAYPRO_DEV_MOCK_MARK_COMPLETED) {
+          await completeDevMockPayment(payment.id);
+        }
+
+        responseData = {
+          success: true,
+          paymentId: payment.id,
+          orderId: payment.id,
+          id: payment.id,
+          provider: externalResult.provider,
+          paymentUrl: externalResult.paymentUrl,
+          payNum: 'payNum' in externalResult ? externalResult.payNum : undefined,
+          tenantKey: 'tenantKey' in externalResult ? externalResult.tenantKey : undefined,
+          upstreamOrderId: 'upstreamOrderId' in externalResult ? externalResult.upstreamOrderId : undefined,
+          qrImagePath: 'qrImagePath' in externalResult ? externalResult.qrImagePath : undefined,
+          paymentQrContent: 'paymentQrContent' in externalResult ? externalResult.paymentQrContent : undefined,
+        };
       } catch (error) {
         await prisma.payment.update({
           where: { id: payment.id },
@@ -815,12 +1954,18 @@ export const xpayNotify = async (req: Request, res: Response) => {
       return res.send('fail');
     }
 
-    if (!XPAY_TOKEN) {
-      logger.error('[Payment] xpayNotify rejected: XPAY_TOKEN is not configured');
+    const projectKey = parseProjectKeyFromPaymentId(mark);
+    const projectConfig = await getPaymentProjectConfig(projectKey || DEFAULT_PAYMENT_PROJECT_KEY);
+    const xpayToken = projectConfig.xpayToken || XPAY_TOKEN;
+
+    if (!xpayToken) {
+      logger.error('[Payment] xpayNotify rejected: project XPAY token is not configured', {
+        projectKey: projectConfig.key,
+      });
       return res.send('fail');
     }
 
-    const expectedSign = generateSignature({ money, mark, type, dt }, XPAY_TOKEN);
+    const expectedSign = generateSignature({ money, mark, type, dt }, xpayToken);
     if (!timingSafeEqualText(String(sign).trim().toLowerCase(), expectedSign.toLowerCase())) {
       return res.send('fail');
     }
@@ -860,6 +2005,7 @@ export const xpayNotify = async (req: Request, res: Response) => {
         type,
         dt,
       },
+      projectConfig,
     });
 
     if (result === 'NOT_FOUND' || result === 'AMOUNT_MISMATCH') {
@@ -877,6 +2023,390 @@ export const xpayNotify = async (req: Request, res: Response) => {
     }
     logger.error('[Payment] xpayNotify error:', error);
     res.status(500).send('error');
+  }
+};
+
+export const xpayTenantNotify = async (req: Request, res: Response) => {
+  let replayKey: string | null = null;
+  try {
+    const clientIp = extractRequestClientIp(req);
+    if (!isNotifyIpAllowed(clientIp, XPAY_NOTIFY_IP_ALLOWLIST)) {
+      logger.warn('[Payment] xpayTenantNotify rejected by IP allowlist', {
+        clientIp,
+        allowlistSize: XPAY_NOTIFY_IP_ALLOWLIST.size,
+      });
+      return res.status(403).json({ success: false, message: 'forbidden' });
+    }
+
+    const body = req.body && typeof req.body === 'object' ? req.body as Record<string, unknown> : {};
+    const tenantKey = String(body.tenantKey || '').trim();
+    const orderId = String(body.orderId || '').trim();
+    const outOrderId = String(body.outOrderId || orderId).trim();
+    const rawAmount = body.amount;
+    const subject = String(body.subject || '').trim();
+    const status = body.status;
+    const payType = String(body.payType || '').trim().toLowerCase();
+    const tradeNo = String(body.tradeNo || '').trim();
+    const paidAt = String(body.paidAt || '').trim();
+    const timestamp = String(body.timestamp || '').trim();
+    const nonce = String(body.nonce || '').trim();
+    const sign = String(body.sign || '').trim();
+    const metadata = body.metadata;
+
+    if (!tenantKey || !orderId || !outOrderId || rawAmount === undefined || !timestamp || !nonce || !sign) {
+      return res.status(400).json({ success: false, message: 'missing required fields' });
+    }
+
+    if (typeof rawAmount !== 'string' && typeof rawAmount !== 'number') {
+      return res.status(400).json({ success: false, message: 'missing required fields' });
+    }
+
+    if (!isXpayTenantSuccessStatus(status)) {
+      return sendSuccess(res, { received: true, ignored: true }, 'Ignored non-success tenant callback');
+    }
+
+    const callbackTimestamp = Number(timestamp);
+    if (!Number.isFinite(callbackTimestamp) || Math.abs(Date.now() - callbackTimestamp) > 10 * 60 * 1000) {
+      return res.status(400).json({ success: false, message: 'tenant callback expired' });
+    }
+
+    const expectedAmountFen = normalizeAmountToFen(rawAmount);
+    if (expectedAmountFen === null) {
+      return res.status(400).json({ success: false, message: 'invalid amount' });
+    }
+
+    const projectKey = parseProjectKeyFromPaymentId(outOrderId || orderId) || DEFAULT_PAYMENT_PROJECT_KEY;
+    const projectConfig = await getPaymentProjectConfig(projectKey);
+    const callbackSecret = projectConfig.xpayTenantCallbackSecret || XPAY_TENANT_CALLBACK_SECRET;
+
+    if (!callbackSecret) {
+      logger.error('[Payment] xpayTenantNotify rejected: tenant callback secret missing', {
+        projectKey: projectConfig.key,
+        tenantKey,
+      });
+      return res.status(503).json({ success: false, message: 'tenant callback secret missing' });
+    }
+
+    if (projectConfig.xpayTenantKey && projectConfig.xpayTenantKey !== tenantKey) {
+      logger.warn('[Payment] xpayTenantNotify rejected: tenant key mismatch', {
+        projectKey: projectConfig.key,
+        expectedTenantKey: projectConfig.xpayTenantKey,
+        receivedTenantKey: tenantKey,
+        outOrderId,
+      });
+      return res.status(400).json({ success: false, message: 'tenant key mismatch' });
+    }
+
+    const signPayload: XpayTenantNotifyPayload = {
+      tenantKey,
+      orderId,
+      outOrderId,
+      amount: String(rawAmount),
+      subject,
+      status: String(status ?? ''),
+      payType,
+      tradeNo,
+      paidAt,
+      timestamp,
+      nonce,
+      metadata,
+      sign,
+    };
+    const expectedSign = generateBase64Hmac(buildSortedSignBase(signPayload as unknown as Record<string, unknown>), callbackSecret);
+    if (!timingSafeEqualText(sign, expectedSign)) {
+      logger.warn('[Payment] xpayTenantNotify rejected: invalid signature', {
+        projectKey: projectConfig.key,
+        tenantKey,
+        outOrderId,
+      });
+      return res.status(401).json({ success: false, message: 'invalid signature' });
+    }
+
+    if (PAYMENT_NOTIFY_REPLAY_TTL_SECONDS > 0) {
+      replayKey = buildXpayTenantNotifyReplayKey({
+        tenantKey,
+        orderId,
+        outOrderId,
+        amount: String(rawAmount),
+        tradeNo,
+        timestamp,
+        nonce,
+        sign,
+      });
+
+      const accepted = await redisService.setIfNotExists(
+        replayKey,
+        { source: 'xpay-tenant', tenantKey, orderId, outOrderId, tradeNo, timestamp },
+        PAYMENT_NOTIFY_REPLAY_TTL_SECONDS,
+      );
+
+      if (!accepted) {
+        logger.warn('[Payment] xpayTenantNotify replay callback ignored', {
+          tenantKey,
+          orderId,
+          outOrderId,
+          replayKey,
+        });
+        return sendSuccess(res, { received: true, replay: true }, 'Duplicate tenant callback ignored');
+      }
+    }
+
+    const result = await completeExternalPayment(req, outOrderId, {
+      expectedAmountFen,
+      metadata: {
+        callbackSource: 'xpay-tenant',
+        tenantKey,
+        orderId,
+        payType,
+        tradeNo,
+        paidAt,
+        subject,
+        rawMetadata: metadata,
+      },
+      projectConfig,
+    });
+
+    if (result === 'NOT_FOUND' || result === 'AMOUNT_MISMATCH') {
+      if (replayKey) {
+        await redisService.del(replayKey).catch(() => undefined);
+      }
+      return res.status(404).json({ success: false, message: result.toLowerCase() });
+    }
+
+    return sendSuccess(res, {
+      received: true,
+      tenantKey,
+      orderId,
+      outOrderId,
+      result,
+    }, 'Tenant callback accepted');
+  } catch (error: any) {
+    if (replayKey) {
+      await redisService.del(replayKey).catch(() => undefined);
+    }
+    logger.error('[Payment] xpayTenantNotify error:', error);
+    return res.status(500).json({ success: false, message: 'error' });
+  }
+};
+
+export const creemWebhook = async (req: Request, res: Response) => {
+  try {
+    const signature = String(req.headers['creem-signature'] || '').trim();
+    if (!signature) {
+      return res.status(400).json({ received: false, message: 'missing creem-signature' });
+    }
+
+    const body = req.body && typeof req.body === 'object' ? req.body as CreemWebhookEvent : {};
+    const eventType = String(body.eventType || '').trim();
+    const payloadObject = body.object || null;
+    const paymentId = String(
+      payloadObject?.request_id
+      || payloadObject?.metadata?.paymentId
+      || '',
+    ).trim();
+
+    if (!paymentId) {
+      return res.status(400).json({ received: false, message: 'missing request_id' });
+    }
+
+    const projectKey = parseProjectKeyFromPaymentId(paymentId) || DEFAULT_PAYMENT_PROJECT_KEY;
+    const projectConfig = await getPaymentProjectConfig(projectKey);
+    const webhookSecret = projectConfig.creemWebhookSecret || CREEM_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      logger.error('[Payment] creemWebhook rejected: webhook secret missing', {
+        projectKey: projectConfig.key,
+        paymentId,
+      });
+      return res.status(503).json({ received: false, message: 'creem webhook secret missing' });
+    }
+
+    const rawBody = (req as Request & { rawBody?: string }).rawBody || JSON.stringify(req.body ?? {});
+    const expectedSignature = generateCreemHmacHex(rawBody, webhookSecret);
+    if (!timingSafeEqualText(signature.toLowerCase(), expectedSignature.toLowerCase())) {
+      logger.warn('[Payment] creemWebhook rejected: invalid signature', {
+        projectKey: projectConfig.key,
+        paymentId,
+      });
+      return res.status(401).json({ received: false, message: 'invalid signature' });
+    }
+
+    if (eventType !== 'checkout.completed' && eventType !== 'subscription.paid') {
+      return res.status(200).json({ received: true, ignored: true, eventType });
+    }
+
+    const expectedAmountFen =
+      payloadObject?.order?.amount !== undefined && payloadObject?.order?.amount !== null
+        ? Number(payloadObject.order.amount)
+        : undefined;
+
+    const result = await completeExternalPayment(req, paymentId, {
+      expectedAmountFen: Number.isFinite(expectedAmountFen) ? expectedAmountFen : undefined,
+      metadata: {
+        callbackSource: 'creem-webhook',
+        creemEventType: eventType,
+        creemCheckoutId: payloadObject?.checkout_id || payloadObject?.id,
+        creemOrderId: payloadObject?.order?.id,
+        creemProductId: payloadObject?.product?.id,
+      },
+      projectConfig,
+    });
+
+    return res.status(200).json({
+      received: true,
+      paymentId,
+      eventType,
+      result,
+    });
+  } catch (error: any) {
+    logger.error('[Payment] creemWebhook error:', error);
+    return res.status(500).json({ received: false, message: 'error' });
+  }
+};
+
+export const creemReturn = async (req: Request, res: Response) => {
+  try {
+    const requestId = String(req.query.request_id || '').trim();
+    const signature = String(req.query.signature || '').trim();
+    if (!requestId || !signature) {
+      return res.redirect(302, buildCreemFrontendFailUrl(req, requestId || 'unknown', 'missing_signature'));
+    }
+
+    const projectKey = parseProjectKeyFromPaymentId(requestId) || DEFAULT_PAYMENT_PROJECT_KEY;
+    const projectConfig = await getPaymentProjectConfig(projectKey);
+    const apiKey = projectConfig.creemApiKey || CREEM_API_KEY;
+    if (!apiKey) {
+      return res.redirect(302, buildCreemFrontendFailUrl(req, requestId, 'missing_api_key'));
+    }
+
+    const signParams: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.query)) {
+      if (Array.isArray(value)) {
+        signParams[key] = value[0] ? String(value[0]).trim() : '';
+      } else if (value !== undefined && value !== null) {
+        signParams[key] = String(value).trim();
+      }
+    }
+
+    const expectedSignature = generateCreemHmacHex(buildCreemRedirectSignBase(signParams), apiKey);
+    if (!timingSafeEqualText(signature.toLowerCase(), expectedSignature.toLowerCase())) {
+      logger.warn('[Payment] creemReturn rejected: invalid redirect signature', {
+        paymentId: requestId,
+      });
+      return res.redirect(302, buildCreemFrontendFailUrl(req, requestId, 'invalid_signature'));
+    }
+
+    const result = await completeExternalPayment(req, requestId, {
+      metadata: {
+        callbackSource: 'creem-return',
+        creemCheckoutId: String(req.query.checkout_id || '').trim(),
+        creemOrderId: String(req.query.order_id || '').trim(),
+        creemCustomerId: String(req.query.customer_id || '').trim(),
+        creemProductId: String(req.query.product_id || '').trim(),
+      },
+      projectConfig,
+    });
+
+    if (result === 'NOT_FOUND' || result === 'AMOUNT_MISMATCH') {
+      return res.redirect(302, buildCreemFrontendFailUrl(req, requestId, result.toLowerCase()));
+    }
+
+    return res.redirect(302, buildCreemFrontendSuccessUrl(req, requestId));
+  } catch (error: any) {
+    logger.error('[Payment] creemReturn error:', error);
+    return res.redirect(302, buildCreemFrontendFailUrl(req, String(req.query.request_id || 'unknown'), 'internal_error'));
+  }
+};
+
+export const qiuPayNotify = async (req: Request, res: Response) => {
+  let replayKey: string | null = null;
+  try {
+    const source =
+      req.body && typeof req.body === 'object' && Object.keys(req.body as Record<string, unknown>).length > 0
+        ? req.body as Record<string, unknown>
+        : req.query as Record<string, unknown>;
+    const outTradeNo = String(source.out_trade_no || '').trim();
+    const tradeNo = String(source.trade_no || '').trim();
+    const money = String(source.money || '').trim();
+    const tradeStatus = String(source.trade_status || '').trim().toUpperCase();
+    const sign = String(source.sign || '').trim();
+
+    if (!outTradeNo || !tradeNo || !money || !tradeStatus || !sign) {
+      return res.status(400).send('fail');
+    }
+    if (tradeStatus !== 'TRADE_SUCCESS') {
+      return res.send('success');
+    }
+
+    const projectKey = parseProjectKeyFromPaymentId(outTradeNo) || DEFAULT_PAYMENT_PROJECT_KEY;
+    const projectConfig = await getPaymentProjectConfig(projectKey);
+    const merchantKey = projectConfig.qiupayKey || process.env.QIUPAY_KEY || '';
+    if (!merchantKey) {
+      logger.error('[Payment] qiuPayNotify rejected: merchant key missing', { projectKey, outTradeNo });
+      return res.status(503).send('fail');
+    }
+
+    const signPayload: Record<string, string> = {};
+    for (const [key, value] of Object.entries(source)) {
+      if (value === undefined || value === null) continue;
+      signPayload[key] = Array.isArray(value)
+        ? String(value[0] || '').trim()
+        : String(value).trim();
+    }
+    const expectedSign = createQiuPaySignature(signPayload, merchantKey);
+    if (!timingSafeEqualText(sign.toLowerCase(), expectedSign.toLowerCase())) {
+      logger.warn('[Payment] qiuPayNotify rejected: invalid signature', { projectKey, outTradeNo });
+      return res.status(401).send('fail');
+    }
+
+    const expectedAmountFen = normalizeAmountToFen(money);
+    if (expectedAmountFen === null) {
+      return res.status(400).send('fail');
+    }
+
+    if (PAYMENT_NOTIFY_REPLAY_TTL_SECONDS > 0) {
+      replayKey = buildQiuPayNotifyReplayKey({
+        outTradeNo,
+        tradeNo,
+        money,
+        tradeStatus,
+        sign,
+      });
+      const accepted = await redisService.setIfNotExists(
+        replayKey,
+        { source: 'qiupay', outTradeNo, tradeNo, money },
+        PAYMENT_NOTIFY_REPLAY_TTL_SECONDS,
+      );
+      if (!accepted) {
+        logger.warn('[Payment] qiuPayNotify replay callback ignored', { outTradeNo, replayKey });
+        return res.send('success');
+      }
+    }
+
+    const result = await completeExternalPayment(req, outTradeNo, {
+      expectedAmountFen,
+      metadata: {
+        callbackSource: 'qiupay',
+        tradeNo,
+        tradeStatus,
+        param: String(source.param || '').trim(),
+      },
+      projectConfig,
+    });
+
+    if (result === 'NOT_FOUND' || result === 'AMOUNT_MISMATCH') {
+      if (replayKey) {
+        await redisService.del(replayKey).catch(() => undefined);
+      }
+      return res.status(404).send('fail');
+    }
+
+    return res.send('success');
+  } catch (error: any) {
+    if (replayKey) {
+      await redisService.del(replayKey).catch(() => undefined);
+    }
+    logger.error('[Payment] qiuPayNotify error:', error);
+    return res.status(500).send('error');
   }
 };
 
@@ -898,8 +2428,13 @@ export const payProNotify = async (req: Request, res: Response) => {
     }
 
     const { orderNo, amount, payNum, sign } = validation.data;
-    if (!PAYPRO_OPENAPI_SECRET) {
-      logger.error('[Payment] payProNotify rejected: PAYPRO_OPENAPI_SECRET is not configured');
+    const projectKey = parseProjectKeyFromPaymentId(orderNo);
+    const projectConfig = await getPaymentProjectConfig(projectKey || DEFAULT_PAYMENT_PROJECT_KEY);
+    const payProSecret = projectConfig.payProOpenApiSecret || PAYPRO_OPENAPI_SECRET;
+    if (!payProSecret) {
+      logger.error('[Payment] payProNotify rejected: project PayPro secret is not configured', {
+        projectKey: projectConfig.key,
+      });
       return res.send('fail');
     }
 
@@ -914,7 +2449,7 @@ export const payProNotify = async (req: Request, res: Response) => {
         amount: normalizedAmount,
         payNum,
       },
-      PAYPRO_OPENAPI_SECRET,
+      payProSecret,
     );
 
     if (!timingSafeEqualText(String(sign).trim().toUpperCase(), expectedSign.toUpperCase())) {
@@ -955,6 +2490,7 @@ export const payProNotify = async (req: Request, res: Response) => {
         callbackSource: 'paypro',
         payNum,
       },
+      projectConfig,
     });
 
     if (result === 'NOT_FOUND' || result === 'AMOUNT_MISMATCH') {
@@ -970,6 +2506,234 @@ export const payProNotify = async (req: Request, res: Response) => {
       await redisService.del(replayKey).catch(() => undefined);
     }
     logger.error('[Payment] payProNotify error:', error);
+    return res.status(500).send('error');
+  }
+};
+
+export const tpayNotify = async (req: Request, res: Response) => {
+  let replayKey: string | null = null;
+  try {
+    const clientIp = extractRequestClientIp(req);
+    if (!isNotifyIpAllowed(clientIp, TPAY_NOTIFY_IP_ALLOWLIST)) {
+      logger.warn('[Payment] tpayNotify rejected by IP allowlist', {
+        clientIp,
+        allowlistSize: TPAY_NOTIFY_IP_ALLOWLIST.size,
+      });
+      return res.send('fail');
+    }
+
+    const body = req.body && typeof req.body === 'object' ? req.body as Record<string, unknown> : {};
+    const orderNo = String(body.order_no || '').trim();
+    const projectKey = parseProjectKeyFromPaymentId(orderNo);
+    const projectConfig = await getPaymentProjectConfig(projectKey || DEFAULT_PAYMENT_PROJECT_KEY);
+    const tpayAppId = projectConfig.tpayAppId || process.env.TPAY_APP_ID || '';
+    const tpaySecret = projectConfig.tpayAppSecret || process.env.TPAY_APP_SECRET || '';
+    if (!tpayAppId || !tpaySecret) {
+      logger.error('[Payment] tpayNotify rejected: Tpay config missing', {
+        projectKey: projectConfig.key,
+      });
+      return res.send('fail');
+    }
+
+    const subject = String(body.subject || '').trim();
+    const payType = String(body.pay_type || '').trim();
+    const money = normalizePayProAmount(body.money as string | number);
+    const realmoney = body.realmoney == null ? '' : String(body.realmoney).trim();
+    const result = String(body.result || '').trim().toLowerCase();
+    const xddpayOrder = String(body.xddpay_order || '').trim();
+    const appId = String(body.app_id || '').trim();
+    const extra = String(body.extra || '').trim();
+    const sign = String(body.sign || '').trim();
+
+    if (!orderNo || !payType || !money || !xddpayOrder || !sign || appId !== tpayAppId || result !== 'success') {
+      return res.send('fail');
+    }
+
+    const expectedSign = generateTpaySignature({
+      orderNo,
+      subject,
+      payType,
+      money,
+      appId,
+      extra,
+    }, tpaySecret);
+
+    if (!timingSafeEqualText(sign.toUpperCase(), expectedSign.toUpperCase())) {
+      return res.send('fail');
+    }
+
+    const expectedAmountFen = normalizeAmountToFen(money);
+    if (expectedAmountFen === null) {
+      return res.send('fail');
+    }
+
+    if (PAYMENT_NOTIFY_REPLAY_TTL_SECONDS > 0) {
+      replayKey = buildTpayNotifyReplayKey({
+        orderNo,
+        xddpayOrder,
+        money,
+        result,
+        sign,
+      });
+
+      const accepted = await redisService.setIfNotExists(
+        replayKey,
+        { source: 'tpay', orderNo, xddpayOrder, money, result },
+        PAYMENT_NOTIFY_REPLAY_TTL_SECONDS,
+      );
+
+      if (!accepted) {
+        logger.warn('[Payment] tpayNotify replay callback ignored', {
+          orderNo,
+          replayKey,
+        });
+        return res.send('success');
+      }
+    }
+
+    const completeResult = await completeExternalPayment(req, orderNo, {
+      expectedAmountFen,
+      metadata: {
+        callbackSource: 'tpay',
+        xddpayOrder,
+        payType,
+        realmoney,
+        extra,
+      },
+      projectConfig,
+    });
+
+    if (completeResult === 'NOT_FOUND' || completeResult === 'AMOUNT_MISMATCH') {
+      if (replayKey) {
+        await redisService.del(replayKey).catch(() => undefined);
+      }
+      return res.send('fail');
+    }
+
+    return res.send('success');
+  } catch (error) {
+    if (replayKey) {
+      await redisService.del(replayKey).catch(() => undefined);
+    }
+    logger.error('[Payment] tpayNotify error:', error);
+    return res.status(500).send('error');
+  }
+};
+
+export const hupijiaoNotify = async (req: Request, res: Response) => {
+  let replayKey: string | null = null;
+  try {
+    const clientIp = extractRequestClientIp(req);
+    if (!isNotifyIpAllowed(clientIp, HUPIJIAO_NOTIFY_IP_ALLOWLIST)) {
+      logger.warn('[Payment] hupijiaoNotify rejected by IP allowlist', {
+        clientIp,
+        allowlistSize: HUPIJIAO_NOTIFY_IP_ALLOWLIST.size,
+      });
+      return res.send('fail');
+    }
+
+    const body = req.body && typeof req.body === 'object' ? req.body as Record<string, unknown> : {};
+    const tradeOrderId = String(body.trade_order_id || '').trim();
+    const projectKey = parseProjectKeyFromPaymentId(tradeOrderId);
+    const projectConfig = await getPaymentProjectConfig(projectKey || DEFAULT_PAYMENT_PROJECT_KEY);
+    const appId = projectConfig.hupijiaoAppId || process.env.HUPIJIAO_APP_ID || '';
+    const appSecret = projectConfig.hupijiaoAppSecret || process.env.HUPIJIAO_APP_SECRET || '';
+    if (!appId || !appSecret) {
+      logger.error('[Payment] hupijiaoNotify rejected: HuPiJiao config missing', {
+        projectKey: projectConfig.key,
+      });
+      return res.send('fail');
+    }
+
+    const totalFee = normalizePayProAmount(body.total_fee as string | number);
+    const transactionId = String(body.transaction_id || '').trim();
+    const openOrderId = String(body.open_order_id || '').trim();
+    const orderTitle = String(body.order_title || '').trim();
+    const status = String(body.status || '').trim().toUpperCase();
+    const plugins = String(body.plugins || '').trim();
+    const attach = String(body.attach || '').trim();
+    const callbackAppId = String(body.appid || '').trim();
+    const time = String(body.time || '').trim();
+    const nonceStr = String(body.nonce_str || '').trim();
+    const hash = String(body.hash || '').trim();
+
+    if (!tradeOrderId || !totalFee || !transactionId || !hash || callbackAppId !== appId || status !== 'OD') {
+      return res.send('fail');
+    }
+
+    const signSource: Record<string, string> = {
+      trade_order_id: tradeOrderId,
+      total_fee: totalFee,
+      transaction_id: transactionId,
+      open_order_id: openOrderId,
+      order_title: orderTitle,
+      status,
+      plugins,
+      attach,
+      appid: callbackAppId,
+      time,
+      nonce_str: nonceStr,
+    };
+    const expectedHash = generateHupijiaoSignature(signSource, appSecret);
+    if (!timingSafeEqualText(hash.toLowerCase(), expectedHash.toLowerCase())) {
+      return res.send('fail');
+    }
+
+    const expectedAmountFen = normalizeAmountToFen(totalFee);
+    if (expectedAmountFen === null) {
+      return res.send('fail');
+    }
+
+    if (PAYMENT_NOTIFY_REPLAY_TTL_SECONDS > 0) {
+      replayKey = buildHupijiaoNotifyReplayKey({
+        tradeOrderId,
+        transactionId,
+        totalFee,
+        status,
+        hash,
+      });
+
+      const accepted = await redisService.setIfNotExists(
+        replayKey,
+        { source: 'hupijiao', tradeOrderId, transactionId, totalFee, status },
+        PAYMENT_NOTIFY_REPLAY_TTL_SECONDS,
+      );
+
+      if (!accepted) {
+        logger.warn('[Payment] hupijiaoNotify replay callback ignored', {
+          tradeOrderId,
+          replayKey,
+        });
+        return res.send('success');
+      }
+    }
+
+    const completeResult = await completeExternalPayment(req, tradeOrderId, {
+      expectedAmountFen,
+      metadata: {
+        callbackSource: 'hupijiao',
+        transactionId,
+        openOrderId,
+        orderTitle,
+        plugins,
+        attach,
+      },
+      projectConfig,
+    });
+
+    if (completeResult === 'NOT_FOUND' || completeResult === 'AMOUNT_MISMATCH') {
+      if (replayKey) {
+        await redisService.del(replayKey).catch(() => undefined);
+      }
+      return res.send('fail');
+    }
+
+    return res.send('success');
+  } catch (error) {
+    if (replayKey) {
+      await redisService.del(replayKey).catch(() => undefined);
+    }
+    logger.error('[Payment] hupijiaoNotify error:', error);
     return res.status(500).send('error');
   }
 };
@@ -1200,10 +2964,28 @@ export const manualCompletePayment = async (req: AuthRequest, res: Response, nex
       if (!payment) throw new AppError('Payment not found', 404, ErrorCode.NOT_FOUND);
       if (payment.status === 'COMPLETED') return; // Already completed, handled by withLock return value if needed
 
-      const updatedPayment = await prisma.$transaction(async (tx) => {
+      const {
+        paymentRecord: updatedPayment,
+        walletAuditEntry,
+        paymentAuditEntry,
+      } = await prisma.$transaction(async (tx) => {
+        let walletAuditEntry:
+          | {
+              userId: number;
+              target: string;
+              before: Record<string, unknown>;
+              after: Record<string, unknown>;
+            }
+          | null = null;
         const beforePayment = await tx.payment.findUnique({ where: { id: orderId } });
         // Re-check status inside transaction for absolute safety
-        if (beforePayment?.status === 'COMPLETED') return beforePayment;
+        if (beforePayment?.status === 'COMPLETED') {
+          return {
+            paymentRecord: beforePayment,
+            walletAuditEntry,
+            paymentAuditEntry: null,
+          };
+        }
 
         const paymentRecord = await tx.payment.update({
           where: { id: orderId },
@@ -1250,14 +3032,48 @@ export const manualCompletePayment = async (req: AuthRequest, res: Response, nex
               data: { signature }
             });
 
-            await logDataChange(paymentRecord.user_id, 'WALLET_DEPOSIT_MANUAL', `wallet_${wallet.id}`, req, beforeWallet, updatedWallet);
+            walletAuditEntry = {
+              userId: paymentRecord.user_id,
+              target: `wallet_${wallet.id}`,
+              before: beforeWallet,
+              after: updatedWallet,
+            };
           }
         }
 
-        await logDataChange(req.user!.id, 'PAYMENT_COMPLETED_MANUAL', `payment_${paymentRecord.id}`, req, beforePayment, paymentRecord);
-        return paymentRecord;
+        const paymentAuditEntry = {
+          userId: req.user!.id,
+          target: `payment_${paymentRecord.id}`,
+          before: beforePayment,
+          after: paymentRecord,
+        };
+        return {
+          paymentRecord,
+          walletAuditEntry,
+          paymentAuditEntry,
+        };
       });
 
+      if (walletAuditEntry) {
+        await logDataChange(
+          walletAuditEntry.userId,
+          'WALLET_DEPOSIT_MANUAL',
+          walletAuditEntry.target,
+          req,
+          walletAuditEntry.before,
+          walletAuditEntry.after,
+        );
+      }
+      if (paymentAuditEntry) {
+        await logDataChange(
+          paymentAuditEntry.userId,
+          'PAYMENT_COMPLETED_MANUAL',
+          paymentAuditEntry.target,
+          req,
+          paymentAuditEntry.before,
+          paymentAuditEntry.after,
+        );
+      }
       if (updatedPayment) {
         eventService.emitEvent(EVENTS.PAYMENT_SUCCESS, updatedPayment);
       }

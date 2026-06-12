@@ -1,0 +1,400 @@
+{
+  "timestamp": "2026-06-08T08:04:54.960Z",
+  "baseUrl": "http://127.0.0.1:4184",
+  "payUrl": "http://127.0.0.1:4184",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184",
+  "plannedTotal": 12,
+  "completed": 12,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 5000,
+    "domReadyTimeoutMs": 2000,
+    "stableWaitMs": 100,
+    "waitUntil": "commit"
+  },
+  "total": 12,
+  "failed": 7,
+  "failedRoutes": [
+    {
+      "label": "home-history",
+      "url": "http://127.0.0.1:4184/",
+      "finalUrl": "http://127.0.0.1:4184/",
+      "documentStatus": 200,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 2000ms exceeded.",
+        "console_errors=1",
+        "request_failures=1",
+        "missing_text=千服联灯"
+      ]
+    },
+    {
+      "label": "search-history",
+      "url": "http://127.0.0.1:4184/search",
+      "finalUrl": "http://127.0.0.1:4184/search",
+      "documentStatus": 200,
+      "findings": [
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4184/login",
+      "finalUrl": "http://127.0.0.1:4184/login",
+      "documentStatus": 200,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4184/register",
+      "finalUrl": "http://127.0.0.1:4184/register",
+      "documentStatus": 200,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4184/forgot-password",
+      "finalUrl": "http://127.0.0.1:4184/forgot-password",
+      "documentStatus": 200,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4184/#/search",
+      "finalUrl": "http://127.0.0.1:4184/search",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4184/",
+      "finalUrl": "http://127.0.0.1:4184/",
+      "documentStatus": 200,
+      "findings": [
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ..."
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [
+    "search-history",
+    "search-hash"
+  ],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": false,
+      "detail": "search_input_missing"
+    },
+    {
+      "label": "search-hash",
+      "ok": false,
+      "detail": "search_input_missing"
+    }
+  ],
+  "commonErrorResponses": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4184/api/v1/csrf-token",
+      "count": 1
+    }
+  ],
+  "payRoot": {
+    "finalUrl": "http://127.0.0.1:4184/",
+    "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+    "canonicalHref": "https://mc-u.top/",
+    "ogUrl": "https://mc-u.top/",
+    "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+    "certificateErrorDetected": false,
+    "bodyMismatch": "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ..."
+  },
+  "results": [
+    {
+      "label": "home-history",
+      "url": "http://127.0.0.1:4184/",
+      "finalUrl": "http://127.0.0.1:4184/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES"
+        }
+      ],
+      "requestFailures": [
+        {
+          "url": "http://127.0.0.1:4184/assets/user-BMa_tH4B.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_INSUFFICIENT_RESOURCES"
+        }
+      ],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\home-history.png",
+      "ok": false,
+      "findings": [
+        "stable_wait_error=page.waitForLoadState: Timeout 2000ms exceeded.",
+        "console_errors=1",
+        "request_failures=1",
+        "missing_text=千服联灯"
+      ]
+    },
+    {
+      "label": "servers-history",
+      "url": "http://127.0.0.1:4184/servers",
+      "finalUrl": "http://127.0.0.1:4184/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 公开索引检测中 公开目录检测中 发现服务器 正在检查公开目录状态并同步最新服务器数据。 全部 生存 创造 极限 小游戏 角色扮演 公开索引 MINECRAFT 服务器公开列表 这里汇总已公开的服务器名称、分类、标签、版本、在线状态和简介，方便玩家按关键词和玩法筛选目标服务器。 列表状态:...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\servers-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "search-history",
+      "url": "http://127.0.0.1:4184/search",
+      "finalUrl": "http://127.0.0.1:4184/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\search-history.png",
+      "ok": false,
+      "findings": [
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "resources-history",
+      "url": "http://127.0.0.1:4184/resources",
+      "finalUrl": "http://127.0.0.1:4184/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\resources-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "rules-history",
+      "url": "http://127.0.0.1:4184/rules",
+      "finalUrl": "http://127.0.0.1:4184/rules",
+      "documentStatus": 200,
+      "title": "等级与经验规则 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/rules",
+      "ogUrl": "https://mc-u.top/rules",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\rules-history.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "login-history",
+      "url": "http://127.0.0.1:4184/login",
+      "finalUrl": "http://127.0.0.1:4184/login",
+      "documentStatus": 200,
+      "title": "登录 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\login-history.png",
+      "ok": false,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "http://127.0.0.1:4184/register",
+      "finalUrl": "http://127.0.0.1:4184/register",
+      "documentStatus": 200,
+      "title": "注册 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/register",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\register-history.png",
+      "ok": false,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "http://127.0.0.1:4184/forgot-password",
+      "finalUrl": "http://127.0.0.1:4184/forgot-password",
+      "documentStatus": 200,
+      "title": "找回密码 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/forgot-password",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "form_inputs=0"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "http://127.0.0.1:4184/#/search",
+      "finalUrl": "http://127.0.0.1:4184/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": false,
+        "detail": "search_input_missing"
+      },
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "requestFailures": [],
+      "errorResponses": [
+        {
+          "url": "http://127.0.0.1:4184/api/v1/csrf-token",
+          "status": 404,
+          "resourceType": "fetch"
+        }
+      ],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "console_errors=1",
+        "error_responses=1",
+        "interaction_failed=search_input_missing"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "http://127.0.0.1:4184/#/servers",
+      "finalUrl": "http://127.0.0.1:4184/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\servers-hash.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "resources-hash",
+      "url": "http://127.0.0.1:4184/#/resources",
+      "finalUrl": "http://127.0.0.1:4184/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\resources-hash.png",
+      "ok": true,
+      "findings": []
+    },
+    {
+      "label": "pay-root",
+      "url": "http://127.0.0.1:4184/",
+      "finalUrl": "http://127.0.0.1:4184/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "consoleEntries": [],
+      "requestFailures": [],
+      "errorResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\audit-script-commit-check-4184\\pay-root.png",
+      "ok": false,
+      "findings": [
+        "body_mismatch=系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。 千服联灯 QIANFU 首页 找服 资源 团队 规则 推广 登录 快速注册 INITIALIZING_SESSION... 千服联灯 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。 平台 浏览服务器 高级搜索 推广方案 资源中心 站点信息 开发团队 等级规则 服务条款 ..."
+      ]
+    }
+  ]
+}

@@ -3,8 +3,9 @@ import prisma from '../db';
 import safeStringify from 'json-stringify-safe';
 import crypto from 'crypto';
 import { logger } from '../utils/logger';
+import { getJwtSecret } from '../utils/securityConfig';
 
-const HMAC_SECRET = process.env.JWT_SECRET || 'audit-log-fallback-secret';
+const HMAC_SECRET = getJwtSecret();
 
 /**
  * Calculate HMAC signature for an audit log entry to ensure integrity

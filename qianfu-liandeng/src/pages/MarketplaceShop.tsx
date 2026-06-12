@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowUpDown, BadgeCheck, BarChart3, Clock3, Lock, Palette, RotateCcw, Save, ShoppingCart, Sparkles } from 'lucide-react';
 import { api } from '@/api/request';
-import { sanitizeUrl, isUrlSafe, isImageUrlSafe } from '@/utils/urlValidator';
+import { sanitizeUrl, isImageUrlSafe } from '@/utils/urlValidator';
+import PageSeo from '@/components/PageSeo';
+
+const SITE_URL = 'https://mc-u.top';
 
 type Product = {
   id: string;
@@ -128,6 +131,23 @@ export default function MarketplaceShop() {
 
   const activeBanner = banners[activeBannerIndex % banners.length];
   const activeFeatured = featured[activeFeaturedIndex % Math.max(featured.length, 1)];
+  const canonicalPath = userId ? `/shop/${userId}` : '/marketplace/shop';
+  const shopSeoDescription = config.bio || '浏览公开玩家店铺、商品与创作者资源。';
+  const shopSeoSchema = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: config.shopName || '玩家店铺',
+    description: shopSeoDescription,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: featured.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        url: `${SITE_URL}/marketplace/products/${item.id}`,
+        name: item.title,
+      })),
+    },
+  }), [config.shopName, featured, shopSeoDescription]);
 
   const saveConfig = async () => {
     setSavingShopConfig(true);
@@ -192,7 +212,15 @@ export default function MarketplaceShop() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-6 sm:space-y-8">
+    <>
+      <PageSeo
+        title={`${config.shopName || '玩家店铺'} - 千服联灯`}
+        description={shopSeoDescription}
+        canonicalPath={canonicalPath}
+        image={isImageUrlSafe(config.bannerUrl) ? config.bannerUrl : undefined}
+        schema={shopSeoSchema}
+      />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-6 sm:space-y-8">
       <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
         <div className="relative h-48 sm:h-56 md:h-72">
           {isImageUrlSafe(config.bannerUrl) ? (
@@ -213,7 +241,7 @@ export default function MarketplaceShop() {
               <div className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white text-xs font-black shadow-lg">✓</div>
             </div>
             <div className="text-white space-y-3 max-w-4xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-[10px] font-black uppercase tracking-[0.45em]"><BadgeCheck className="w-3.5 h-3.5" /> Verified Seller</div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-[10px] font-black uppercase tracking-[0.45em]"><BadgeCheck className="w-3.5 h-3.5" /> 已认证商家</div>
               <h1 className="text-4xl md:text-5xl font-black tracking-tight">{config.shopName}</h1>
               <p className="max-w-3xl leading-7 text-white/85">{config.bio}</p>
             </div>
@@ -235,7 +263,7 @@ export default function MarketplaceShop() {
               {!editable && <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs font-bold text-muted-foreground"><Lock className="w-3.5 h-3.5" />仅店主可编辑</span>}
               {editable && <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-bold">可编辑</span>}
               <div className="flex items-center gap-2">
-                {banners.map((_, index) => <button key={index} onClick={() => { setActiveBannerIndex(index); bumpMetric('announcement'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeBannerIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
+                {banners.map((_, index) => <button type="button" key={index} onClick={() => { setActiveBannerIndex(index); bumpMetric('announcement'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeBannerIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
               </div>
             </div>
           </div>
@@ -248,7 +276,7 @@ export default function MarketplaceShop() {
           </div>
           {editable ? (
             <>
-              <button onClick={() => setEditingAnnouncement((current) => !current)} className="w-full sm:w-auto px-4 py-2 rounded-xl border border-border text-sm font-bold">{editingAnnouncement ? '收起编辑' : '编辑公告 / 头图'}</button>
+              <button type="button" onClick={() => setEditingAnnouncement((current) => !current)} className="w-full sm:w-auto px-4 py-2 rounded-xl border border-border text-sm font-bold">{editingAnnouncement ? '收起编辑' : '编辑公告 / 头图'}</button>
               {editingAnnouncement && (
                 <div className="space-y-4 rounded-3xl border border-dashed border-border p-4 sm:p-5 bg-muted/20">
                   {shopConfigMessage && <div className="rounded-2xl border border-border bg-background p-3 text-sm">{shopConfigMessage}</div>}
@@ -261,9 +289,9 @@ export default function MarketplaceShop() {
                     <textarea className="rounded-xl border border-border px-4 py-3 bg-background min-h-28" value={form.announcementText} onChange={(e) => setForm((s) => ({ ...s, announcementText: e.target.value }))} placeholder="公告内容" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button disabled={savingShopConfig} onClick={saveConfig} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"><Save className="w-4 h-4" /> {savingShopConfig ? '保存中...' : '保存店铺配置'}</button>
-                    <button disabled={savingShopConfig} onClick={resetConfig} className="px-4 py-2 rounded-xl border border-border text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"><RotateCcw className="w-4 h-4" /> 重置默认</button>
-                    <button onClick={() => setEditingAnnouncement(false)} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">取消</button>
+                    <button type="button" disabled={savingShopConfig} onClick={saveConfig} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"><Save className="w-4 h-4" /> {savingShopConfig ? '保存中...' : '保存店铺配置'}</button>
+                    <button type="button" disabled={savingShopConfig} onClick={resetConfig} className="px-4 py-2 rounded-xl border border-border text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"><RotateCcw className="w-4 h-4" /> 重置默认</button>
+                    <button type="button" onClick={() => setEditingAnnouncement(false)} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">取消</button>
                   </div>
                 </div>
               )}
@@ -284,7 +312,7 @@ export default function MarketplaceShop() {
           </div>
           <div className="grid md:grid-cols-3 gap-3">
             {themes.map((theme) => (
-              <button key={theme} disabled={!editable || savingShopConfig} onClick={() => applyTheme(theme)} className={`rounded-2xl border p-4 text-left transition-all ${config.theme === theme ? 'border-black bg-black text-white' : 'border-border bg-background hover:border-black'} ${!editable ? 'opacity-60 cursor-not-allowed' : ''}`}>
+              <button type="button" key={theme} disabled={!editable || savingShopConfig} onClick={() => applyTheme(theme)} className={`rounded-2xl border p-4 text-left transition-all ${config.theme === theme ? 'border-black bg-black text-white' : 'border-border bg-background hover:border-black'} ${!editable ? 'opacity-60 cursor-not-allowed' : ''}`}>
                 <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.35em] font-black"><Palette className="w-3.5 h-3.5" />{themeNames[theme]}</div>
                 <div className="text-sm mt-2 opacity-85">一键套用主题预设</div>
               </button>
@@ -300,7 +328,7 @@ export default function MarketplaceShop() {
                     <div className="font-bold mt-1">{version.config.shopName} · {version.config.theme || 'default'}</div>
                     <div className="text-sm text-muted-foreground mt-1 line-clamp-1">{version.config.announcementText}</div>
                   </div>
-                  {editable && <button disabled={savingShopConfig} onClick={() => restoreVersion(version)} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">回滚此版本</button>}
+                  {editable && <button type="button" disabled={savingShopConfig} onClick={() => restoreVersion(version)} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">回滚此版本</button>}
                 </div>
               )) : <div className="text-sm text-muted-foreground">暂无版本历史</div>}
             </div>
@@ -311,7 +339,7 @@ export default function MarketplaceShop() {
                     <div className="text-xs text-muted-foreground">版本详情</div>
                     <div className="font-bold mt-1">{selectedVersion.config.shopName} · {selectedVersion.config.theme || 'default'}</div>
                   </div>
-                  {editable && <button disabled={savingShopConfig} onClick={() => restoreVersion(selectedVersion)} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold">回滚到该版本</button>}
+                  {editable && <button type="button" disabled={savingShopConfig} onClick={() => restoreVersion(selectedVersion)} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold">回滚到该版本</button>}
                 </div>
                 <div className="grid md:grid-cols-2 gap-3 mt-4 text-sm">
                   <div className="rounded-xl border border-border p-3"><div className="text-xs text-muted-foreground mb-1">Banner</div><div className="break-all">{selectedVersion.config.bannerUrl}</div></div>
@@ -330,7 +358,7 @@ export default function MarketplaceShop() {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-xl sm:text-2xl font-black">精选轮播</h2>
             <div className="flex items-center gap-2">
-              {featured.map((_, index) => <button key={index} onClick={() => { setActiveFeaturedIndex(index); bumpMetric('featured'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeFeaturedIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
+              {featured.map((_, index) => <button type="button" key={index} onClick={() => { setActiveFeaturedIndex(index); bumpMetric('featured'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeFeaturedIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
             </div>
           </div>
           {activeFeatured ? (
@@ -339,7 +367,7 @@ export default function MarketplaceShop() {
                 {activeFeatured.coverUrl && isImageUrlSafe(activeFeatured.coverUrl) ? <img src={activeFeatured.coverUrl} alt={activeFeatured.title} className="w-full h-full object-cover opacity-85" /> : <div className="w-full h-full flex items-center justify-center text-white/60"><ShoppingCart className="w-12 h-12" /></div>}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute left-4 right-4 sm:left-5 sm:right-5 bottom-4 sm:bottom-5 text-white">
-                  <div className="text-[10px] sm:text-xs uppercase tracking-[0.35em] font-black opacity-80">Featured</div>
+                  <div className="text-[10px] sm:text-xs uppercase tracking-[0.35em] font-black opacity-80">精选</div>
                   <div className="text-xl sm:text-2xl font-black mt-2 line-clamp-2">{activeFeatured.title}</div>
                   <div className="text-xs sm:text-sm mt-2 opacity-85">¥{activeFeatured.price} · 销量 {activeFeatured.sales} · 评分 {activeFeatured.rating}</div>
                 </div>
@@ -352,7 +380,7 @@ export default function MarketplaceShop() {
 
         <div className="space-y-4">
           <h2 className="text-xl sm:text-2xl font-black">全部商品</h2>
-          <div className="flex items-center justify-between gap-3 flex-wrap"><span className="text-sm text-muted-foreground">按热度、销量、评分切换排序</span><button onClick={() => setSortBy((current) => current === 'hot' ? 'sales' : current === 'sales' ? 'rating' : 'hot')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-bold"><ArrowUpDown className="w-4 h-4" />切换排序</button></div>
+          <div className="flex items-center justify-between gap-3 flex-wrap"><span className="text-sm text-muted-foreground">按热度、销量、评分切换排序</span><button type="button" onClick={() => setSortBy((current) => current === 'hot' ? 'sales' : current === 'sales' ? 'rating' : 'hot')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-bold"><ArrowUpDown className="w-4 h-4" />切换排序</button></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {sortedProducts.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-card p-4 hover:border-black transition-all"><div className="text-xs text-muted-foreground uppercase tracking-widest">{item.category}</div><div className="font-bold mt-2 line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2 flex items-center gap-2 flex-wrap"><span>¥{item.price}</span><span>· 销量 {item.sales}</span><span>· 评分 {item.rating}</span></div></Link>)}
           </div>
@@ -368,6 +396,7 @@ export default function MarketplaceShop() {
           {featured.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-background p-4 hover:border-black transition-all" onClick={() => bumpMetric('featured')}><div className="font-bold line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2">¥{item.price} · 销量 {item.sales} · 评分 {item.rating}</div></Link>)}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

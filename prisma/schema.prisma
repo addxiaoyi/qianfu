@@ -2,13 +2,15 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
+  provider      = "prisma-client-js"
+  output        = "./generated/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 generator localClient {
-  provider = "prisma-client-js"
-  output   = "./generated/local-client"
+  provider      = "prisma-client-js"
+  output        = "./generated/local-client"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -187,6 +189,10 @@ model Server {
   reviewed_by        Int?
   reviewer           User?     @relation("ServerReviewer", fields: [reviewed_by], references: [id])
   reviewed_at        DateTime?
+  listing_plan       String?
+  listing_started_at DateTime?
+  listing_expires_at DateTime?
+  listing_price_paid Int?
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
   /// java | bedrock — listing filter + publish form
@@ -216,6 +222,7 @@ model Server {
   @@index([network_env])
   @@index([created_at])
   @@index([updated_at])
+  @@index([listing_expires_at])
   @@index([name])
   @@index([name_en])
   @@index([ip])

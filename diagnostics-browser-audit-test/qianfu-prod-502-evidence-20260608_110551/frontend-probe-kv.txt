@@ -1,0 +1,16 @@
++ bash -lc npm\ run\ --silent\ probe:frontend-deploy\ --\ --report-only\ --kv
+remote_url=https://mc-u.top/
+local_html_path=D:\qwq\项目\千服\qianfu-liandeng\dist\index.html
+remote_root_status=200
+remote_etag=W/"6a110ee7-10c5"
+remote_last_modified=Sat, 23 May 2026 02:20:23 GMT
+remote_bundle=/assets/index-D8ePUst4.js
+local_bundle=/assets/index-CHZmvcH-.js
+bundle_match=false
+remote_legacy_hash_markers=https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources
+local_legacy_hash_markers=none
+remote_search_target=https://mc-u.top/#/search?q={search_term_string}
+local_search_target=https://mc-u.top/search?q={search_term_string}
+search_target_match=false
+remote_same_as=https://mc-u.top/#/servers,https://mc-u.top/#/resources
+local_same_as=https://mc-u.top/servers,https://mc-u.top/resources

@@ -7,6 +7,8 @@ import { useT, type TranslationKey } from '@/store/uiStore';
 import HomeFeatureCard from '@/components/HomeFeatureCard';
 import HomeStatCard from '@/components/HomeStatCard';
 import { useQuery } from '@tanstack/react-query';
+import { request } from '@/api/request';
+import { useBackendHealth } from '@/hooks/useBackendHealth';
 
 interface ServerStats {
   onlineNodes: number;
@@ -15,9 +17,24 @@ interface ServerStats {
   availability: string;
 }
 
-const heroSupportBadges: { labelKey: TranslationKey; prefix: string }[] = [
-  { labelKey: 'home.status.connected', prefix: 'Matrix_Link:' },
-  { labelKey: 'home.status.sync', prefix: 'Global_Grid:' },
+const heroSupportBadges: {
+  prefix: string;
+  healthyKey: TranslationKey;
+  pendingKey: TranslationKey;
+  degradedKey: TranslationKey;
+}[] = [
+  {
+    prefix: '平台状态',
+    healthyKey: 'home.status.connected',
+    pendingKey: 'home.status.probing',
+    degradedKey: 'home.status.degraded',
+  },
+  {
+    prefix: '数据同步',
+    healthyKey: 'home.status.sync',
+    pendingKey: 'home.status.sync_pending',
+    degradedKey: 'home.status.sync_issue',
+  },
 ];
 
 const featureCards: { titleKey: TranslationKey; descKey: TranslationKey; variant: 'security' | 'spark' | 'terminal'; tag: string }[] = [
@@ -52,9 +69,9 @@ const ctaButtonBase =
 
 
 const metricsHeader = {
-  label: 'SYSTEM_METRICS',
-  title: 'Live Status',
-  desc: '当前展示的是站点级别的实时统计，帮助访客快速确认节点规模、链路速度和在线稳定性。',
+  label: '站点指标',
+  title: '实时状态',
+  desc: '这里展示公开列表和平台链路的当前状态，方便访客快速判断是否值得继续浏览。',
   labelClassName: 'text-[10px] font-black uppercase tracking-[0.45em] italic text-zinc-500',
   titleClassName: 'text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-white',
   descClassName: 'text-base md:text-lg text-zinc-500 font-bold italic leading-relaxed max-w-2xl',
@@ -81,21 +98,30 @@ const Home: React.FC = () => {
     damping: 30,
     restDelta: 0.001,
   });
+  const { backendDegraded, isLoading: backendHealthLoading } = useBackendHealth();
 
   const [heroLead = '', ...heroRest] = t('home.hero.title').split(' ');
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ['server-stats'],
-    queryFn: () => fetch('/api/servers/stats').then((res) => res.json()),
+    queryFn: () => request<ServerStats>('/servers/stats', { useAuth: false }),
     staleTime: 30_000,
     retry: 2,
   });
 
+  const showDegradedState = backendDegraded || statsError;
+  const showPendingState = !showDegradedState && (backendHealthLoading || statsLoading);
+
+  const heroBadgeStates = heroSupportBadges.map((badge) => ({
+    prefix: badge.prefix,
+    value: t(showDegradedState ? badge.degradedKey : showPendingState ? badge.pendingKey : badge.healthyKey),
+  }));
+
   const stats = [
-    { label: 'home.stats.nodes' as const, value: statsLoading ? '—' : (statsData?.onlineNodes ?? '—') },
-    { label: 'home.stats.latency' as const, value: statsLoading ? '—' : (statsData?.syncLatency ?? '—') },
-    { label: 'home.stats.response' as const, value: statsLoading ? '—' : (statsData?.avgResponseTime ?? '—') },
-    { label: 'home.stats.availability' as const, value: statsLoading ? '—' : (statsData?.availability ?? '—') },
+    { label: 'home.stats.nodes' as const, value: statsLoading ? '—' : String(statsData?.onlineNodes ?? '—') },
+    { label: 'home.stats.latency' as const, value: statsLoading ? '—' : String(statsData?.syncLatency ?? '—') },
+    { label: 'home.stats.response' as const, value: statsLoading ? '—' : String(statsData?.avgResponseTime ?? '—') },
+    { label: 'home.stats.availability' as const, value: statsLoading ? '—' : String(statsData?.availability ?? '—') },
   ];
 
   return (
@@ -154,18 +180,59 @@ const Home: React.FC = () => {
               <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform opacity-50" />
             </Link>
           </motion.div>
+
+          {showDegradedState ? (
+            <motion.div
+              variants={itemVariants}
+              className="mt-8 max-w-2xl rounded-[1.75rem] border border-amber-200 bg-amber-50 px-6 py-4 text-left shadow-sm"
+            >
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] italic text-amber-700">
+                {t('home.status.banner_label')}
+              </div>
+              <p className="mt-2 text-sm font-semibold leading-6 text-amber-900">
+                {t('home.status.banner_desc')}
+              </p>
+            </motion.div>
+          ) : null}
         </div>
 
         <div className="absolute bottom-12 left-12 opacity-10 lg:block hidden">
           <div className="flex flex-col items-start gap-2">
             <GeometricLantern variant="terminal" className="w-8 h-8" />
-            <span className="text-[10px] font-black uppercase tracking-widest italic">{heroSupportBadges[0].prefix} {t(heroSupportBadges[0].labelKey)}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest italic">{heroBadgeStates[0].prefix} {heroBadgeStates[0].value}</span>
           </div>
         </div>
         <div className="absolute bottom-12 right-12 opacity-10 lg:block hidden">
           <div className="flex flex-col items-end gap-2">
             <GeometricLantern variant="network" className="w-8 h-8" />
-            <span className="text-[10px] font-black uppercase tracking-widest italic">{heroSupportBadges[1].prefix} {t(heroSupportBadges[1].labelKey)}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest italic">{heroBadgeStates[1].prefix} {heroBadgeStates[1].value}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 md:px-12 py-12 sm:py-14">
+        <div className="rounded-[2rem] border border-zinc-100 bg-zinc-50/80 p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 sm:gap-6">
+            <div className="space-y-3 max-w-3xl">
+              <div className="text-[10px] font-black uppercase tracking-[0.45em] italic text-zinc-400">站点摘要</div>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight uppercase italic">Minecraft 服务器发现、发布与支持</h2>
+              <p className="text-sm sm:text-base text-zinc-500 font-medium leading-7">
+                千服联灯面向中文 Minecraft 玩家和服主，提供公开服务器列表、搜索、资源中心、推广展示、工单支持和移动端入口。
+                访客可以直接浏览服务器信息，服主可以提交资料并管理展示内容。
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full lg:w-[420px]">
+              {[
+                '公开服务器列表',
+                '玩家资源中心',
+                '工单与通知支持',
+                '移动端优先体验',
+              ].map((item) => (
+                <div key={item} className="rounded-2xl border border-white bg-white px-4 py-4 text-sm font-bold text-zinc-700 shadow-sm">
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

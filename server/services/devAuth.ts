@@ -26,7 +26,7 @@
  *    - 鐢熶骇鐜 NEVER 鍚敤 Dev Auth
  *    - 濡傛灉鏆撮湶 Dev cookie 鏈哄埗缁欑敓浜х幆澧冿紝搴旂珛鍗虫挙閿€骞惰疆鎹㈠瘑閽? * 
  * 6. 涓庨獙璇佺爜鐧诲綍鐨勫尯鍒? *    - 楠岃瘉鐮佺櫥褰曚細鍒涘缓 SuperTokens 浼氳瘽锛岃蛋姝ｅ父璁よ瘉娴佺▼
- *    - 楠岃瘉鐮佺櫥褰曟柊鐢ㄦ埛杩斿洖 needsRegistration 淇″彿
+ *    - Code login uses a generic registration-safe response for unknown accounts
  *    - Dev 鐧诲綍瀹屽叏缁曡繃杩欎簺鏈哄埗锛岀洿鎺ユ巿浜堢鐞嗗憳鏉冮檺
  */
 
@@ -40,22 +40,17 @@ import prisma, { User } from '../db';
 
 import { logger } from '../utils/logger';
 
-import { parseJsonArray } from '../utils/jsonField';
-
-
-
 const DEFAULT_COOKIE_NAME = 'dev_auth_token';
 
-const DEFAULT_SECRET = 'dev-secret-change-me';
-
-const TOKEN_EXPIRY = '24h';
-
-const COOKIE_MAX_AGE = 24 * 60 * 60; // 24 灏忔椂 (绉?
+const _TOKEN_EXPIRY = '24h';
 
 const DEFAULT_DEV_USERNAME = 'devadmin';
 const DEFAULT_DEV_PASSWORD = 'devpass123';
 
 const COOKIE_NAME = process.env.DEV_AUTH_COOKIE_NAME || DEFAULT_COOKIE_NAME;
+const ENV_DEV_SECRET = process.env.DEV_AUTH_SECRET?.trim();
+const RUNTIME_DEV_SECRET = ENV_DEV_SECRET || crypto.randomBytes(32).toString('hex');
+let devSecretWarningLogged = false;
 
 export const DEV_AUTH_COOKIE_NAME = COOKIE_NAME;
 
@@ -89,25 +84,23 @@ export function isDevAuthCookiePresent(req: Request): boolean {
 
 }
 
-
-
-async function createDevAuthToken(userId: string): Promise<string> {
-
-  const secret = process.env.DEV_AUTH_SECRET || DEFAULT_SECRET;
-
-  return jwt.sign({ userId }, secret, { expiresIn: TOKEN_EXPIRY });
-
+function getDevAuthSecret(): string {
+  if (!ENV_DEV_SECRET && !devSecretWarningLogged) {
+    devSecretWarningLogged = true;
+    logger.warn('[DevAuth] DEV_AUTH_SECRET is not set; using ephemeral in-memory secret for this process');
+  }
+  return RUNTIME_DEV_SECRET;
 }
 
 
 
-async function verifyDevAuthToken(token: string): Promise<{ userId: string } | null> {
+
+
+
+async function _verifyDevAuthToken(token: string): Promise<{ userId: string } | null> {
 
   try {
-
-    const secret = process.env.DEV_AUTH_SECRET || DEFAULT_SECRET;
-
-    const payload = jwt.verify(token, secret) as { userId: string };
+    const payload = jwt.verify(token, getDevAuthSecret()) as { userId: string };
 
     return payload;
 
@@ -168,4 +161,3 @@ export async function getOrCreateDevAuthUser(): Promise<User> {
   return user;
 
 }
-

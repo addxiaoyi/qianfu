@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import { getProfile, updateProfile, listBioVersions } from '../controllers/userController';
+import { changePassword } from '../controllers/authController';
 import { getCheckinStatus, postCheckin } from '../controllers/userLevelController';
 import { authenticate } from '../middleware/auth';
 import { csrfProtection } from '../middleware/csrf';
 import { userLimiter } from '../middleware/rateLimiter';
 import { validateBody, validateQuery } from '../middleware/requestValidation';
-import { bioVersionQuerySchema, profileUpdateSchema } from '../utils/validation';
+import { bioVersionQuerySchema, changePasswordSchema, profileUpdateSchema } from '../utils/validation';
 
 const router = Router();
 
@@ -103,6 +104,8 @@ router.get('/profile/versions', userLimiter, authenticate, validateQuery(bioVers
  *         description: Authentication required
  */
 router.put('/profile', userLimiter, authenticate, csrfProtection, validateBody(profileUpdateSchema), updateProfile);
+
+router.put('/profile/password', userLimiter, authenticate, csrfProtection, validateBody(changePasswordSchema), changePassword);
 
 /**
  * @swagger

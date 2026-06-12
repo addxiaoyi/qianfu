@@ -138,6 +138,17 @@ const suspiciousPatterns = [
 
 const whitelistedPaths = [
   '/api/csrf-token',
+  '/api/v1/csrf-token',
+  '/api/auth/csrf-token',
+  '/api/v1/auth/csrf-token',
+  '/api/auth/oauth-status',
+  '/api/v1/auth/oauth-status',
+  '/api/auth/github/start',
+  '/api/v1/auth/github/start',
+  '/api/auth/github/callback',
+  '/api/v1/auth/github/callback',
+  '/api/ready',
+  '/api/v1/ready',
   '/api/health',
 ];
 

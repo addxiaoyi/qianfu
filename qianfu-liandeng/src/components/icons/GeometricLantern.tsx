@@ -1,6 +1,6 @@
 import React from 'react';
 
-type LanternVariant =
+export type LanternVariant =
   | 'spark'
   | 'security'
   | 'user'
@@ -11,7 +11,18 @@ type LanternVariant =
   | 'payment'
   | 'activity'
   | 'alert'
-  | 'server';
+  | 'server'
+  | 'menu'
+  | 'close'
+  | 'chevron'
+  | 'check'
+  | 'mail'
+  | 'bell'
+  | 'logout'
+  | 'message'
+  | 'gift'
+  | 'award'
+  | 'search';
 
 interface LanternProps extends React.SVGProps<SVGSVGElement> {
   size?: number | string;
@@ -19,115 +30,298 @@ interface LanternProps extends React.SVGProps<SVGSVGElement> {
 }
 
 /**
- * GeometricLantern - A suite of custom industrial geometric icons.
- * Each variant is uniquely crafted to replace generic UI icons while
- * maintaining the "Command Matrix" branded aesthetic.
+ * GeometricLantern
+ * Pixel lantern icon system: all variants share one lantern silhouette,
+ * then overlay feature-specific pixel glyphs so each location looks related
+ * but still functionally distinct.
  */
-export const GeometricLantern: React.FC<LanternProps> = ({ 
-  size = 24, 
+export const GeometricLantern: React.FC<LanternProps> = ({
+  size = 24,
   variant = 'spark',
-  className = "", 
+  className = '',
   ...props 
 }) => {
+  const block = (x: number, y: number, w = 1, h = 1, opacity = 1, key?: string) => (
+    <rect key={key || `${x}-${y}-${w}-${h}-${opacity}`} x={x} y={y} width={w} height={h} fill="currentColor" opacity={opacity} />
+  );
+
+  const lanternBase = (
+    <>
+      {block(11, 1, 2, 1, 0.9)}
+      {block(10, 2, 4, 1, 0.85)}
+      {block(9, 3, 6, 1, 0.8)}
+      {block(8, 4, 8, 1, 0.95)}
+
+      {block(8, 5, 1, 10, 0.92)}
+      {block(15, 5, 1, 10, 0.92)}
+      {block(9, 5, 6, 1, 0.85)}
+      {block(9, 14, 6, 1, 0.85)}
+      {block(10, 5, 1, 9, 0.45)}
+      {block(13, 5, 1, 9, 0.45)}
+
+      {block(10, 8, 4, 4, 0.16)}
+      {block(11, 7, 2, 1, 0.12)}
+
+      {block(10, 15, 4, 1, 0.8)}
+      {block(10, 16, 4, 1, 0.65)}
+      {block(11, 17, 2, 1, 0.72)}
+    </>
+  );
+
   const renderVariant = () => {
     switch (variant) {
       case 'security':
         return (
           <>
-            <path d="M12 2L4 5V11C4 16.19 7.41 21.05 12 22C16.59 21.05 20 16.19 20 11V5L12 2Z" fill="none" stroke="currentColor" strokeWidth="2" />
-            <rect x="10" y="8" width="4" height="4" fill="currentColor" rx="0.5" />
-            <path d="M12 14V17" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+            {block(11, 7, 2, 1)}
+            {block(10, 8, 1, 1)}
+            {block(13, 8, 1, 1)}
+            {block(10, 9, 4, 3)}
+            {block(12, 10, 1, 2, 0.35)}
           </>
         );
       case 'user':
         return (
           <>
-            <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M4 20C4 16 8 15 12 15C16 15 20 16 20 20" fill="none" stroke="currentColor" strokeWidth="2" />
-            <rect x="11" y="2" width="2" height="2" fill="currentColor" />
+            {block(11, 7, 2, 2)}
+            {block(10, 10, 4, 2)}
+            {block(9, 11, 1, 1)}
+            {block(14, 11, 1, 1)}
           </>
         );
       case 'data':
         return (
           <>
-            <rect x="3" y="14" width="4" height="6" fill="currentColor" />
-            <rect x="10" y="8" width="4" height="12" fill="currentColor" opacity="0.6" />
-            <rect x="17" y="4" width="4" height="16" fill="currentColor" opacity="0.3" />
-            <path d="M2 20H22" stroke="currentColor" strokeWidth="1.5" />
+            {block(10, 11, 1, 2)}
+            {block(12, 10, 1, 3)}
+            {block(14, 9, 1, 4)}
+            {block(10, 13, 5, 1, 0.75)}
           </>
         );
       case 'settings':
         return (
           <>
-            <rect x="4" y="4" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" />
-            <circle cx="12" cy="12" r="3" fill="currentColor" />
-            <path d="M12 4V7M12 17V20M4 12H7M17 12H20" stroke="currentColor" strokeWidth="1.5" />
+            {block(12, 8, 1, 5)}
+            {block(10, 10, 5, 1)}
+            {block(11, 9, 1, 1)}
+            {block(13, 9, 1, 1)}
+            {block(11, 11, 1, 1)}
+            {block(13, 11, 1, 1)}
           </>
         );
       case 'terminal':
         return (
           <>
-            <path d="M4 8L10 12L4 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
-            <rect x="12" y="16" width="8" height="2" fill="currentColor" />
-            <path d="M2 4H22V20H2V4Z" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.3" />
+            {block(10, 9, 1, 1)}
+            {block(11, 10, 1, 1)}
+            {block(10, 11, 1, 1)}
+            {block(12, 11, 3, 1)}
           </>
         );
       case 'network':
         return (
           <>
-            <circle cx="12" cy="6" r="3" fill="currentColor" />
-            <circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
-            <circle cx="18" cy="18" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M12 9V15M10 16L7 16M14 16L17 16" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+            {block(10, 9, 1, 1)}
+            {block(14, 9, 1, 1)}
+            {block(12, 12, 1, 1)}
+            {block(11, 10, 1, 1, 0.8)}
+            {block(13, 10, 1, 1, 0.8)}
+            {block(12, 11, 1, 1, 0.8)}
           </>
         );
       case 'payment':
         return (
           <>
-            <rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M2 10H22" stroke="currentColor" strokeWidth="2" />
-            <rect x="5" y="14" width="4" height="2" fill="currentColor" />
-            <circle cx="18" cy="14" r="1.5" fill="currentColor" />
+            {block(10, 8, 5, 1)}
+            {block(10, 12, 5, 1)}
+            {block(10, 9, 1, 3)}
+            {block(14, 9, 1, 3)}
+            {block(12, 9, 1, 3)}
+            {block(11, 10, 3, 1)}
           </>
         );
       case 'activity':
         return (
           <>
-            <path d="M2 12H6L9 5L15 19L18 12H22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-            <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.1" />
+            {block(10, 11, 1, 1)}
+            {block(11, 10, 1, 1)}
+            {block(12, 12, 1, 1)}
+            {block(13, 9, 1, 1)}
+            {block(14, 11, 1, 1)}
           </>
         );
       case 'alert':
         return (
           <>
-            <path d="M12 3L2 21H22L12 3Z" fill="none" stroke="currentColor" strokeWidth="2" />
-            <rect x="11" y="9" width="2" height="6" fill="currentColor" />
-            <rect x="11" y="17" width="2" height="2" fill="currentColor" />
+            {block(12, 8, 1, 4)}
+            {block(12, 13, 1, 1)}
+            {block(11, 7, 3, 1, 0.85)}
+          </>
+        );
+      case 'server':
+        return (
+          <>
+            {block(10, 9, 5, 1)}
+            {block(9, 11, 6, 1)}
+            {block(10, 13, 5, 1)}
+            {block(12, 10, 1, 3, 0.35)}
+          </>
+        );
+      case 'menu':
+        return (
+          <>
+            {block(8, 8, 8, 1, 0.95)}
+            {block(8, 11, 8, 1, 0.85)}
+            {block(8, 14, 8, 1, 0.95)}
+            {block(10, 9, 4, 1, 0.25)}
+            {block(10, 12, 4, 1, 0.2)}
+            {block(10, 15, 4, 1, 0.25)}
+          </>
+        );
+      case 'close':
+        return (
+          <>
+            {block(9, 9, 1, 1)}
+            {block(10, 10, 1, 1)}
+            {block(11, 11, 1, 1)}
+            {block(12, 12, 1, 1)}
+            {block(13, 11, 1, 1)}
+            {block(14, 10, 1, 1)}
+            {block(15, 9, 1, 1)}
+            {block(9, 15, 1, 1)}
+            {block(10, 14, 1, 1)}
+            {block(11, 13, 1, 1)}
+            {block(13, 13, 1, 1)}
+            {block(14, 14, 1, 1)}
+            {block(15, 15, 1, 1)}
+          </>
+        );
+      case 'chevron':
+        return (
+          <>
+            {block(9, 9, 1, 1)}
+            {block(10, 10, 1, 1)}
+            {block(11, 11, 1, 1)}
+            {block(12, 12, 1, 1)}
+            {block(13, 11, 1, 1)}
+            {block(14, 10, 1, 1)}
+            {block(15, 9, 1, 1)}
+          </>
+        );
+      case 'check':
+        return (
+          <>
+            {block(9, 12, 1, 1)}
+            {block(10, 13, 1, 1)}
+            {block(11, 14, 1, 1)}
+            {block(12, 13, 1, 1)}
+            {block(13, 12, 1, 1)}
+            {block(14, 11, 1, 1)}
+            {block(15, 10, 1, 1)}
+          </>
+        );
+      case 'mail':
+        return (
+          <>
+            {block(9, 9, 6, 1)}
+            {block(9, 10, 1, 4)}
+            {block(14, 10, 1, 4)}
+            {block(9, 14, 6, 1)}
+            {block(10, 10, 1, 1, 0.35)}
+            {block(11, 11, 1, 1, 0.35)}
+            {block(12, 12, 1, 1, 0.35)}
+            {block(13, 11, 1, 1, 0.35)}
+            {block(14, 10, 1, 1, 0.35)}
+          </>
+        );
+      case 'bell':
+        return (
+          <>
+            {block(11, 7, 2, 1)}
+            {block(10, 8, 4, 1)}
+            {block(9, 9, 6, 4)}
+            {block(10, 13, 4, 1)}
+            {block(11, 14, 2, 1)}
+            {block(11, 15, 2, 1, 0.7)}
+          </>
+        );
+      case 'logout':
+        return (
+          <>
+            {block(9, 8, 4, 8)}
+            {block(13, 10, 2, 1)}
+            {block(13, 11, 3, 1)}
+            {block(13, 12, 2, 1)}
+            {block(13, 13, 3, 1)}
+            {block(15, 11, 1, 3)}
+          </>
+        );
+      case 'message':
+        return (
+          <>
+            {block(9, 9, 6, 4)}
+            {block(10, 10, 4, 2, 0.28)}
+            {block(10, 13, 1, 1)}
+            {block(11, 13, 1, 1)}
+          </>
+        );
+      case 'gift':
+        return (
+          <>
+            {block(9, 10, 6, 4)}
+            {block(11, 9, 1, 6)}
+            {block(10, 12, 4, 1)}
+            {block(9, 9, 6, 1, 0.7)}
+          </>
+        );
+      case 'award':
+        return (
+          <>
+            {block(10, 8, 1, 3)}
+            {block(13, 8, 1, 3)}
+            {block(11, 11, 2, 2)}
+            {block(10, 13, 4, 1)}
+            {block(11, 14, 2, 1)}
+          </>
+        );
+      case 'search':
+        return (
+          <>
+            {block(10, 9, 3, 1)}
+            {block(9, 10, 5, 1)}
+            {block(9, 11, 1, 3)}
+            {block(13, 11, 1, 3)}
+            {block(10, 14, 3, 1)}
+            {block(13, 14, 2, 1)}
+            {block(14, 15, 1, 1)}
           </>
         );
       case 'spark':
       default:
         return (
           <>
-            <path d="M12 2C12 2 13 10 13 11C14 11 22 12 22 12C22 12 14 13 13 14C13 15 12 22 12 22C12 22 11 14 11 13C10 13 2 12 2 12C2 12 10 11 11 10C11 9 12 2 12 2Z" />
-            <circle cx="6" cy="18" r="1.5" />
-            <path d="M18 5V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M16 7H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            {block(12, 8, 1, 4)}
+            {block(10, 10, 5, 1)}
+            {block(16, 7, 1, 1, 0.85)}
+            {block(17, 8, 1, 1, 0.75)}
+            {block(9, 13, 1, 1, 0.7)}
           </>
         );
     }
   };
 
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="currentColor" 
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
+      shapeRendering="crispEdges"
       className={className}
       {...props}
     >
+      {lanternBase}
       {renderVariant()}
     </svg>
   );

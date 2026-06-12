@@ -41,6 +41,10 @@ export interface SendBatchResultItem<T = unknown> {
   message?: string;
 }
 
+export interface ResponseSendOptions {
+  mask?: boolean;
+}
+
 /**
  * Standard Success Response
  */
@@ -50,8 +54,9 @@ export const sendSuccess = <T>(
   message: string = 'Success',
   statusCode: number = 200,
   meta?: Record<string, unknown>,
+  options?: ResponseSendOptions,
 ) => {
-  const sanitizedData = maskData(data);
+  const sanitizedData = options?.mask === false ? data : maskData(data);
   const requestId = getRequestId(res.req);
   const responseData = buildSuccessEnvelope(sanitizedData, message, requestId, meta);
 

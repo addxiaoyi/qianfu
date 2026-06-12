@@ -1,18 +1,45 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
-import { isImageUrlSafe, isUrlSafe } from '@/utils/urlValidator';
+import { isImageUrlSafe } from '@/utils/urlValidator';
 import StatusWrapper from '@/components/StatusWrapper';
 import { Link } from 'react-router-dom';
 import GeometricLantern from '@/components/icons/GeometricLantern';
+import { formatListingPlanLabel, getListingStatus, getServerPlayersMax, getServerPlayersOnline, getServerThumbnail, getServerVersionLabel } from '@/utils/serverView';
 
 import { useT } from '@/store/uiStore';
 
+const getReviewTone = (status?: string) => {
+  const normalized = String(status || '').toUpperCase();
+  if (normalized === 'APPROVED') {
+    return {
+      text: 'text-green-500',
+      label: 'APPROVED',
+      icon: 'spark' as const,
+    };
+  }
+  if (normalized === 'PENDING') {
+    return {
+      text: 'text-orange-500',
+      label: 'PENDING',
+      icon: 'activity' as const,
+    };
+  }
+  return {
+    text: 'text-red-500',
+    label: normalized || 'UNKNOWN',
+    icon: 'alert' as const,
+  };
+};
+
 const MyServers: React.FC = () => {
   const t = useT();
-  const { data: servers, isLoading, isError, refetch } = useQuery({
+  const { data: servers = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['my-servers'],
-    queryFn: () => api.get<any[]>('/me/servers'),
+    queryFn: async () => {
+      const response = await api.get<{ data?: any[]; meta?: Record<string, unknown> } | any[]>('/servers');
+      return Array.isArray(response) ? response : Array.isArray((response as any)?.data) ? (response as any).data : [];
+    },
   });
 
   return (
@@ -32,34 +59,48 @@ const MyServers: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {servers?.map((server) => (
+          {servers.map((server: any) => (
             <div key={server.id} className="rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-100 bg-white p-5 sm:p-6 lg:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.04)] hover:border-zinc-300 transition-all">
+              {(() => {
+                const thumbnail = getServerThumbnail(server);
+                const playersOnline = getServerPlayersOnline(server);
+                const playersMax = getServerPlayersMax(server);
+                const versionLabel = getServerVersionLabel(server);
+                const review = getReviewTone(server.review_status || server.status);
+                const reviewNotes = String(server.review_notes || '').trim();
+                const listingPlan = formatListingPlanLabel(server.listing_plan);
+                const listingStatus = getListingStatus(server);
+                return (
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full min-w-0">
                   <div className="w-full sm:w-40 lg:w-44 h-28 sm:h-24 lg:h-28 rounded-[1.5rem] overflow-hidden flex items-center justify-center border border-zinc-100 shrink-0 bg-zinc-50 relative">
-                     {server.image ? (
-                       <img src={isImageUrlSafe(server.image) ? server.image : ''} className="w-full h-full object-cover" />
+                     {thumbnail ? (
+                       <img src={isImageUrlSafe(thumbnail) ? thumbnail : ''} className="w-full h-full object-cover" />
                      ) : (
                        <GeometricLantern variant="network" className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-300" />
                      )}
-                     <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] animate-pulse" />
+                     <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full shadow-[0_0_12px_rgba(34,197,94,0.6)] animate-pulse ${review.label === 'APPROVED' ? 'bg-green-500' : review.label === 'PENDING' ? 'bg-orange-400' : 'bg-red-400'}`} />
                   </div>
                   
                   <div className="space-y-4 flex-grow min-w-0 text-left">
                     <div className="space-y-2">
                       <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900">{server.name}</h3>
                       <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em]">
-                        <span className={`flex items-center gap-2 ${
-                          server.status === 'APPROVED' ? 'text-green-500' : 
-                          server.status === 'PENDING' ? 'text-orange-500' : 'text-red-500'
-                        }`}>
-                          {server.status === 'APPROVED' ? <GeometricLantern variant="spark" className="w-4 h-4" /> : 
-                           server.status === 'PENDING' ? <GeometricLantern variant="activity" className="w-4 h-4" /> : <GeometricLantern variant="alert" className="w-4 h-4" />}
-                          {server.status === 'APPROVED' ? t('dash.servers.status.approved') : 
-                           server.status === 'PENDING' ? t('dash.servers.status.pending') : t('dash.servers.status.rejected')}
+                        <span className={`flex items-center gap-2 ${review.text}`}>
+                          <GeometricLantern variant={review.icon} className="w-4 h-4" />
+                          {review.label === 'APPROVED'
+                            ? t('dash.servers.status.approved')
+                            : review.label === 'PENDING'
+                              ? t('dash.servers.status.pending')
+                              : t('dash.servers.status.rejected')}
                         </span>
                         <span className="text-zinc-300 font-mono tracking-[0.28em]">NODE_ADDR: {server.id}</span>
+                        {server.ip ? <span className="text-zinc-300 font-mono tracking-[0.2em]">HOST: {server.ip}</span> : null}
+                        <span className="text-zinc-300 font-mono tracking-[0.2em]">PLAN: {listingPlan}</span>
                       </div>
+                      {reviewNotes ? (
+                        <p className="text-xs font-semibold text-zinc-400 leading-6 max-w-3xl">REVIEW_NOTE: {reviewNotes}</p>
+                      ) : null}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
@@ -67,21 +108,21 @@ const MyServers: React.FC = () => {
                           <GeometricLantern variant="user" className="w-4 h-4 text-zinc-400" />
                           <div className="flex flex-col min-w-0">
                              <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">Users</span>
-                             <span className="text-sm font-semibold text-zinc-900 mt-1">{server.players || '0 / 0'}</span>
+                             <span className="text-sm font-semibold text-zinc-900 mt-1">{playersMax ? `${playersOnline} / ${playersMax}` : String(playersOnline)}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
                           <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-400" />
                           <div className="flex flex-col min-w-0">
-                             <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">Uptime</span>
-                             <span className="text-sm font-semibold text-zinc-900 mt-1">{server.uptime || '0.00%'}</span>
+                             <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">有效期</span>
+                             <span className={`text-sm font-semibold mt-1 ${listingStatus.expired ? 'text-red-500' : 'text-zinc-900'}`}>{listingStatus.label}</span>
                           </div>
                        </div>
                        <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
                           <GeometricLantern variant="data" className="w-4 h-4 text-zinc-400" />
                           <div className="flex flex-col min-w-0">
                              <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">Version</span>
-                             <span className="text-sm font-semibold text-zinc-900 mt-1">{server.version || 'Unknown'}</span>
+                             <span className="text-sm font-semibold text-zinc-900 mt-1">{versionLabel}</span>
                           </div>
                        </div>
                     </div>
@@ -96,11 +137,13 @@ const MyServers: React.FC = () => {
                     <span className="text-[11px] font-semibold uppercase tracking-[0.28em]">{t('common.edit')}</span>
                     <GeometricLantern variant="settings" className="w-5 h-5" />
                   </Link>
-                  <button className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-zinc-100 bg-zinc-50 flex items-center justify-center transition-all hover:bg-red-500 hover:text-white active:scale-[0.98]">
+                  <button type="button" className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-zinc-100 bg-zinc-50 flex items-center justify-center transition-all hover:bg-red-500 hover:text-white active:scale-[0.98]">
                     <GeometricLantern variant="alert" className="w-5 h-5" />
                   </button>
                 </div>
               </div>
+                );
+              })()}
             </div>
           ))}
         </div>

@@ -11,7 +11,8 @@ module.exports = {
       max_memory_restart: '512M',
       env: {
         NODE_ENV: process.env.NODE_ENV || 'production',
-        PORT: process.env.PORT || '3000',
+        PORT: process.env.QIANFU_API_PORT || '3001',
+        PORT_STRICT: process.env.PORT_STRICT || 'true',
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',

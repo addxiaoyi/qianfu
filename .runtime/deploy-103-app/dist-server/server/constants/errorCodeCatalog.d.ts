@@ -1,0 +1,51 @@
+export declare const API_ERROR_CODE_HTTP_STATUS: {
+    readonly BAD_REQUEST: 400;
+    readonly UNAUTHORIZED: 401;
+    readonly FORBIDDEN: 403;
+    readonly NOT_FOUND: 404;
+    readonly CONFLICT: 409;
+    readonly UNPROCESSABLE_ENTITY: 422;
+    readonly TOO_MANY_REQUESTS: 429;
+    readonly INTERNAL_ERROR: 500;
+    readonly SERVICE_UNAVAILABLE: 503;
+    readonly GATEWAY_TIMEOUT: 504;
+    readonly VALIDATION_ERROR: 400;
+    readonly RESOURCE_ALREADY_EXISTS: 409;
+    readonly RESOURCE_NOT_FOUND: 404;
+    readonly INVALID_CREDENTIALS: 401;
+    readonly TOKEN_EXPIRED: 401;
+    readonly TOKEN_INVALID: 401;
+    readonly RATE_LIMIT_EXCEEDED: 429;
+    readonly PERMISSION_DENIED: 403;
+    readonly PAYMENT_FAILED: 402;
+    readonly INSUFFICIENT_BALANCE: 402;
+    readonly INVALID_OPERATION: 400;
+    readonly RATE_LIMITED: 429;
+    readonly DATABASE_ERROR: 500;
+    readonly UNIQUE_CONSTRAINT_VIOLATION: 409;
+    readonly FOREIGN_KEY_CONSTRAINT_VIOLATION: 400;
+    readonly FILE_UPLOAD_ERROR: 400;
+    readonly FILE_NOT_FOUND: 404;
+    readonly FILE_SIZE_EXCEEDED: 413;
+    readonly NETWORK_ERROR: 503;
+    readonly TIMEOUT_ERROR: 408;
+    readonly PAYMENT_REQUIRED: 402;
+    readonly INSUFFICIENT_FUNDS: 402;
+    readonly INVALID_PAYMENT_METHOD: 400;
+    readonly TRANSACTION_NOT_FOUND: 404;
+    readonly SESSION_EXPIRED: 401;
+    readonly LIMIT_EXCEEDED: 429;
+    readonly AUTHENTICATION_FAILED: 401;
+    readonly INVALID_INPUT: 400;
+    readonly RESOURCE_CONFLICT: 409;
+};
+export type ApiErrorCode = keyof typeof API_ERROR_CODE_HTTP_STATUS;
+export interface ErrorCodeCatalogItem {
+    code: ApiErrorCode;
+    httpStatus: number;
+    description: string;
+    handling: string;
+}
+export declare const ERROR_CODE_CATALOG: Record<ApiErrorCode, ErrorCodeCatalogItem>;
+export declare function getErrorCodeCatalogItem(code: ApiErrorCode): ErrorCodeCatalogItem;
+//# sourceMappingURL=errorCodeCatalog.d.ts.map

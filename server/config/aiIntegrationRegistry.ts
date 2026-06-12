@@ -10,14 +10,14 @@ export type AiIntegrationEntry = {
 };
 
 export const AI_INTEGRATION_REGISTRY: readonly AiIntegrationEntry[] = [
-  { id: 1, code: 'route.hash_spa', area: '导航', hint: '站点为 Hash 路由，主要路径形如 #/、#/servers/:id、#/mobile、#/me。' },
-  { id: 2, code: 'route.mobile_prefix', area: '导航', hint: '移动端路径常带 #/mobile 前缀，与桌面端路由可对照切换。' },
-  { id: 3, code: 'route.level_rules', area: '导航', hint: '公开等级规则页：#/level-rules 与 #/mobile/level-rules，未登录可读。' },
-  { id: 4, code: 'route.legal', area: '导航', hint: '隐私与条款：#/privacy、#/terms（移动端同路径兼容）。' },
-  { id: 5, code: 'route.auth_callback', area: '导航', hint: 'OAuth 回调 #/auth/callback，异常时回首页。' },
-  { id: 6, code: 'route.login', area: '导航', hint: '登录入口常用 #/login，未登录操作会引导登录。' },
-  { id: 7, code: 'route.editor', area: '导航', hint: '服务器编辑 #/editor/:id 或 #/editor/me（简介）。' },
-  { id: 8, code: 'route.admin_prefix', area: '导航', hint: '管理相关 #/admin* 需权限，含审核、用户、工单等。' },
+  { id: 1, code: 'route.clean_paths', area: '导航', hint: '站点已向真实路径迁移，主要路径形如 /、/servers/:id、/mobile、/me。' },
+  { id: 2, code: 'route.mobile_prefix', area: '导航', hint: '移动端路径常用 /mobile 前缀，与桌面端路由可对照切换。' },
+  { id: 3, code: 'route.level_rules', area: '导航', hint: '公开等级规则页：/level-rules 与 /mobile/level-rules，未登录可读。' },
+  { id: 4, code: 'route.legal', area: '导航', hint: '隐私与条款：/privacy、/terms（移动端同路径兼容）。' },
+  { id: 5, code: 'route.auth_callback', area: '导航', hint: 'OAuth 回调 /oauth/callback，异常时回首页。' },
+  { id: 6, code: 'route.login', area: '导航', hint: '登录入口常用 /login，未登录操作会引导登录。' },
+  { id: 7, code: 'route.editor', area: '导航', hint: '服务器编辑 /editor/:id 或 /editor/me（简介）。' },
+  { id: 8, code: 'route.admin_prefix', area: '导航', hint: '管理相关 /admin* 需权限，含审核、用户、工单等。' },
 
   { id: 9, code: 'server.list_filters', area: '服务器', hint: '列表支持分类、版本、平台、在线、排序与分页筛选。' },
   { id: 10, code: 'server.detail_tabs', area: '服务器', hint: '详情含介绍、状态/图表、评论与点赞等 Tab。' },

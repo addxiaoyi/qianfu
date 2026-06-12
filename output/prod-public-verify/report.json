@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-06-08T13:48:49.446Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 502,
+      "ok": false,
+      "contentType": "text/html",
+      "bodyPreview": "<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 502,
+      "ok": false,
+      "contentType": "text/html",
+      "bodyPreview": "<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>",
+      "error": ""
+    },
+    "diagnosis": "static_html_likely_alive_but_api_edge_broken"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/index-D8ePUst4.js",
+    "localBundle": "/assets/index-CHZmvcH-.js",
+    "bundleMatch": "false",
+    "remoteLegacyHashMarkers": "https://mc-u.top/#/search,https://mc-u.top/#/servers,https://mc-u.top/#/resources,#/search,#/servers,#/resources",
+    "searchTargetMatch": "false",
+    "assetReferenceMatch": "false",
+    "assetContentMatch": "false",
+    "missingOrMismatchedAssets": "/assets/index-CHZmvcH-.js:404",
+    "diagnosis": "stale_bundle"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": 200,
+      "ok": true,
+      "contentType": "text/html",
+      "bodyPreview": "<!doctype html> <html lang=\"zh-CN\"> <head> <meta charset=\"UTF-8\" /> <link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\" /> <link rel=\"apple-touch-icon\" href=\"/icons/apple-touch-icon.png\" /> <lin...",
+      "error": ""
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": 502,
+      "ok": false,
+      "contentType": "text/html",
+      "bodyPreview": "<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>",
+      "error": ""
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": 502,
+      "ok": false,
+      "contentType": "text/html",
+      "bodyPreview": "<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx</center> </body> </html>",
+      "error": ""
+    },
+    "probeOk": true,
+    "probeError": "",
+    "tlsStatus": "wrong_principal",
+    "certCn": "mc-u.top",
+    "certSan": "DNS:mc-u.top",
+    "htmlStatus": "200",
+    "looksLikeMainSite": "true",
+    "rootMarkerMatch": "false",
+    "canonicalUrl": "https://mc-u.top/",
+    "ogUrl": "https://mc-u.top/",
+    "diagnosis": "main_site_tls_vhost_fallback"
+  },
+  "findings": [
+    "主站更像是静态根页还活着，但 /api 边缘或上游进程仍然损坏。",
+    "主站前端仍在使用旧 bundle：remote=/assets/index-D8ePUst4.js local=/assets/index-CHZmvcH-.js。",
+    "支付域 https://pay.star-web.top 很可能落到了主站 TLS/vhost，而不是独立支付站点。"
+  ],
+  "recommendedActions": [
+    "主站下一步：在生产机检查 pm2 qianfu-api、API_PORT/PORT、ss -lntp 和 Nginx /api upstream，先让 127.0.0.1:3000/api/health 与公网 /api/health 变绿。",
+    "前端下一步：重新执行 npm run build 并部署 qianfu-liandeng/dist，确认线上入口从 /assets/index-D8ePUst4.js 更新为 /assets/index-CHZmvcH-.js。",
+    "支付域下一步：修复 pay.star-web.top 的 Nginx server_name 与证书绑定，确保证书来自 /etc/letsencrypt/live/pay.star-web.top/，根路径返回 qianfu-pay-gateway 而不是 mc-u.top HTML。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\report.json"
+}

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XPay 支付异常</title>
+    <link rel="stylesheet" href="/assets/css/liandeng-theme.css">
+</head>
+<body class="liandeng-body">
+<main style="min-height: 100vh; display: grid; place-items: center; padding: 24px;">
+    <section class="ld-card" style="width: min(520px, 100%);">
+        <p class="ld-kicker">Payment Error</p>
+        <h1 class="ld-card-title">无法打开订单</h1>
+        <p class="ld-copy" th:text="${message}">订单不存在或已不可用。</p>
+    </section>
+</main>
+</body>
+</html>

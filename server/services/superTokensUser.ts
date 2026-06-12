@@ -10,8 +10,8 @@ const ST_API_RETRIES = 2;
 export async function getOrCreateSuperTokensUser(
   email: string,
 ): Promise<string | null> {
-  const stApiUrl = process.env.API_BASE_URL || 'http://localhost:3567';
-  const stApiKey = process.env.API_KEY || '';
+  const stApiUrl = process.env.SUPERTOKENS_CONNECTION_URI || process.env.API_BASE_URL || 'http://localhost:3567';
+  const stApiKey = process.env.SUPERTOKENS_API_KEY || process.env.API_KEY || '';
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (stApiKey) {
     headers['api-key'] = stApiKey;

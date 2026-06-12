@@ -6,9 +6,14 @@ import {
   getSessions,
   revokeSession,
   checkUsernameAvailability,
+  login,
   devLogin,
   devLogout,
+  forgotPassword,
+  resetPassword,
+  resetPasswordWithToken,
 } from '../controllers/authController';
+import { handleGitHubAuthCallback, startGitHubAuth } from '../controllers/githubAuthController';
 import { sendLoginCode, verifyLoginCode } from '../controllers/authCodeController';
 import { registerUser } from '../controllers/registerController';
 import { authLimiter, csrfLimiter, authBruteForceLimiter } from '../middleware/rateLimiter';
@@ -53,9 +58,16 @@ router.get('/csrf-token', csrfLimiter, generateCsrfTokens, (req, res) => {
   }
 });
 
+router.get('/auth/github/start', startGitHubAuth);
+router.get('/auth/github/callback', handleGitHubAuthCallback);
+router.get('/auth/callback/github', handleGitHubAuthCallback);
 router.post('/auth/send-code', csrfProtection, authLimiter, sendLoginCode);
 router.post('/auth/verify-code', csrfProtection, authLimiter, verifyLoginCode);
 router.post('/auth/register', csrfProtection, authLimiter, registerUser);
+router.post('/auth/login', authBruteForceLimiter, authLimiter, login);
+router.post('/auth/forgot-password', csrfProtection, authLimiter, forgotPassword);
+router.post('/auth/reset-password', csrfProtection, authBruteForceLimiter, authLimiter, resetPassword);
+router.post('/auth/password-reset', csrfProtection, authBruteForceLimiter, authLimiter, resetPasswordWithToken);
 router.post('/auth/check-username', csrfProtection, authLimiter, validateBody(usernameAvailabilitySchema), checkUsernameAvailability);
 router.post('/auth/dev-login', csrfProtection, authLimiter, validateBody(devAuthLoginSchema), devLogin);
 router.post('/auth/dev-logout', csrfProtection, authLimiter, devLogout);

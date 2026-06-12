@@ -1,0 +1,2 @@
++ pm2 status qianfu-api --no-color
+/d/qwq/项目/千服/scripts/linux/collect-prod-502-evidence.sh: line 32: pm2: command not found
