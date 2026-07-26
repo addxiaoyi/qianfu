@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+artifacts/*
+!artifacts/.gitkeep
+mysql-init/*
+!mysql-init/.gitkeep
+payment-assets/qr/*
+!payment-assets/qr/.gitkeep
+backups/*
+!backups/.gitkeep
+__pycache__/
+*.pyc

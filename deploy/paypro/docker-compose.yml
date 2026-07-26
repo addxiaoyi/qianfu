@@ -1,0 +1,137 @@
+name: ${COMPOSE_PROJECT_NAME:-qianfu-paypro}
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-time-zone=+08:00
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PAYPRO_MYSQL_ROOT_PASSWORD:?PAYPRO_MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${PAYPRO_DB_NAME:-paypro}
+      MYSQL_USER: ${PAYPRO_DB_USER:-paypro}
+      MYSQL_PASSWORD: ${PAYPRO_DB_PASSWORD:?PAYPRO_DB_PASSWORD is required}
+      TZ: Asia/Shanghai
+    volumes:
+      - paypro_mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    environment:
+      PAYPRO_REDIS_PASSWORD: ${PAYPRO_REDIS_PASSWORD:?PAYPRO_REDIS_PASSWORD is required}
+      REDISCLI_AUTH: ${PAYPRO_REDIS_PASSWORD:?PAYPRO_REDIS_PASSWORD is required}
+      TZ: Asia/Shanghai
+    command:
+      - sh
+      - -ec
+      - exec redis-server --appendonly yes --save 60 1000 --requirepass "$${PAYPRO_REDIS_PASSWORD}"
+    volumes:
+      - paypro_redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    logging: *default-logging
+
+  paypro:
+    image: qianfu/paypro:${PAYPRO_IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 768m
+    cpus: 1.0
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    ports:
+      - "127.0.0.1:${PAYPRO_HOST_PORT:-8889}:8889"
+    environment:
+      TZ: Asia/Shanghai
+      PAYPRO_PORT: "8889"
+      PAYPRO_BIND_ADDRESS: 0.0.0.0
+      PAYPRO_DB_URL: jdbc:mysql://mysql:3306/${PAYPRO_DB_NAME:-paypro}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      PAYPRO_DB_USER: ${PAYPRO_DB_USER:-paypro}
+      PAYPRO_DB_PASSWORD: ${PAYPRO_DB_PASSWORD:?PAYPRO_DB_PASSWORD is required}
+      PAYPRO_REDIS_HOST: redis
+      PAYPRO_REDIS_PORT: "6379"
+      PAYPRO_REDIS_DATABASE: "0"
+      PAYPRO_REDIS_PASSWORD: ${PAYPRO_REDIS_PASSWORD:?PAYPRO_REDIS_PASSWORD is required}
+      PAYPRO_SITE: ${PAYPRO_SITE:-http://127.0.0.1:8889}
+      PAYPRO_STATIC_ROOT: /opt/paypro/static/
+      PAYPRO_QR_CODE_ROOT: /opt/paypro/static/assets/qr
+      PAYPRO_ALLOW_BUNDLED_QR_CODES: "false"
+      PAYPRO_OPENAPI_SECRET: ${PAYPRO_OPENAPI_SECRET:?PAYPRO_OPENAPI_SECRET is required}
+      PAYPRO_ADMIN_TOKEN: ${PAYPRO_ADMIN_TOKEN:?PAYPRO_ADMIN_TOKEN is required}
+      PAYPRO_NOTIFY_ALLOWED_HOSTS: ${PAYPRO_NOTIFY_ALLOWED_HOSTS:-}
+      PAYPRO_CALLBACK_TIMEOUT_MS: ${PAYPRO_CALLBACK_TIMEOUT_MS:-5000}
+      PAYPRO_QR_CODE_NUM: ${PAYPRO_QR_CODE_NUM:-2}
+      PAYPRO_ALIPAY_ENABLED: ${PAYPRO_ALIPAY_ENABLED:-false}
+      PAYPRO_ALIPAY_ALLOW_NIGHT: ${PAYPRO_ALIPAY_ALLOW_NIGHT:-false}
+      PAYPRO_ALIPAY_USE_LOCAL_QR: ${PAYPRO_ALIPAY_USE_LOCAL_QR:-true}
+      PAYPRO_WECHAT_ENABLED: ${PAYPRO_WECHAT_ENABLED:-false}
+      PAYPRO_WECHAT_ALLOW_NIGHT: ${PAYPRO_WECHAT_ALLOW_NIGHT:-false}
+      PAYPRO_WECHAT_USE_LOCAL_QR: ${PAYPRO_WECHAT_USE_LOCAL_QR:-true}
+      PAYPRO_MAIL_HOST: ${PAYPRO_MAIL_HOST:-localhost}
+      PAYPRO_MAIL_PORT: ${PAYPRO_MAIL_PORT:-25}
+      PAYPRO_MAIL_USERNAME: ${PAYPRO_MAIL_USERNAME:-}
+      PAYPRO_MAIL_PASSWORD: ${PAYPRO_MAIL_PASSWORD:-}
+      PAYPRO_MAIL_AUTH: ${PAYPRO_MAIL_AUTH:-false}
+      PAYPRO_MAIL_STARTTLS: ${PAYPRO_MAIL_STARTTLS:-false}
+      PAYPRO_MAIL_STARTTLS_REQUIRED: ${PAYPRO_MAIL_STARTTLS_REQUIRED:-false}
+      PAYPRO_MAIL_SENDER: ${PAYPRO_MAIL_SENDER:-}
+      PAYPRO_MAIL_RECEIVER: ${PAYPRO_MAIL_RECEIVER:-}
+    volumes:
+      - ./payment-assets/qr:/opt/paypro/static/assets/qr:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+      - egress
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8889/api/health | grep -q '\"status\":\"ok\"'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    logging: *default-logging
+
+networks:
+  backend:
+    internal: true
+  egress:
+
+volumes:
+  paypro_mysql_data:
+  paypro_redis_data:
