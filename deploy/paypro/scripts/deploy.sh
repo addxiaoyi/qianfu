@@ -11,6 +11,8 @@ cd "$DEPLOY_ROOT"
 
 compose --env-file "$ENV_FILE" -f "$DEPLOY_ROOT/docker-compose.yml" build --pull paypro
 compose --env-file "$ENV_FILE" -f "$DEPLOY_ROOT/docker-compose.yml" up -d --wait --wait-timeout 240 mysql redis
+"$SCRIPT_DIR/backup.sh" "$ENV_FILE"
+"$SCRIPT_DIR/migrate.sh" "$ENV_FILE"
 compose --env-file "$ENV_FILE" -f "$DEPLOY_ROOT/docker-compose.yml" up -d --wait --wait-timeout 240 paypro
 
 HOST_PORT=$(grep -E '^PAYPRO_HOST_PORT=' "$ENV_FILE" | tail -n 1 | cut -d= -f2- || true)

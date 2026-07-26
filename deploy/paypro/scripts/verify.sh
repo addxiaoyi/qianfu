@@ -37,6 +37,7 @@ require_length() {
 
 [ -f "$ENV_FILE" ] || fail "Missing environment file: $ENV_FILE"
 [ -f "$COMPOSE_FILE" ] || fail "Missing Compose file: $COMPOSE_FILE"
+[ -f "$DEPLOY_ROOT/mysql-migrations/002-order-expiry-decrement.sql" ] || fail 'Missing database migration 002'
 (
   cd "$DEPLOY_ROOT/artifacts"
   sha256sum -c paypro.jar.sha256 >/dev/null
@@ -61,6 +62,24 @@ printf '%s' "$DB_NAME" | grep -Eq '^[A-Za-z0-9_]+$' || fail 'PAYPRO_DB_NAME cont
 printf '%s' "$DB_USER" | grep -Eq '^[A-Za-z0-9_]+$' || fail 'PAYPRO_DB_USER contains invalid characters'
 
 [ "$(read_env PAYPRO_ALLOW_BUNDLED_QR_CODES)" = 'false' ] || fail 'PAYPRO_ALLOW_BUNDLED_QR_CODES must remain false'
+
+ORDER_TIMEOUT=$(read_env PAYPRO_ORDER_TIMEOUT_MINUTES)
+ORDER_TIMEOUT=${ORDER_TIMEOUT:-30}
+printf '%s' "$ORDER_TIMEOUT" | grep -Eq '^[0-9]+$' || fail 'PAYPRO_ORDER_TIMEOUT_MINUTES must be an integer'
+[ "$ORDER_TIMEOUT" -ge 1 ] && [ "$ORDER_TIMEOUT" -le 10080 ] || fail 'PAYPRO_ORDER_TIMEOUT_MINUTES must be between 1 and 10080'
+
+DECREMENT_ENABLED=$(read_env PAYPRO_DECREMENT_ENABLED)
+DECREMENT_ENABLED=${DECREMENT_ENABLED:-false}
+[ "$DECREMENT_ENABLED" = 'false' ] || fail 'PAYPRO_DECREMENT_ENABLED must remain false until no-note payment assets are accepted'
+DECREMENT_MAX_COUNT=$(read_env PAYPRO_DECREMENT_MAX_COUNT)
+DECREMENT_MAX_COUNT=${DECREMENT_MAX_COUNT:-5}
+printf '%s' "$DECREMENT_MAX_COUNT" | grep -Eq '^[0-9]+$' || fail 'PAYPRO_DECREMENT_MAX_COUNT must be an integer'
+[ "$DECREMENT_MAX_COUNT" -ge 1 ] && [ "$DECREMENT_MAX_COUNT" -le 100 ] || fail 'PAYPRO_DECREMENT_MAX_COUNT must be between 1 and 100'
+DECREMENT_STEP=$(read_env PAYPRO_DECREMENT_STEP)
+DECREMENT_STEP=${DECREMENT_STEP:-0.01}
+printf '%s' "$DECREMENT_STEP" | grep -Eq '^[0-9]+([.][0-9]+)?$' || fail 'PAYPRO_DECREMENT_STEP must be a positive decimal'
+awk -v value="$DECREMENT_STEP" 'BEGIN { exit !(value > 0) }' || fail 'PAYPRO_DECREMENT_STEP must be greater than zero'
+
 ALIPAY_ENABLED=$(read_env PAYPRO_ALIPAY_ENABLED)
 WECHAT_ENABLED=$(read_env PAYPRO_WECHAT_ENABLED)
 

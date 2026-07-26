@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -eu
+umask 077
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 DEPLOY_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
@@ -15,6 +16,7 @@ case "$RETENTION_DAYS" in
 esac
 
 mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
 compose --env-file "$ENV_FILE" -f "$DEPLOY_ROOT/docker-compose.yml" exec -T mysql sh -ec 'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --quick --routines --triggers --events "$MYSQL_DATABASE"' \
   | gzip -9 > "$BACKUP_FILE"
 

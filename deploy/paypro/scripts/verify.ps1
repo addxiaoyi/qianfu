@@ -63,6 +63,9 @@ function Invoke-Compose([string]$Mode, [string[]]$ComposeArgs) {
 
 if (-not (Test-Path $EnvFile -PathType Leaf)) { throw "Missing environment file: $EnvFile" }
 if (-not (Test-Path $ComposeFile -PathType Leaf)) { throw "Missing Compose file: $ComposeFile" }
+if (-not (Test-Path (Join-Path $DeployRoot 'mysql-migrations\002-order-expiry-decrement.sql') -PathType Leaf)) {
+  throw 'Missing database migration 002'
+}
 Assert-Hash (Join-Path $DeployRoot 'artifacts\paypro.jar')
 Assert-Hash (Join-Path $DeployRoot 'mysql-init\001-schema.sql')
 
@@ -81,6 +84,22 @@ if ($dbUser -notmatch '^[A-Za-z0-9_]+$') { throw 'PAYPRO_DB_USER contains invali
 
 $allowBundled = ([string]$values['PAYPRO_ALLOW_BUNDLED_QR_CODES']).ToLowerInvariant()
 if ($allowBundled -ne 'false') { throw 'PAYPRO_ALLOW_BUNDLED_QR_CODES must remain false' }
+
+$orderTimeout = if ($values.ContainsKey('PAYPRO_ORDER_TIMEOUT_MINUTES')) { [string]$values['PAYPRO_ORDER_TIMEOUT_MINUTES'] } else { '30' }
+if ($orderTimeout -notmatch '^\d+$' -or [int64]$orderTimeout -lt 1 -or [int64]$orderTimeout -gt 10080) {
+  throw 'PAYPRO_ORDER_TIMEOUT_MINUTES must be between 1 and 10080'
+}
+$decrementEnabled = if ($values.ContainsKey('PAYPRO_DECREMENT_ENABLED')) { ([string]$values['PAYPRO_DECREMENT_ENABLED']).ToLowerInvariant() } else { 'false' }
+if ($decrementEnabled -ne 'false') { throw 'PAYPRO_DECREMENT_ENABLED must remain false until no-note payment assets are accepted' }
+$decrementMaxCount = if ($values.ContainsKey('PAYPRO_DECREMENT_MAX_COUNT')) { [string]$values['PAYPRO_DECREMENT_MAX_COUNT'] } else { '5' }
+if ($decrementMaxCount -notmatch '^\d+$' -or [int64]$decrementMaxCount -lt 1 -or [int64]$decrementMaxCount -gt 100) {
+  throw 'PAYPRO_DECREMENT_MAX_COUNT must be between 1 and 100'
+}
+$decrementStep = if ($values.ContainsKey('PAYPRO_DECREMENT_STEP')) { [string]$values['PAYPRO_DECREMENT_STEP'] } else { '0.01' }
+[decimal]$parsedStep = 0
+if (-not [decimal]::TryParse($decrementStep, [Globalization.NumberStyles]::AllowDecimalPoint, [Globalization.CultureInfo]::InvariantCulture, [ref]$parsedStep) -or $parsedStep -le 0) {
+  throw 'PAYPRO_DECREMENT_STEP must be a positive decimal'
+}
 
 $alipayEnabled = ([string]$values['PAYPRO_ALIPAY_ENABLED']).ToLowerInvariant() -eq 'true'
 $wechatEnabled = ([string]$values['PAYPRO_WECHAT_ENABLED']).ToLowerInvariant() -eq 'true'

@@ -23,6 +23,7 @@ deploy/paypro/
 ├─ .env.example
 ├─ artifacts/                 # prepare 脚本生成，不提交
 ├─ mysql-init/                # prepare 脚本生成，不提交
+├─ mysql-migrations/          # 已存在数据卷的幂等增量迁移
 ├─ payment-assets/qr/         # 已确认二维码，不提交
 ├─ backups/                   # 数据库备份，不提交
 └─ scripts/
@@ -30,6 +31,7 @@ deploy/paypro/
    ├─ verify.ps1 / verify.sh
    ├─ verify-jar.py
    ├─ deploy.sh
+   ├─ migrate.sh
    ├─ backup.sh
    └─ restore.sh
 ```
@@ -86,7 +88,7 @@ Linux：
 ./scripts/verify.sh .env
 ```
 
-门禁会验证产物校验和、密钥长度、数据库标识符、bundled QR 禁用状态、支付启用条件及 Compose 解析。启用任一支付方式时，还会强制要求：
+门禁会验证产物校验和、数据库迁移文件、密钥长度、数据库标识符、订单超时范围、减额模式禁用状态、bundled QR 禁用状态、支付启用条件及 Compose 解析。启用任一支付方式时，还会强制要求：
 
 - `PAYPRO_SITE` 为真实 HTTPS 地址；
 - `PAYPRO_NOTIFY_ALLOWED_HOSTS` 为 QianFu 回调的真实主机；
@@ -102,11 +104,13 @@ Linux：
 curl -fsS http://127.0.0.1:8889/api/health
 ```
 
-`deploy.sh` 仅构建并启动本目录的三个容器，不修改 QianFu 环境变量、数据库支付项目或当前发布版本。健康端点只有在 MySQL 与 Redis 均可用时才返回：
+`deploy.sh` 只操作本目录的三个容器，不修改 QianFu 环境变量、数据库支付项目或当前发布版本。其固定顺序为：构建新镜像、启动并等待 MySQL/Redis、创建压缩且带校验和的数据库备份、幂等应用 `mysql-migrations/002-order-expiry-decrement.sql`、验证所需字段和索引、最后启动 PayPro。健康端点只有在 MySQL 与 Redis 均可用时才返回：
 
 ```json
 {"status":"ok"}
 ```
+
+迁移 002 仅添加缺失字段、扩容 `notify_url` 并添加缺失索引，不删除表、列、索引或数据；旧版本应用可继续读取迁移后的表。减额匹配仍默认关闭。
 
 公开访问需要在确认真实域名后单独配置 TLS 反向代理；容器端口仍保持回环绑定。
 
