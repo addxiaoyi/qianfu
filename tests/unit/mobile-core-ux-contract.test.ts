@@ -30,4 +30,22 @@ describe('mobile core UX contracts', () => {
     expect(home).toContain('精选推荐');
     expect(home).toContain('重新加载');
   });
+
+  it('keeps detail actions reachable inside the bottom safe area', () => {
+    const detail = read('qianfu-liandeng/src/components/mobile/MobileServerDetail.tsx');
+
+    expect(detail).toContain('data-testid="server-detail-actions"');
+    expect(detail).toContain('pb-[calc(1rem+env(safe-area-inset-bottom))]');
+  });
+
+  it('keeps the mobile editor task flow explicit and native-select free', () => {
+    const editor = read('qianfu-liandeng/src/pages/ServerEditor.tsx');
+    const mobileEditor = read('qianfu-liandeng/src/components/mobile/MobileEditor.tsx');
+
+    expect(editor).toContain('data-testid="mobile-editor-actions"');
+    expect(editor).toContain('发布步骤');
+    expect(editor).toContain('MobileSelectSheet');
+    expect(editor).not.toContain('<select');
+    expect(mobileEditor).toContain('data-mobile-editor="true"');
+  });
 });

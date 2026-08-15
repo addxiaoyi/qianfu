@@ -1,20 +1,30 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import DOMPurify from 'dompurify';
 import { api } from '@/api/request';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, ChevronLeft, Eye, Layout, Settings, FileText, CheckCircle2, AlertCircle, RefreshCcw, X, Shield } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronLeft, Eye, Layout, Settings, FileText, CheckCircle2, AlertCircle, RefreshCcw, X, Shield, Save } from 'lucide-react';
 import { useT } from '@/store/uiStore';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import GeometricLantern from '@/components/icons/GeometricLantern';
-import RichTextEditor from '@/components/RichTextEditor';
-import MatrixTagInput from '@/components/MatrixTagInput';
+import GeometricLantern from '@/components/ui/GeometricLantern';
+import RichTextEditor from '@/components/form/RichTextEditor';
+import MatrixTagInput from '@/components/form/MatrixTagInput';
 import { isImageUrlSafe } from '@/utils/urlValidator';
-import MatrixImageUpload from '@/components/MatrixImageUpload';
+import MatrixImageUpload from '@/components/form/MatrixImageUpload';
+import MobileSelectSheet, { type MobileSelectOption } from '@/components/mobile/MobileSelectSheet';
+import { sanitizeHtml } from '@/utils/htmlSanitizer';
+import {
+  createServerEditorDraftAutosave,
+  createServerEditorDraftPersistence,
+  getServerEditorDraftFingerprint,
+  getServerEditorDraftKey,
+  type ServerEditorDraft,
+} from './serverEditorDraft';
+
+type ListingPlan = 'free-monthly';
 
 // Schema for creating a new server (all fields required)
 const createServerSchema = z.object({
@@ -24,7 +34,10 @@ const createServerSchema = z.object({
   tags: z.string().min(1, '请至少输入一个标签'),
   description: z.string().min(20, '描述至少20字'),
   image: z.string().min(1, '请上传宣传图'),
-  listingPlan: z.enum(['basic-monthly', 'pro-quarterly', 'vip-yearly']),
+  listingPlan: z.literal('free-monthly'),
+  freeDomainEnabled: z.boolean().default(false),
+  freeDomainSuffixId: z.number().int().positive().nullable().default(null),
+  freeDomainPrefix: z.string().max(63).default(''),
 });
 
 // Schema for editing a server (version and ip are locked, so they are optional in the form)
@@ -35,7 +48,10 @@ const editServerSchema = z.object({
   tags: z.string().min(1, '请至少输入一个标签'),
   description: z.string().min(20, '描述至少20字'),
   image: z.string().min(1, '请上传宣传图'),
-  listingPlan: z.enum(['basic-monthly', 'pro-quarterly', 'vip-yearly']).optional(),
+  listingPlan: z.literal('free-monthly').optional(),
+  freeDomainEnabled: z.boolean().default(false),
+  freeDomainSuffixId: z.number().int().positive().nullable().default(null),
+  freeDomainPrefix: z.string().max(63).default(''),
 });
 
 // Use a single form shape that works in both create/edit modes
@@ -46,17 +62,24 @@ type ServerFormValues = {
   tags: string;
   description: string;
   image: string | null;
-  listingPlan: 'basic-monthly' | 'pro-quarterly' | 'vip-yearly';
+  listingPlan: ListingPlan;
+  freeDomainEnabled: boolean;
+  freeDomainSuffixId: number | null;
+  freeDomainPrefix: string;
 };
+
+type FreeDomainSuffix = { id: number; suffix: string; provider: string; ttl: number; quotaPerUser: number };
 
 const ServerEditor: React.FC = () => {
   const t = useT();
   const [searchParams] = useSearchParams();
   const serverId = searchParams.get('id');
   const [loading, setLoading] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<'idle' | 'saving' | 'saved' | 'unavailable'>('idle');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('cover');
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'checking' | 'online' | 'offline'>('idle');
+  const [suffixSheetOpen, setSuffixSheetOpen] = useState(false);
   const navigate = useNavigate();
 
   const sectionRefs = {
@@ -84,8 +107,8 @@ const ServerEditor: React.FC = () => {
     return () => observers.forEach(o => o.disconnect());
   }, []);
 
-  const { register, handleSubmit, reset, control, watch, formState: { errors, isDirty } } = useForm<ServerFormValues>({
-    resolver: zodResolver(schema) as any,
+  const { register, handleSubmit, reset, control, formState: { errors, isDirty } } = useForm<ServerFormValues>({
+    resolver: zodResolver(schema) as unknown,
     defaultValues: {
       name: '',
       version: '',
@@ -93,11 +116,100 @@ const ServerEditor: React.FC = () => {
       tags: '',
       description: '',
       image: null,
-      listingPlan: 'basic-monthly',
+      listingPlan: 'free-monthly',
+      freeDomainEnabled: false,
+      freeDomainSuffixId: null,
+      freeDomainPrefix: '',
     }
   });
 
-  const formData = watch() as ServerFormValues;
+  const formData = useWatch({ control }) as ServerFormValues;
+  const suffixQuery = useQuery({
+    queryKey: ['free-domain-suffixes'],
+    queryFn: () => api.get<FreeDomainSuffix[]>('/free-domain-suffixes'),
+    staleTime: 60_000,
+  });
+  const selectedSuffix = suffixQuery.data?.find((suffix) => suffix.id === formData.freeDomainSuffixId);
+  const suffixOptions = useMemo<readonly MobileSelectOption<string>[]>(() => [
+    { value: '', label: '选择域名后缀' },
+    ...(suffixQuery.data ?? []).map((suffix) => ({
+      value: String(suffix.id),
+      label: `${suffix.suffix} · ${suffix.provider}`,
+      description: `TTL ${suffix.ttl}s · 每人 ${suffix.quotaPerUser} 个`,
+    })),
+  ], [suffixQuery.data]);
+  const latestFormData = useRef(formData);
+  latestFormData.current = formData;
+  const hydrated = useRef(false);
+  const savedFingerprint = useRef('');
+  const draftKey = useMemo(() => getServerEditorDraftKey(serverId), [serverId]);
+  const autosave = useMemo(() => createServerEditorDraftAutosave(800), []);
+  const remoteDraftUrl = (key: string) => `/preferences/server-editor-draft?key=${encodeURIComponent(key)}`;
+  const draftPersistence = useMemo(() => createServerEditorDraftPersistence({
+    load: async (key) => {
+      const response = await api.get<{ draft?: ServerEditorDraft | null }>(remoteDraftUrl(key));
+      return response?.draft ?? null;
+    },
+    save: async (key, draft) => {
+      await api.put(remoteDraftUrl(key), draft);
+      return true;
+    },
+    clear: async (key) => {
+      await api.delete(remoteDraftUrl(key));
+      return true;
+    },
+  }), []);
+  const formFingerprint = useMemo(
+    () => getServerEditorDraftFingerprint({
+      name: formData.name,
+      version: formData.version,
+      ip: formData.ip,
+      tags: formData.tags,
+      description: formData.description,
+      image: formData.image,
+      listingPlan: formData.listingPlan,
+    }),
+    [formData.name, formData.version, formData.ip, formData.tags, formData.description, formData.image, formData.listingPlan],
+  );
+
+  useEffect(() => {
+    if (serverId) return;
+    let cancelled = false;
+    hydrated.current = false;
+    void draftPersistence.load(draftKey).then((draft) => {
+      if (cancelled) return;
+      if (draft) {
+        reset(draft);
+        savedFingerprint.current = getServerEditorDraftFingerprint(draft);
+        setDraftStatus('saved');
+      } else {
+        savedFingerprint.current = getServerEditorDraftFingerprint(latestFormData.current as ServerEditorDraft);
+      }
+      hydrated.current = true;
+    });
+    return () => { cancelled = true; };
+  }, [draftKey, draftPersistence, reset, serverId]);
+
+  useEffect(() => () => autosave.cancel(), [autosave]);
+
+  useEffect(() => {
+    if (!hydrated.current || formFingerprint === savedFingerprint.current) return;
+    setDraftStatus('saving');
+    autosave.schedule(() => {
+      const currentFormData = latestFormData.current;
+      const currentFingerprint = getServerEditorDraftFingerprint(currentFormData as ServerEditorDraft);
+      void draftPersistence.save(draftKey, currentFormData as ServerEditorDraft).then((saved) => {
+        if (!saved) {
+          setDraftStatus('unavailable');
+          return;
+        }
+        if (getServerEditorDraftFingerprint(latestFormData.current as ServerEditorDraft) !== currentFingerprint) return;
+        savedFingerprint.current = currentFingerprint;
+        reset(currentFormData);
+        setDraftStatus('saved');
+      });
+    });
+  }, [autosave, draftKey, draftPersistence, formFingerprint, reset]);
 
   // Fetch server data if in edit mode
   useQuery({
@@ -105,21 +217,66 @@ const ServerEditor: React.FC = () => {
     queryFn: async () => {
       if (!serverId) return null;
       const data = await api.get<any>(`/servers/${serverId}`);
-      reset({
+      const draft = await draftPersistence.load(draftKey);
+      if (draft) {
+        reset(draft);
+        savedFingerprint.current = getServerEditorDraftFingerprint(draft);
+        hydrated.current = true;
+        setDraftStatus('saved');
+        return data;
+      }
+      const serverDraft: ServerEditorDraft = {
         name: data.name || '',
         version: data.version || '',
         ip: data.ip || '',
         tags: Array.isArray(data.tags) ? data.tags.join(' ') : data.tags || '',
         description: data.content_html || data.description || '',
         image: data.thumbnail || data.image || null,
-        listingPlan: data.listing_plan || 'basic-monthly',
-      });
+        listingPlan: 'free-monthly',
+        freeDomainEnabled: Boolean(data.free_domain?.domain),
+        freeDomainSuffixId: data.free_domain?.suffix_id ?? null,
+        freeDomainPrefix: data.free_domain?.prefix ?? '',
+      };
+      reset(serverDraft);
+      savedFingerprint.current = getServerEditorDraftFingerprint(serverDraft);
+      hydrated.current = true;
       return data;
     },
     enabled: !!serverId,
   });
 
-  const onSubmit = async (values: any) => {
+  const saveDraft = () => {
+    setDraftStatus('saving');
+    const draft = formData as ServerEditorDraft;
+    const fingerprint = getServerEditorDraftFingerprint(draft);
+    void draftPersistence.save(draftKey, draft).then((saved) => {
+      const isLatest = getServerEditorDraftFingerprint(latestFormData.current as ServerEditorDraft) === fingerprint;
+      if (saved && isLatest) {
+        savedFingerprint.current = fingerprint;
+        reset(draft);
+      }
+      if (!saved) setDraftStatus('unavailable');
+      else if (isLatest) setDraftStatus('saved');
+      toast({
+        variant: saved ? 'default' : 'destructive',
+        title: saved ? '草稿已保存' : '无法保存草稿',
+        description: saved ? '可以稍后继续编辑，正式提交仍会再次校验。' : '服务端草稿暂时不可用，请稍后重试。',
+      });
+    });
+  };
+
+  const showValidationErrors = (fieldErrors: typeof errors) => {
+    const labels = Object.entries(fieldErrors)
+      .map(([field, error]) => `${field}: ${String(error?.message || '请检查此项')}`)
+      .join('；');
+    toast({
+      variant: 'destructive',
+      title: '还有内容未填写完整',
+      description: labels || '请检查表单中的红色提示。',
+    });
+  };
+
+  const onSubmit = async (values: ServerFormValues) => {
     setLoading(true);
     try {
       let thumbnailUrl = values.image;
@@ -139,7 +296,10 @@ const ServerEditor: React.FC = () => {
         tags: JSON.stringify(String(values.tags || '').split(' ').map((tag: string) => tag.trim()).filter(Boolean)),
         thumbnail: thumbnailUrl,
         supported_versions: JSON.stringify([values.version].filter(Boolean)),
-        listing_plan: values.listingPlan,
+        listing_plan: 'free-monthly',
+        free_domain_enabled: values.freeDomainEnabled,
+        free_domain_suffix_id: values.freeDomainEnabled ? values.freeDomainSuffixId ?? undefined : undefined,
+        free_domain_prefix: values.freeDomainEnabled ? values.freeDomainPrefix.trim() : undefined,
       };
 
       if (serverId) {
@@ -151,6 +311,14 @@ const ServerEditor: React.FC = () => {
         title: t('common.success'), 
         description: serverId ? '服务器资料已更新。' : '服务器已提交审核。'
       });
+      const draftCleared = await draftPersistence.clear(draftKey);
+      if (!draftCleared) {
+        toast({
+          variant: 'destructive',
+          title: '服务器已提交，但草稿清理失败',
+          description: '发布已完成；下次进入编辑器时可能仍会看到旧草稿。',
+        });
+      }
       navigate('/dashboard/servers');
     } catch (err: any) {
       toast({ variant: 'destructive', title: t('common.error'), description: err.message });
@@ -180,7 +348,7 @@ const ServerEditor: React.FC = () => {
   const descLength = formData.description?.replace(/<[^>]*>?/gm, '').length || 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-full min-w-0 overflow-x-clip bg-white">
       {/* Side Navigation */}
       <nav className="fixed left-12 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col gap-4">
         {[
@@ -191,7 +359,7 @@ const ServerEditor: React.FC = () => {
           <button
             type="button"
             key={item.id}
-            onClick={() => scrollToSection(item.id as any)}
+            onClick={() => scrollToSection(item.id as unknown)}
             className={`group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 ${
               activeSection === item.id ? 'bg-black text-white shadow-2xl scale-110' : 'bg-zinc-50 text-zinc-300 hover:bg-zinc-100'
             }`}
@@ -206,10 +374,10 @@ const ServerEditor: React.FC = () => {
 
       {/* Floating Action Bar — sits below the global navbar */}
       <div className="fixed top-24 right-8 z-40 hidden items-center gap-3 md:flex">
-        {isDirty && (
+         {(isDirty || draftStatus !== 'idle') && (
           <div className="flex items-center gap-3 px-5 py-3 bg-orange-50 border border-orange-200 rounded-2xl animate-in slide-in-from-right duration-300 shadow-lg">
              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-             <span className="text-[9px] font-black uppercase tracking-widest italic text-orange-500">未保存</span>
+              <span className={`text-[9px] font-black uppercase tracking-widest italic ${draftStatus === 'unavailable' ? 'text-red-500' : 'text-orange-500'}`}>{draftStatus === 'saving' ? '自动保存中' : draftStatus === 'saved' && !isDirty ? '已自动保存' : draftStatus === 'unavailable' ? '自动保存失败' : '未保存'}</span>
           </div>
         )}
         <button 
@@ -230,6 +398,7 @@ const ServerEditor: React.FC = () => {
              <button 
                type="button"
                onClick={() => navigate(-1)}
+               aria-label="返回上一页"
                className="w-10 h-10 border border-zinc-100 rounded-xl flex items-center justify-center hover:bg-black hover:text-white transition-all group"
              >
                 <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -247,9 +416,27 @@ const ServerEditor: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter mb-6 uppercase italic leading-none break-words">
              {serverId ? t('editor.title.edit') : t('editor.title.new')}
           </h1>
-          <p className="text-zinc-400 font-bold text-base sm:text-lg lg:text-xl italic leading-relaxed max-w-lg border-l-2 border-zinc-100 pl-8">
-            {t('editor.subtitle')}
-          </p>
+           <p className="text-zinc-400 font-bold text-base sm:text-lg lg:text-xl italic leading-relaxed max-w-lg border-l-2 border-zinc-100 pl-8">
+             {t('editor.subtitle')}
+           </p>
+
+           <div className="mt-6 flex gap-2 overflow-x-auto pb-1 md:hidden" aria-label="发布步骤">
+             {[
+               { id: 'cover', label: '封面' },
+               { id: 'basic', label: '资料' },
+               { id: 'content', label: '介绍' },
+             ].map((item) => (
+               <button
+                 key={item.id}
+                 type="button"
+                 onClick={() => scrollToSection(item.id as keyof typeof sectionRefs)}
+                 aria-pressed={activeSection === item.id}
+                 className={`min-h-11 shrink-0 rounded-xl px-4 text-xs font-black ${activeSection === item.id ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-500'}`}
+               >
+                 {item.label}
+               </button>
+             ))}
+           </div>
 
           {/* Edit Mode Data Integrity Banner */}
           {serverId && (
@@ -270,7 +457,7 @@ const ServerEditor: React.FC = () => {
                   <Shield className="w-5 h-5 text-zinc-500" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">系统锁定 · 不可篡改</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 italic">系统生成 · 提交后校验</p>
                   <p className="text-sm font-bold text-zinc-400 italic leading-relaxed">
                     服务器 IP 地址 / 客户端版本号
                   </p>
@@ -280,7 +467,7 @@ const ServerEditor: React.FC = () => {
           )}
         </header>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-20">
+        <form onSubmit={handleSubmit(onSubmit, showValidationErrors)} className="space-y-20">
           {/* Cover Upload */}
           <section id="cover" ref={sectionRefs.cover} className="scroll-mt-24">
             <Controller 
@@ -314,6 +501,7 @@ const ServerEditor: React.FC = () => {
                     </span>
                   </div>
                   <input 
+                    aria-label={t('editor.field.name.label')}
                     {...register('name')}
                     className="matrix-input"
                     placeholder={t('editor.field.name.placeholder')}
@@ -328,6 +516,7 @@ const ServerEditor: React.FC = () => {
                   </label>
                   <div className="relative group/field">
                     <input 
+                      aria-label={t('editor.field.version.label')}
                       {...register('version')}
                       disabled={!!serverId}
                       className={`matrix-input ${serverId ? 'opacity-50 cursor-not-allowed bg-zinc-50' : ''}`}
@@ -360,6 +549,7 @@ const ServerEditor: React.FC = () => {
                   </div>
                   <div className="relative group/field">
                     <input 
+                      aria-label={t('editor.field.ip.label')}
                       {...register('ip')}
                       disabled={!!serverId}
                       className={`matrix-input ${serverId ? 'opacity-50 cursor-not-allowed bg-zinc-50' : ''}`}
@@ -407,21 +597,57 @@ const ServerEditor: React.FC = () => {
                   {errors.tags && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">// ERROR: {errors.tags.message}</p>}
                 </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic flex items-center gap-3">
-                    <GeometricLantern variant="payment" className="w-3.5 h-3.5" /> 发布套餐
-                  </label>
-                  <select
-                    {...register('listingPlan')}
-                    className="matrix-input"
-                  >
-                    <option value="basic-monthly">月租 7 元 / 原价 12</option>
-                    <option value="pro-quarterly">季度 20 元 / 原价 36</option>
-                    <option value="vip-yearly">年付 90 元 / 原价 144</option>
-                  </select>
-                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest italic">
-                    发布新服务器会从钱包余额扣除对应套餐金额，并开启相应展示周期。
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-emerald-800">
+                    <GeometricLantern variant="check" className="h-4 w-4" /> 免费展示
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-emerald-700">
+                    服务器审核通过后长期展示，不设付费上架、钱包扣款或推广返利。
                   </p>
+                </div>
+                <div className="space-y-4 rounded-2xl border border-zinc-200 bg-white px-5 py-5 md:col-span-2">
+                  <label className="flex items-center gap-3 text-sm font-bold text-zinc-900">
+                    <input type="checkbox" {...register('freeDomainEnabled')} className="h-4 w-4 accent-black" />
+                    开启免费域名
+                  </label>
+                  {formData.freeDomainEnabled && (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <Controller
+                        name="freeDomainSuffixId"
+                        control={control}
+                        render={({ field }) => (
+                          <>
+                            <button
+                              type="button"
+                              aria-label="免费域名后缀"
+                              aria-haspopup="dialog"
+                              disabled={suffixQuery.isLoading || suffixOptions.length <= 1}
+                              onClick={() => setSuffixSheetOpen(true)}
+                              className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-left text-sm font-bold text-zinc-900 shadow-sm transition hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <span className="truncate">
+                                {suffixQuery.isLoading ? '正在读取域名后缀…' : suffixQuery.isError ? '域名后缀暂时不可用' : selectedSuffix ? `${selectedSuffix.suffix} · ${selectedSuffix.provider}` : '选择域名后缀'}
+                              </span>
+                              <ChevronDown className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
+                            </button>
+                            <MobileSelectSheet
+                              open={suffixSheetOpen}
+                              title="选择免费域名后缀"
+                              value={field.value ? String(field.value) : ''}
+                              options={suffixOptions}
+                              onChange={(value) => field.onChange(value ? Number(value) : null)}
+                              onClose={() => setSuffixSheetOpen(false)}
+                            />
+                          </>
+                        )}
+                      />
+                      <input {...register('freeDomainPrefix')} className="matrix-input" placeholder="输入前缀，例如 play" aria-label="免费域名前缀" />
+                      <p className="text-xs font-bold text-zinc-600 md:col-span-2">
+                        完整域名预览：<span className="text-accent">{formData.freeDomainPrefix.trim() && selectedSuffix ? `${formData.freeDomainPrefix.trim().toLowerCase()}.${selectedSuffix.suffix}` : '等待输入前缀和后缀'}</span>
+                      </p>
+                      <p className="text-xs leading-5 text-zinc-500 md:col-span-2">审核通过后自动配置 DNS；DNS 服务商超时不会影响审核结果，后台会自动重试。</p>
+                    </div>
+                  )}
                 </div>
              </div>
           </section>
@@ -430,7 +656,7 @@ const ServerEditor: React.FC = () => {
           <section id="content" ref={sectionRefs.content} className="space-y-6 scroll-mt-24">
             <div className="flex justify-between items-end">
               <h2 className="text-xs font-black font-mono uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-4 italic">
-                 <GeometricLantern variant="payment" className="w-5 h-5 text-accent" /> {t('editor.field.desc.label')}
+                 <GeometricLantern variant="data" className="w-5 h-5 text-accent" /> {t('editor.field.desc.label')}
               </h2>
               <span className={`text-[9px] font-black italic tracking-widest ${descLength < 20 ? 'text-orange-500' : 'text-zinc-200'}`}>
                 {descLength} 字
@@ -462,14 +688,14 @@ const ServerEditor: React.FC = () => {
           </div>
 
           <div
-            className="sticky z-30 pt-6 md:hidden"
-            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 6.75rem)' }}
+            data-testid="mobile-editor-actions"
+            className="sticky bottom-0 z-30 pt-4 md:hidden"
           >
-            <div className="flex items-center gap-3 rounded-[2rem] border border-zinc-100 bg-white/95 backdrop-blur-xl p-3 shadow-2xl shadow-black/10">
-              {isDirty && (
+            <div className="flex items-center gap-3 rounded-[1.5rem] border border-zinc-100 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/10 backdrop-blur-xl">
+              {(isDirty || draftStatus !== 'idle') && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-2xl shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                  <span className="text-[9px] font-black uppercase tracking-widest italic text-orange-500">未保存</span>
+                   <span className={`text-[9px] font-black uppercase tracking-widest italic ${draftStatus === 'unavailable' ? 'text-red-500' : 'text-orange-500'}`}>{draftStatus === 'saving' ? '自动保存中' : draftStatus === 'saved' && !isDirty ? '已自动保存' : draftStatus === 'unavailable' ? '自动保存失败' : '未保存'}</span>
                 </div>
               )}
               <button
@@ -481,8 +707,17 @@ const ServerEditor: React.FC = () => {
               >
                 <Eye className="w-4 h-4" />
                 {isPreviewOpen ? '关闭预览' : '实时预览'}
-              </button>
-              <button
+               </button>
+               <button
+                 type="button"
+                 onClick={saveDraft}
+                 disabled={loading}
+                 aria-label="保存草稿"
+                 className="inline-flex items-center justify-center gap-2 px-4 py-4 rounded-[1.5rem] bg-white text-black border border-zinc-200 disabled:opacity-50"
+               >
+                 <Save className="w-4 h-4" />
+               </button>
+               <button
                 type="submit"
                 disabled={loading}
                 className="flex-1 inline-flex items-center justify-center gap-3 px-4 py-4 rounded-[1.5rem] bg-black text-white font-black text-[10px] uppercase tracking-[0.35em] italic shadow-lg shadow-black/10 disabled:opacity-50"
@@ -495,6 +730,14 @@ const ServerEditor: React.FC = () => {
 
           {/* Form Actions */}
           <div className="hidden md:flex flex-col sm:flex-row gap-8 pt-12 pb-32">
+            <button
+              type="button"
+              onClick={saveDraft}
+              disabled={loading}
+              className="px-10 py-8 bg-white border border-zinc-200 rounded-[2.5rem] font-black text-[12px] uppercase tracking-[0.4em] hover:border-accent hover:text-accent transition-all italic active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+            >
+              <Save className="w-5 h-5" /> 保存草稿
+            </button>
             <button 
               type="submit"
               disabled={loading}
@@ -574,7 +817,7 @@ const ServerEditor: React.FC = () => {
 
                     <div 
                       className="prose prose-zinc max-w-none italic font-bold text-lg leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formData.description || 'STREAMING_CONTENT_EMPTY...', { ALLOWED_TAGS: ['b','i','u','em','strong','p','br','ul','ol','li','h1','h2','h3','h4','h5','h6','blockquote','pre','code','span'] }) }}
+                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(formData.description || 'STREAMING_CONTENT_EMPTY...') }}
                     />
                  </div>
               </div>
@@ -582,6 +825,7 @@ const ServerEditor: React.FC = () => {
              <button 
                type="button"
                onClick={() => setIsPreviewOpen(false)}
+               aria-label="关闭服务器预览"
                className="absolute top-8 right-8 w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center hover:bg-accent transition-all active:scale-90"
              >
                 <X className="w-6 h-6" />
