@@ -48,4 +48,13 @@ describe('mobile core UX contracts', () => {
     expect(editor).not.toContain('<select');
     expect(mobileEditor).toContain('data-mobile-editor="true"');
   });
+
+  it('keeps account actions touch-sized while preserving failure recovery', () => {
+    const center = read('qianfu-liandeng/src/components/mobile/MobileUserCenter.tsx');
+
+    expect(center).toContain('summaryUnavailable');
+    expect(center).toContain('重新加载统计');
+    expect(center).toContain('min-h-16 items-center gap-3');
+    expect(center).toContain('登录后使用');
+  });
 });
