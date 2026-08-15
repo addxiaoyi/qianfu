@@ -176,7 +176,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       {/* App header */}
       <div
         className={cn(
-          'shrink-0 border-b border-zinc-200 bg-white/95 px-4 pb-3 shadow-sm backdrop-blur',
+          'min-h-16 shrink-0 border-b border-zinc-200 bg-white/95 px-4 pb-3 shadow-sm backdrop-blur',
           onBack ? 'flex items-end gap-2' : 'flex items-end justify-between',
         )}
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))' }}
@@ -195,9 +195,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           <div className="truncate text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
             千服
           </div>
-          <h1 className="truncate text-lg font-black tracking-tight text-zinc-950">
+          <div className="truncate text-lg font-black tracking-tight text-zinc-950">
             {title || '千服联灯'}
-          </h1>
+          </div>
         </div>
         {!onBack && (
           <Link
@@ -218,7 +218,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           'min-h-0 flex-1 overflow-y-auto',
         )}
         style={{
-          paddingBottom: !hideNav ? '1rem' : undefined,
+          paddingBottom: !hideNav ? 'calc(1rem + env(safe-area-inset-bottom))' : '1rem',
           overscrollBehaviorY: 'none',
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
