@@ -49,7 +49,7 @@ const MobileSelectSheet = <T extends string>({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end bg-black/45 p-0 backdrop-blur-[2px]"
+      className="fixed inset-0 z-[230] flex items-end bg-black/45 p-0 backdrop-blur-[2px]"
       role="presentation"
       onClick={onClose}
     >
