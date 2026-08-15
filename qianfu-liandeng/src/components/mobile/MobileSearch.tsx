@@ -1,13 +1,24 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, TrendingUp, MapPin, Star, Users, Clock, ChevronRight } from 'lucide-react';
+import { Check, Copy, Search, X, SlidersHorizontal, TrendingUp, MapPin, LampDesk, Users, Clock, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/request';
 import { cn } from '../../utils/cn';
 import { toArray } from '../../utils/apiData';
 import { LazyImage } from './MobileLazyImage';
 import { Skeleton } from './MobileSkeleton';
+import { copyText } from '../../utils/clipboard';
+import { toast } from '../../hooks/use-toast';
+import MobileSelectSheet, { type MobileSelectOption } from './MobileSelectSheet';
+import {
+  getDiscoveryQuery,
+  mergeDiscoveryFilters,
+  readDiscoveryFilters,
+  toDiscoverySearchParams,
+  type DiscoveryFilters,
+  type DiscoveryIntent,
+} from '../../utils/serverDiscovery';
 import {
   getServerName,
   getServerPlayersMax,
@@ -20,23 +31,46 @@ import {
 
 const hotSearches = ['生存', 'PVP', 'RPG', '模组', '建筑', '科技', '魔法'];
 const categories = ['全部', '生存', 'PVP', 'RPG', '小游戏', '创造', '模组'];
+const intentOptions: Array<{ id: DiscoveryIntent; label: string }> = [
+  { id: 'online', label: '现在就玩' },
+  { id: 'players', label: '多人活跃' },
+  { id: 'created', label: '刚刚加入' },
+  { id: 'all', label: '全部服务器' },
+];
+const platformOptions: readonly MobileSelectOption<DiscoveryFilters['platform']>[] = [
+  { value: '', label: '全部平台' },
+  { value: 'java', label: 'Java 版' },
+  { value: 'bedrock', label: '基岩版' },
+];
+const onlineOptions: readonly MobileSelectOption<DiscoveryFilters['online']>[] = [
+  { value: '', label: '全部状态' },
+  { value: 'true', label: '在线' },
+  { value: 'false', label: '离线' },
+];
+const sortOptions: readonly MobileSelectOption<DiscoveryFilters['sortBy']>[] = [
+  { value: 'activity', label: '最近活跃' },
+  { value: 'players', label: '在线人数' },
+  { value: 'created', label: '最近加入' },
+];
+
+type FilterSheet = 'platform' | 'online' | 'sort';
 
 const MobileSearch: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
-  const [query, setQuery] = useState(initialQuery);
-  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
-  const [activeCategory, setActiveCategory] = useState('全部');
-  const [sortBy, setSortBy] = useState<'activity' | 'players' | 'updated'>('activity');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = useMemo<DiscoveryFilters>(() => readDiscoveryFilters(searchParams), [searchParams]);
+  const [query, setQuery] = useState(filters.search);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [activeSheet, setActiveSheet] = useState<FilterSheet | null>(null);
+  const [copiedServerId, setCopiedServerId] = useState<string | number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const queryParams = useMemo(() => ({
-    limit: 20,
-    search: submittedQuery || undefined,
-    category: activeCategory === '全部' ? undefined : activeCategory,
-    sortBy,
-    sortOrder: 'desc',
-  }), [submittedQuery, activeCategory, sortBy]);
+  const updateFilters = (patch: Partial<DiscoveryFilters>) => {
+    const next = mergeDiscoveryFilters(filters, patch);
+    setSearchParams(toDiscoverySearchParams(next), { replace: true });
+    setQuery(next.search);
+  };
+
+  const queryParams = useMemo(() => ({ ...getDiscoveryQuery(filters), limit: 20 }), [filters]);
 
   const { data: serverResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['mobile-search-servers', queryParams],
@@ -44,25 +78,64 @@ const MobileSearch: React.FC = () => {
   });
   const servers = toArray<any>(serverResponse);
 
-  const { data: featuredServerResponse } = useQuery({
+  const { data: featuredServerResponse, isError: featuredError, refetch: refetchFeatured } = useQuery({
     queryKey: ['mobile-search-featured-servers'],
     queryFn: () => api.get<any>('/public/servers', { limit: 6, sortBy: 'activity', sortOrder: 'desc' }, { useAuth: false }),
     staleTime: 60_000,
   });
   const featuredServers = toArray<any>(featuredServerResponse);
 
-  const hasSearched = !!submittedQuery || activeCategory !== '全部';
+  const hasSearched = !!filters.search || !!filters.category || filters.intent !== 'all' || !!filters.platform || !!filters.version || !!filters.online;
+  const appliedFilterCount = [filters.platform, filters.online, filters.version].filter(Boolean).length;
 
   const handleSearch = (text: string) => {
     const next = text.trim();
-    setQuery(next);
-    setSubmittedQuery(next);
+    updateFilters({ search: next });
   };
 
   const handleCategoryClick = (cat: string) => {
-    setActiveCategory(cat);
-    setSubmittedQuery(query.trim());
+    updateFilters({ category: cat === '全部' ? '' : cat, intent: 'all' });
   };
+
+  const openPlatformSheet = () => setActiveSheet('platform');
+  const openOnlineSheet = () => setActiveSheet('online');
+  const openSortSheet = () => setActiveSheet('sort');
+  const closeActiveSheet = () => setActiveSheet(null);
+  const setPlatform = (platform: DiscoveryFilters['platform']) => updateFilters({ platform });
+  const setOnline = (online: DiscoveryFilters['online']) => updateFilters({ intent: 'all', online });
+  const setSort = (sortBy: DiscoveryFilters['sortBy']) => updateFilters({ intent: 'all', sortBy });
+
+  const handleCopyAddress = async (event: React.MouseEvent<HTMLButtonElement>, server: any) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const endpoint = String(server?.ip || '').trim();
+    if (!endpoint) {
+      toast({ title: '该服务器未公开连接地址', variant: 'destructive' });
+      return;
+    }
+    try {
+      await copyText(endpoint);
+      setCopiedServerId(server.id);
+      toast({ title: '服务器地址已复制' });
+      window.setTimeout(() => setCopiedServerId(null), 1600);
+    } catch {
+      toast({ title: '复制失败，请手动查看连接地址', variant: 'destructive' });
+    }
+  };
+
+  const renderFilterTrigger = (label: string, value: string, onClick: () => void) => (
+    <div className="space-y-1">
+      <span className="px-1 text-[10px] font-bold text-muted-foreground">{label}</span>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-xl bg-white px-3 text-left text-xs font-bold text-zinc-800 transition-colors hover:bg-zinc-50"
+      >
+        <span className="truncate">{value}</span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-zinc-400" aria-hidden="true" />
+      </button>
+    </div>
+  );
 
   const renderServerCard = (server: any, index: number) => {
     const players = getServerPlayersOnline(server);
@@ -78,7 +151,8 @@ const MobileSearch: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.04 }}
       >
-        <Link to={`/server/${server.id}`} className="bg-white rounded-2xl overflow-hidden flex gap-3 p-3 active:opacity-80">
+        <div className="bg-white rounded-2xl overflow-hidden flex gap-3 p-3 active:opacity-80">
+          <Link to={`/server/${server.id}`} className="flex min-w-0 flex-1 gap-3">
           <div className="w-20 h-20 rounded-xl bg-zinc-100 overflow-hidden shrink-0">
             {thumbnail ? (
               <LazyImage src={thumbnail} alt={getServerName(server)} className="w-full h-full object-cover" />
@@ -104,21 +178,37 @@ const MobileSearch: React.FC = () => {
               </span>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 self-center" />
-        </Link>
+          </Link>
+          <div className="flex shrink-0 flex-col items-center justify-center gap-1">
+            <button
+              type="button"
+              onClick={(event) => void handleCopyAddress(event, server)}
+              aria-label="复制服务器地址"
+              title="复制服务器地址"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-100 text-muted-foreground transition-colors hover:border-black hover:text-black"
+            >
+              {copiedServerId === server.id ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+            </button>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          </div>
+        </div>
       </motion.div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-full bg-gray-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <h1 className="sr-only">发现服务器</h1>
       <div className="sticky top-0 z-50 bg-gray-50/90 backdrop-blur-xl border-b border-gray-100">
-        <div className="px-4 py-4">
+        <div className="px-4 py-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               ref={inputRef}
-              type="text"
+              type="search"
+              name="server-search"
+              aria-label="搜索服务器和玩法"
+              autoComplete="off"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -133,9 +223,10 @@ const MobileSearch: React.FC = () => {
             {query && (
               <button
                 type="button"
+                aria-label="清除搜索内容"
                 onClick={() => {
                   setQuery('');
-                  setSubmittedQuery('');
+                  updateFilters({ search: '' });
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
               >
@@ -153,16 +244,83 @@ const MobileSearch: React.FC = () => {
               onClick={() => handleCategoryClick(cat)}
               className={cn(
                 'px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors shrink-0',
-                activeCategory === cat ? 'bg-black text-white' : 'bg-white text-muted-foreground active:bg-gray-100',
+                (filters.category || '全部') === cat ? 'bg-black text-white' : 'bg-white text-muted-foreground active:bg-gray-100',
               )}
             >
               {cat}
             </button>
           ))}
         </div>
+
+        <div className="flex max-w-full gap-2 overflow-x-auto px-4 pb-3 scrollbar-hide">
+          {intentOptions.map((option) => (
+            <button
+              type="button"
+              key={option.id}
+              onClick={() => updateFilters({ intent: option.id })}
+              className={cn(
+                'shrink-0 rounded-xl px-3 py-2 text-xs font-black transition-colors',
+                filters.intent === option.id ? 'bg-black text-white' : 'bg-white text-muted-foreground',
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="px-4 pb-4">
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls="mobile-server-filters"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="flex w-full items-center justify-between rounded-xl bg-white px-3 py-2 text-xs font-black text-muted-foreground"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>筛选</span>
+              {appliedFilterCount > 0 ? (
+                <span className="rounded-full bg-black px-2 py-0.5 text-[10px] text-white">{appliedFilterCount}</span>
+              ) : null}
+            </span>
+            <span className="text-[10px]">{filtersOpen ? '收起' : '展开'}</span>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {filtersOpen ? (
+              <motion.div
+                id="mobile-server-filters"
+                initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                className="grid grid-cols-2 gap-2 overflow-hidden"
+              >
+                {renderFilterTrigger(
+                  '服务器平台',
+                  platformOptions.find((option) => option.value === filters.platform)?.label || '全部平台',
+                  openPlatformSheet,
+                )}
+                {renderFilterTrigger(
+                  '在线状态',
+                  onlineOptions.find((option) => option.value === filters.online)?.label || '全部状态',
+                  openOnlineSheet,
+                )}
+                {renderFilterTrigger(
+                  '排序方式',
+                  sortOptions.find((option) => option.value === filters.sortBy)?.label || '最近活跃',
+                  openSortSheet,
+                )}
+                <label className="col-span-2 space-y-1">
+                  <span className="px-1 text-[10px] font-bold text-muted-foreground">服务器版本</span>
+                  <input aria-label="服务器版本" value={filters.version} onChange={(event) => updateFilters({ version: event.target.value.trim() })} placeholder="如 1.21.1" className="min-h-11 w-full rounded-xl border-0 bg-white px-3 text-xs font-bold placeholder:text-zinc-300" />
+                </label>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
+      <div className="space-y-4 px-4 py-4">
         <AnimatePresence mode="wait">
           {!hasSearched ? (
             <motion.div
@@ -193,10 +351,15 @@ const MobileSearch: React.FC = () => {
 
               <div>
                 <h3 className="text-sm font-black uppercase tracking-tight mb-3 flex items-center gap-2">
-                  <Star className="w-4 h-4" />
+                  <LampDesk className="w-4 h-4" />
                   推荐服务器
                 </h3>
-                {featuredServers.length === 0 ? (
+                {featuredError ? (
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm font-bold text-amber-800">
+                    推荐服务器加载失败。
+                    <button type="button" onClick={() => refetchFeatured()} className="ml-3 underline underline-offset-4">重试</button>
+                  </div>
+                ) : featuredServers.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-zinc-200 p-6 text-sm font-bold text-zinc-400 bg-white">
                     暂无已审核服务器
                   </div>
@@ -238,26 +401,9 @@ const MobileSearch: React.FC = () => {
             </motion.div>
           ) : (
             <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <p className="text-xs text-muted-foreground mb-4">找到 {servers.length} 个结果</p>
-
-              <div className="mb-4 flex max-w-full gap-2 overflow-x-auto scrollbar-hide">
-                {[
-                  { key: 'activity', label: '活跃度' },
-                  { key: 'players', label: '在线人数' },
-                  { key: 'updated', label: '最近更新' },
-                ].map((s) => (
-                  <button
-                    type="button"
-                    key={s.key}
-                    onClick={() => setSortBy(s.key as typeof sortBy)}
-                    className={cn(
-                      'px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors shrink-0',
-                      sortBy === s.key ? 'bg-black text-white' : 'bg-white text-muted-foreground',
-                    )}
-                  >
-                    {s.label}
-                  </button>
-                ))}
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">找到 {servers.length} 个结果</p>
+                <button type="button" onClick={() => setSearchParams(new URLSearchParams(), { replace: true })} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-muted-foreground">清除筛选</button>
               </div>
 
               {isLoading ? (
@@ -279,9 +425,8 @@ const MobileSearch: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setSubmittedQuery('');
-                      setQuery('');
-                      setActiveCategory('全部');
+                       setSearchParams(new URLSearchParams(), { replace: true });
+                       setQuery('');
                     }}
                     className="px-6 py-3 bg-black text-white text-sm font-bold rounded-xl"
                   >
@@ -295,6 +440,31 @@ const MobileSearch: React.FC = () => {
           )}
         </AnimatePresence>
       </div>
+
+      <MobileSelectSheet
+        open={activeSheet === 'platform'}
+        title="选择服务器平台"
+        value={filters.platform}
+        options={platformOptions}
+        onChange={setPlatform}
+        onClose={closeActiveSheet}
+      />
+      <MobileSelectSheet
+        open={activeSheet === 'online'}
+        title="选择在线状态"
+        value={filters.online}
+        options={onlineOptions}
+        onChange={setOnline}
+        onClose={closeActiveSheet}
+      />
+      <MobileSelectSheet
+        open={activeSheet === 'sort'}
+        title="选择排序方式"
+        value={filters.sortBy}
+        options={sortOptions}
+        onChange={setSort}
+        onClose={closeActiveSheet}
+      />
     </div>
   );
 };
