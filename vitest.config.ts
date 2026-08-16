@@ -7,6 +7,8 @@ import { resolve } from 'path';
 
 const coverageScope = process.env.COVERAGE_SCOPE ?? 'critical';
 const isCriticalCoverage = coverageScope === 'critical';
+const frontendReact = resolve(__dirname, './qianfu-liandeng/node_modules/react');
+const frontendReactDom = resolve(__dirname, './qianfu-liandeng/node_modules/react-dom');
 
 /**
  * Critical coverage scope (CI hard gate).
@@ -50,9 +52,14 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-      '@qianfu/shared': resolve(__dirname, './packages/shared/src/index.ts'),
-    },
+    alias: [
+      { find: '@', replacement: resolve(__dirname, './src') },
+      { find: '@qianfu/shared', replacement: resolve(__dirname, './packages/shared/src/index.ts') },
+      // The frontend has its own React version; tests must use the same dispatcher.
+      { find: /^react$/, replacement: frontendReact },
+      { find: /^react\/(.+)$/, replacement: `${frontendReact}/$1` },
+      { find: /^react-dom$/, replacement: frontendReactDom },
+      { find: /^react-dom\/(.+)$/, replacement: `${frontendReactDom}/$1` },
+    ],
   },
 });

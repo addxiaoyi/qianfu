@@ -14,6 +14,7 @@ import Footer from "./components/Footer";
 import GlobalSettingsPanel from "./components/GlobalSettingsPanel";
 import DynamicBranding from "./components/DynamicBranding";
 import SeoHead from "./components/SeoHead";
+import EntryAnimationGate from "@/components/entry/EntryAnimationGate";
 import { useBackendHealth } from "./hooks/useBackendHealth";
 
 // Pages
@@ -299,7 +300,8 @@ function App() {
   );
 
   return (
-    <Router>
+    <EntryAnimationGate>
+      <Router>
       <SeoHead />
       <DynamicBranding />
       <GlobalProgress />
@@ -329,7 +331,8 @@ function App() {
           />
         </div>
       </div>
-    </Router>
+      </Router>
+    </EntryAnimationGate>
   );
 }
 
