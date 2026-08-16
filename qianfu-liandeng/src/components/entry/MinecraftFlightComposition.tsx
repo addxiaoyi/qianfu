@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 
-export const durationInFrames = 72;
+export const durationInFrames = 144;
 export const fps = 60;
 
 const stars = [
@@ -31,11 +31,11 @@ const clamp = { extrapolateLeft: 'clamp' as const, extrapolateRight: 'clamp' as 
 const MinecraftFlightComposition: React.FC = () => {
   const frame = useCurrentFrame();
   const video = useVideoConfig();
-  const cameraScale = interpolate(frame, [0, 15, 54, 72], [1.02, 1.04, 1.16, 1.2], clamp);
-  const cameraY = interpolate(frame, [0, 54, 72], [5, 0, -5], clamp);
-  const sceneOpacity = interpolate(frame, [0, 10, 64, 72], [0, 1, 1, 0], clamp);
+  const cameraScale = interpolate(frame, [0, 30, 108, 144], [1.02, 1.04, 1.16, 1.2], clamp);
+  const cameraY = interpolate(frame, [0, 108, 144], [5, 0, -5], clamp);
+  const sceneOpacity = interpolate(frame, [0, 20, 128, 144], [0, 1, 1, 0], clamp);
   const brandingProgress = spring({
-    frame: Math.max(0, frame - 34),
+    frame: Math.max(0, frame - 68),
     fps: video.fps,
     config: { damping: 18, stiffness: 130, mass: 0.7 },
   });
@@ -61,7 +61,7 @@ const MinecraftFlightComposition: React.FC = () => {
         <AbsoluteFill style={{ backgroundColor: '#111d31' }} />
 
         {stars.map(([left, top, size], index) => {
-          const starOpacity = interpolate(frame, [index, index + 10], [0, 0.85], clamp);
+          const starOpacity = interpolate(frame, [index * 2, index * 2 + 20], [0, 0.85], clamp);
           const driftX = interpolate(frame, [0, durationInFrames], [0, index % 2 === 0 ? -12 : 12], clamp);
           return (
             <div
@@ -93,7 +93,7 @@ const MinecraftFlightComposition: React.FC = () => {
         />
 
         {terrainBlocks.map((block) => {
-          const progress = interpolate(frame, [block.delay, block.delay + 18], [0, 1], clamp);
+          const progress = interpolate(frame, [block.delay * 2, block.delay * 2 + 36], [0, 1], clamp);
           const lift = interpolate(progress, [0, 1], [26, 0], clamp);
           return (
             <div
@@ -115,7 +115,7 @@ const MinecraftFlightComposition: React.FC = () => {
         })}
 
         {foregroundBlocks.map((block) => {
-          const progress = interpolate(frame, [block.delay, block.delay + 20], [0, 1], clamp);
+          const progress = interpolate(frame, [block.delay * 2, block.delay * 2 + 40], [0, 1], clamp);
           const lift = interpolate(progress, [0, 1], [42, 0], clamp);
           const drift = interpolate(frame, [0, durationInFrames], [0, block.x < 50 ? -24 : 24], clamp);
           return (

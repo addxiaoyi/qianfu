@@ -9,7 +9,7 @@ const source = readFileSync(
 
 describe('Minecraft flight composition', () => {
   it('defines the approved B2 timing and local visual layers', () => {
-    expect(source).toContain('durationInFrames = 72');
+    expect(source).toContain('durationInFrames = 144');
     expect(source).toContain('fps = 60');
     expect(source).toContain('useCurrentFrame');
     expect(source).toContain('interpolate');
