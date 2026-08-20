@@ -27,9 +27,12 @@ interface ServerCardProps {
 
 const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, nodesOnlineLabel }) => {
   const [copied, setCopied] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
   const tags = parseListField(server.tags).slice(0, 2);
   const name = getServerName(server);
   const image = getServerThumbnail(server);
+  const initials = name.trim().slice(0, 2) || 'MC';
+  const hue = Array.from(name).reduce((sum, char) => sum + char.charCodeAt(0), 0) % 360;
   const players = getServerPlayerLabel(server);
   const description = getServerSummary(server);
   const versions = getServerVersionLabels(server);
@@ -68,13 +71,20 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
     >
       <div className="relative flex h-full flex-col">
         <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] bg-zinc-50 shadow-xs transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2 group-hover:shadow-[0_24px_48px_rgba(0,0,0,0.08)]">
-            {image ? <img
+            {image && !imageFailed ? <img
               src={image}
               className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 ease-out grayscale group-hover:grayscale-0"
               alt={name}
               loading="lazy"
               decoding="async"
-            /> : <div className="flex h-full items-center justify-center text-[10px] font-semibold tracking-wide text-zinc-300">暂无封面</div>}
+              onError={() => setImageFailed(true)}
+            /> : <div
+              className="flex h-full items-center justify-center"
+              style={{ background: `radial-gradient(circle at 30% 20%, rgba(255,255,255,.45), transparent 40%), linear-gradient(135deg, hsl(${hue} 55% 72%), hsl(${(hue + 48) % 360} 55% 38%))` }}
+              aria-label={`${name}封面占位图`}
+            >
+              <span className="select-none text-6xl font-black tracking-[-0.08em] text-white/80 drop-shadow-sm">{initials}</span>
+            </div>}
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           <div className="absolute left-6 top-6 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
              <div className="px-4 py-1.5 bg-white/95 backdrop-blur-xl text-black text-[9px] font-semibold tracking-wide rounded-sm shadow-2xl">
