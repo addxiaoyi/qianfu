@@ -3,7 +3,7 @@
  * 防止 javascript: / data: 等危险协议的 URL 注入
  */
 
-const SAFE_PROTOCOLS = ['https:', 'http:', 'ftp:'];
+const SAFE_PROTOCOLS = ['https:', 'http:'];
 const MAX_URL_LENGTH = 2048;
 
 /**
