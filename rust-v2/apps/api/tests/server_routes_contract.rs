@@ -21,7 +21,11 @@ async fn publish_validation_returns_bedrock_preview_without_side_effects() {
         ))
         .unwrap();
 
-    let response = qianfu_api::router().oneshot(request).await.unwrap();
+    let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
+    let response = qianfu_api::router_with_storage(storage)
+        .oneshot(request)
+        .await
+        .unwrap();
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
         .unwrap();
@@ -237,6 +241,21 @@ async fn server_review_requires_an_authenticated_admin_session() {
         .await
         .unwrap();
     assert_eq!(response.status(), 401);
+}
+
+#[tokio::test]
+async fn discovery_rejects_unbounded_category_lists_before_storage_access() {
+    let categories = (0..11).map(|index| format!("c{index}")).collect::<Vec<_>>().join(",");
+    let request = Request::builder()
+        .uri(format!("/api/v2/servers?category={categories}"))
+        .body(Body::empty())
+        .unwrap();
+    let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
+    let response = qianfu_api::router_with_storage(storage)
+        .oneshot(request)
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 422);
 }
 
 #[tokio::test]
