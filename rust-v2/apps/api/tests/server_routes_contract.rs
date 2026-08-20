@@ -245,7 +245,10 @@ async fn server_review_requires_an_authenticated_admin_session() {
 
 #[tokio::test]
 async fn discovery_rejects_unbounded_category_lists_before_storage_access() {
-    let categories = (0..11).map(|index| format!("c{index}")).collect::<Vec<_>>().join(",");
+    let categories = (0..11)
+        .map(|index| format!("c{index}"))
+        .collect::<Vec<_>>()
+        .join(",");
     let request = Request::builder()
         .uri(format!("/api/v2/servers?category={categories}"))
         .body(Body::empty())
