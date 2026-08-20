@@ -37,3 +37,15 @@ fn task_insert_serializes_execution_payload() {
     assert_eq!(task.payload["type"], "dns_apply");
     assert_eq!(task.payload["zone"], "example.com");
 }
+
+#[test]
+fn server_discovery_columns_are_present_in_base_and_incremental_migrations() {
+    let base = include_str!("../migrations/0001_init.sql");
+    let incremental = include_str!("../migrations/0012_server_discovery_filters.sql");
+
+    for column in ["category", "version"] {
+        assert!(base.contains(&format!("    {column} TEXT")));
+        assert!(incremental.contains(&format!("ADD COLUMN IF NOT EXISTS {column} TEXT")));
+    }
+    assert!(incremental.contains("servers_discovery_filters_idx"));
+}
