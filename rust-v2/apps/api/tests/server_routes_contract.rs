@@ -13,6 +13,8 @@ async fn publish_validation_returns_bedrock_preview_without_side_effects() {
                 "name":"基岩生存",
                 "description":"基岩版公开服务器",
                 "edition":"bedrock",
+                "category":"生存",
+                "version":"1.21.1",
                 "host":"play.example.cn",
                 "qq_group":"2293237813"
             }"#,
@@ -29,7 +31,25 @@ async fn publish_validation_returns_bedrock_preview_without_side_effects() {
     assert_eq!(json["data"]["edition"], "bedrock");
     assert_eq!(json["data"]["port"], 19132);
     assert_eq!(json["data"]["description"], "基岩版公开服务器");
+    assert_eq!(json["data"]["category"], "生存");
+    assert_eq!(json["data"]["version"], "1.21.1");
     assert!(json["data"].get("owner_id").is_none());
+}
+
+#[tokio::test]
+async fn publish_validation_rejects_oversized_discovery_metadata() {
+    let request = Request::builder()
+        .method("POST")
+        .uri("/api/v2/servers/validate-publish")
+        .header("content-type", "application/json")
+        .body(Body::from(format!(
+            r#"{{"name":"测试","description":"测试服务器","edition":"java","category":"{}","host":"play.example.com"}}"#,
+            "x".repeat(65)
+        )))
+        .unwrap();
+
+    let response = qianfu_api::router().oneshot(request).await.unwrap();
+    assert_eq!(response.status(), 422);
 }
 
 #[tokio::test]
