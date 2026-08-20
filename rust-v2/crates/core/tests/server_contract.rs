@@ -71,3 +71,14 @@ fn publish_rejects_invalid_qq_and_cover_values() {
     draft.qq_group = None;
     assert_eq!(draft.normalize(), Err(ServerError::InvalidCoverUrl));
 }
+
+#[test]
+fn publish_rejects_oversized_discovery_fields_instead_of_dropping_them() {
+    let mut draft = input(ServerEdition::Java);
+    draft.category = Some("x".repeat(65));
+    assert_eq!(draft.normalize(), Err(ServerError::InvalidCategory));
+
+    draft.category = None;
+    draft.version = Some("x\0".to_owned());
+    assert_eq!(draft.normalize(), Err(ServerError::InvalidVersion));
+}
