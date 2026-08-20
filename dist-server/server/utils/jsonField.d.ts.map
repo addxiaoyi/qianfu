@@ -1,1 +1,0 @@
-{"version":3,"file":"jsonField.d.ts","sourceRoot":"","sources":["../../../server/utils/jsonField.ts"],"names":[],"mappings":"AAAA,wBAAgB,cAAc,CAAC,KAAK,EAAE,OAAO,GAAG,MAAM,EAAE,CAevD;AAED,wBAAgB,eAAe,CAAC,CAAC,SAAS,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,EAAE,KAAK,EAAE,OAAO,EAAE,QAAQ,EAAE,CAAC,GAAG,CAAC,CAejG;AAED,wBAAgB,kBAAkB,CAAC,KAAK,EAAE,OAAO,EAAE,QAAQ,SAAO,GAAG,MAAM,CAU1E"}

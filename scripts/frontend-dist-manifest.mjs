@@ -135,7 +135,13 @@ function hashFile(filePath) {
     const stream = createReadStream(filePath);
     stream.on('data', (chunk) => hash.update(chunk));
     stream.on('error', reject);
-    stream.on('end', () => resolvePromise(hash.digest('hex')));
+    stream.on('end', () => {
+      const digest = hash.digest();
+      resolvePromise({
+        sha256: digest.toString('hex'),
+        sri: `sha256-${digest.toString('base64')}`,
+      });
+    });
   });
 }
 
@@ -178,10 +184,11 @@ async function buildManifest(options) {
     const fileStat = await stat(file.absolutePath);
     const bytes = fileStat.size;
     totalBytes += bytes;
+    const integrity = await hashFile(file.absolutePath);
     entries.push({
       path: file.path,
       bytes,
-      sha256: await hashFile(file.absolutePath),
+      ...integrity,
     });
   }
 
@@ -193,15 +200,17 @@ async function buildManifest(options) {
     entrypointAssets = [];
   }
 
+  const distHash = hashManifestEntries(entries);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     app: 'qianfu-liandeng',
     generatedAt: new Date().toISOString(),
     distRoot: toPosixPath(relative(process.cwd(), options.distDir)) || '.',
     manifestPath: `/${MANIFEST_NAME}`,
     fileCount: entries.length,
     totalBytes,
-    distHash: hashManifestEntries(entries),
+    buildId: distHash,
+    distHash,
     entrypointAssets,
     files: entries,
   };

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
+import StatusWrapper from '@/components/ui/StatusWrapper';
 import { motion } from 'framer-motion';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 
 interface PortSecurityStats {
   riskScore?: number;
@@ -66,15 +66,15 @@ const AdminPortSecurity: React.FC = () => {
                 Port Security / 5555
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)] animate-pulse" />
-                <span className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-300 italic">Live Intrusion Monitor</span>
+                <div className="w-2 h-2 rounded-full bg-zinc-400" />
+                <span className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-400">已采集数据面板</span>
               </div>
             </div>
             <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.85] italic text-accent break-words">
               Firewall.
             </h1>
             <p className="text-zinc-400 font-bold text-lg max-w-xl italic border-l-2 border-zinc-100 pl-8">
-              端口 5555 安全态势总览，实时监控连接、拦截与加密状态，帮助管理团队快速识别异常访问。
+              端口 5555 安全态势总览，展示已采集的连接、拦截与传输状态，帮助管理团队识别异常访问。
             </p>
           </div>
 
@@ -123,8 +123,8 @@ const AdminPortSecurity: React.FC = () => {
           <section className="lg:col-span-8 space-y-8">
             <div className="flex items-center justify-between border-b border-zinc-50 pb-6">
               <h3 className="text-[12px] font-black font-mono uppercase tracking-[0.5em] text-zinc-300 flex items-center gap-4 italic">
-                <div className="w-3 h-3 rounded-full bg-accent animate-pulse shadow-accent/20" />
-                Recent Events
+                <div className="w-3 h-3 rounded-full bg-accent" />
+                最近采集事件
               </h3>
               <span className="text-[9px] font-black text-zinc-200 uppercase tracking-widest italic">PORT_5555_STREAM</span>
             </div>
@@ -132,7 +132,7 @@ const AdminPortSecurity: React.FC = () => {
             <div className="border border-zinc-50 rounded-[4rem] overflow-hidden bg-white divide-y divide-zinc-50 shadow-xs group hover:border-accent transition-all duration-1000">
               {recentEvents.length === 0 ? (
                 <div className="py-24 text-center text-zinc-300 italic font-black uppercase tracking-[0.4em] text-[11px]">
-                  No suspicious events detected.
+                  暂无已采集的端口安全事件
                 </div>
               ) : (
                 recentEvents.map((event: PortSecurityEvent) => (

@@ -116,7 +116,7 @@ def build_remote_script(args: argparse.Namespace, remote_bundle: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Password-based SSH runner for Qianfu production restore.")
-    parser.add_argument("--host", default=os.environ.get("QF_SSH_HOST", "103.236.92.10"))
+    parser.add_argument("--host", default=os.environ.get("QF_SSH_HOST", "121.196.161.249"))
     parser.add_argument("--port", type=int, default=int(os.environ.get("QF_SSH_PORT", "22")))
     parser.add_argument("--user", default=os.environ.get("QF_SSH_USER", "root"))
     parser.add_argument("--bundle", default=os.environ.get("QF_RESTORE_BUNDLE", ""))

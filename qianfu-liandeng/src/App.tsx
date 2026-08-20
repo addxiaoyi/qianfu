@@ -1,29 +1,33 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
 import { Suspense, useEffect, lazy, useState } from "react";
 import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from "./store/authStore";
 import { useUIStore, applyAccent } from "./store/uiStore";
-import MobileWrapperPage from "./components/mobile/MobileWrapperPage";
-
 // Components
-import Navbar from "./components/Navbar";
-import AdminLayout from "./components/admin/AdminLayout";
-import GlobalProgress from "./components/GlobalProgress";
-import AnnouncementBanner from "./components/AnnouncementBanner";
-import Footer from "./components/Footer";
-import GlobalSettingsPanel from "./components/GlobalSettingsPanel";
-import DynamicBranding from "./components/DynamicBranding";
-import SeoHead from "./components/SeoHead";
+import GlobalProgress from "@/components/ui/GlobalProgress";
+import ToastViewport from "@/components/ui/ToastViewport";
+import GlobalSettingsPanel from "@/components/form/GlobalSettingsPanel";
+import SeoHead from "@/components/ui/SeoHead";
+import RouteExperience from "@/components/layout/RouteExperience";
 import EntryAnimationGate from "@/components/entry/EntryAnimationGate";
 import { useBackendHealth } from "./hooks/useBackendHealth";
+import { PrefetchProvider } from "./hooks/useRoutePrefetch";
+
+// Route and shell boundaries
+const Navbar = lazy(() => import("@/components/layout/Navbar"));
+const Footer = lazy(() => import("@/components/layout/Footer"));
+const AdminLayout = lazy(() => import("@/components/layout/AdminLayout"));
+const MobileWrapperPage = lazy(() => import("@/components/mobile/MobileWrapperPage"));
+const AnnouncementBanner = lazy(() => import("@/components/business/AnnouncementBanner"));
+const DynamicBranding = lazy(() => import("@/components/business/DynamicBranding"));
 
 // Pages
 const Home = lazy(() => import("./pages/Home"));
 const ServerList = lazy(() => import("./pages/ServerList"));
+const News = lazy(() => import("./pages/News"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
-const Payment = lazy(() => import("./pages/Payment"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
@@ -31,9 +35,15 @@ const OAuthCallback = lazy(() => import("./pages/auth/OAuthCallback"));
 const ServerDetail = lazy(() => import("./pages/ServerDetail"));
 const ServerEditor = lazy(() => import("./pages/ServerEditor"));
 const TicketList = lazy(() => import("./pages/TicketList"));
+const TicketCreate = lazy(() => import("./pages/TicketCreate"));
 const TicketDetail = lazy(() => import("./pages/TicketDetail"));
+const MyServers = lazy(() => import("./pages/MyServers"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ProfileEdit = lazy(() => import("./pages/ProfileEdit"));
+const MyServerFavorites = lazy(() => import("./pages/MyServerFavorites"));
+const ProfileTags = lazy(() => import("./pages/ProfileTags"));
+const NewsSubmission = lazy(() => import("./pages/NewsSubmission"));
+const Settings = lazy(() => import("./pages/Settings"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
 const AdminReview = lazy(() => import("./pages/admin/AdminReview"));
@@ -43,42 +53,45 @@ const AdminLogs = lazy(() => import("./pages/admin/AdminLogs"));
 const AdminAuditStats = lazy(() => import("./pages/admin/AdminAuditStats"));
 const AdminModeration = lazy(() => import("./pages/admin/AdminModeration"));
 const AdminPortSecurity = lazy(() => import("./pages/admin/AdminPortSecurity"));
-const AdminPaymentConfig = lazy(() => import("./pages/admin/AdminPaymentConfig"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminMailConfig = lazy(() => import("./pages/admin/AdminMailConfig"));
-const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
-const PaymentFail = lazy(() => import("./pages/PaymentFail"));
+const AdminAiConfig = lazy(() => import("./pages/admin/AdminAiConfig"));
+const AdminAnnouncements = lazy(() => import("./pages/admin/AdminAnnouncements"));
+const AdminFreeDomains = lazy(() => import("./pages/admin/AdminFreeDomains"));
 const UserPublicProfile = lazy(() => import("./pages/UserPublicProfile"));
 const SearchPage = lazy(() => import("./pages/Search"));
 const OAuthSelection = lazy(() => import("./pages/auth/OAuthSelection"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const ComplianceCenter = lazy(() => import("./pages/ComplianceCenter"));
+const CompliancePolicy = lazy(() => import("./pages/CompliancePolicy"));
 const MobileHome = lazy(() => import("./pages/MobileHome"));
-const PromotionLanding = lazy(() => import("./pages/PromotionLanding"));
 const ResourceCenter = lazy(() => import("./pages/ResourceCenter"));
 const Team = lazy(() => import("./pages/Team"));
 const LevelRules = lazy(() => import("./pages/LevelRules"));
 const ServerPortal = lazy(() => import("./pages/ServerPortal"));
-const MarketplaceShop = lazy(() => import("./pages/MarketplaceShop"));
-const MarketplaceDetail = lazy(() => import("./pages/MarketplaceDetail"));
-const MarketplaceOrderDetail = lazy(() => import("./pages/MarketplaceOrderDetail"));
-const MarketplaceManage = lazy(() => import("./pages/MarketplaceManage"));
-const AdminPromoTasks = lazy(() => import("./pages/admin/AdminPromoTasks"));
-const AdminPromoClaims = lazy(() => import("./pages/admin/AdminPromoClaims"));
+const CommercialFeatureDisabled = lazy(() => import("./pages/CommercialFeatureDisabled"));
 
 // Mobile components
 const MobileTicketList = lazy(() => import("./components/mobile/MobileTicketList"));
 const MobileServerDetail = lazy(() => import("./components/mobile/MobileServerDetail"));
 const MobileUserCenter = lazy(() => import("./components/mobile/MobileUserCenter"));
-const MobileAdminDashboard = lazy(() => import("./components/mobile/MobileAdminDashboard"));
 const MobileEditor = lazy(() => import("./components/mobile/MobileEditor"));
 const MobileSettings = lazy(() => import("./components/mobile/MobileSettings"));
 const MobileNotifications = lazy(() => import("./components/mobile/MobileNotifications"));
 const MobileSearch = lazy(() => import("./components/mobile/MobileSearch"));
-const MobilePayment = lazy(() => import("./components/mobile/MobilePayment"));
 const MobileMessages = lazy(() => import("./components/mobile/MobileMessages"));
 const MobileTicketCreate = lazy(() => import("./components/mobile/MobileTicketCreate"));
 const MobileTicketDetail = lazy(() => import("./components/mobile/MobileTicketDetail"));
+
+const compliancePolicyRoutes = [
+  { path: '/acceptable-use', title: '可接受使用政策' },
+  { path: '/minor-protection', title: '未成年人保护规则' },
+  { path: '/cookies-and-services', title: 'Cookie 与第三方服务清单' },
+  { path: '/prohibited-items', title: '平台禁止内容清单' },
+  { path: '/ip-complaints', title: '知识产权投诉规则' },
+  { path: '/reporting-rules', title: '举报与内容处置规则' },
+] as const;
 
 const detectInitialMobileShell = () => {
   if (typeof window === 'undefined') {
@@ -113,15 +126,25 @@ function App() {
   } = useBackendHealth();
 
   const LoadingState = () => (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="flex flex-col items-center gap-4 text-center px-6">
-        <div className="w-8 h-8 border-2 border-zinc-200 border-t-black rounded-full animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-300">INITIALIZING_SESSION...</p>
-        {!backendReady && (
-          <p className="max-w-sm text-xs leading-6 text-zinc-400">
-            后端当前不可用，正在使用降级模式加载页面。
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md transition-all duration-500">
+      <div className="relative flex flex-col items-center gap-6 p-8 rounded-3xl bg-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white/60">
+        {/* Animated glowing rings */}
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 border-2 border-zinc-200 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+          <div className="absolute inset-0 border-2 border-transparent border-t-black border-r-black rounded-full animate-spin"></div>
+          <div className="absolute inset-2 bg-black rounded-full animate-pulse"></div>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-800 bg-clip-text">
+            INITIALIZING
           </p>
-        )}
+          {!backendReady && (
+            <p className="max-w-xs text-[11px] leading-5 text-zinc-500 text-center animate-pulse">
+              System is warming up or operating in degraded mode...
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -148,7 +171,21 @@ function App() {
     if (isLoading) return <LoadingState />;
     if (!backendReady && !isAuthenticated) return <Navigate to="/login" replace />;
     if (!isAuthenticated) return <Navigate to="/login" replace />;
-    if (user?.role !== 'admin') return <Navigate to="/" replace />;
+    const role = String(user?.role || '').toUpperCase();
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(role)) {
+      return (
+        <main className="mx-auto flex min-h-[60dvh] w-full max-w-2xl items-center justify-center px-6 py-16 text-center">
+          <div>
+            <p className="text-sm font-semibold text-accent">访问受限</p>
+            <h1 className="mt-3 text-3xl font-black text-zinc-950">你没有权限访问此页面</h1>
+            <p className="mt-4 text-sm leading-7 text-zinc-600">此功能仅对平台管理员开放。</p>
+            <Link to="/" className="mt-8 inline-flex rounded-xl bg-zinc-950 px-5 py-3 text-sm font-bold text-white transition-transform active:scale-[0.98]">
+              返回首页
+            </Link>
+          </div>
+        </main>
+      );
+    }
     return <>{children}</>;
   };
 
@@ -175,6 +212,11 @@ function App() {
     <>
       <Route path="/mobile" element={<MobileWrapperPage><MobileHome /></MobileWrapperPage>} />
       <Route path="/servers" element={<MobileWrapperPage title="发现"><MobileSearch /></MobileWrapperPage>} />
+      <Route path="/news" element={<MobileWrapperPage title="新闻"><News /></MobileWrapperPage>} />
+      <Route path="/resources" element={<MobileWrapperPage title="资源中心"><ResourceCenter /></MobileWrapperPage>} />
+      <Route path="/team" element={<MobileWrapperPage title="团队"><Team /></MobileWrapperPage>} />
+      <Route path="/user/:id" element={<MobileWrapperPage title="用户主页" hideNav><UserPublicProfile /></MobileWrapperPage>} />
+      <Route path="/portal/:uuid" element={<MobileWrapperPage title="服务器门户" hideNav><ServerPortal /></MobileWrapperPage>} />
       <Route path="/server/:id" element={<MobileWrapperPage title="服务器详情" hideNav><MobileServerDetail /></MobileWrapperPage>} />
       <Route path="/search" element={<MobileWrapperPage title="搜索"><MobileSearch /></MobileWrapperPage>} />
       <Route path="/login" element={<RedirectIfAuthed><Login /></RedirectIfAuthed>} />
@@ -183,29 +225,42 @@ function App() {
       <Route path="/forgot-password" element={<RedirectIfAuthed><ForgotPassword /></RedirectIfAuthed>} />
       <Route path="/reset-password" element={<RedirectIfAuthed><ResetPassword /></RedirectIfAuthed>} />
       <Route path="/oauth/callback/:provider" element={<OAuthCallback />} />
-      <Route path="/verify-code" element={<RequireAuth><VerifyEmail /></RequireAuth>} />
+      <Route path="/verify-code" element={<VerifyEmail />} />
       <Route path="/terms" element={<MobileWrapperPage title="服务条款"><Terms /></MobileWrapperPage>} />
-      <Route path="/privacy" element={<MobileWrapperPage title="隐私政策"><Privacy /></MobileWrapperPage>} />
+      <Route path="/privacy" element={<MobileWrapperPage title="隐私声明"><Privacy /></MobileWrapperPage>} />
+      <Route path="/compliance" element={<MobileWrapperPage title="合规与交易规则"><ComplianceCenter /></MobileWrapperPage>} />
+      {compliancePolicyRoutes.map(({ path, title }) => (
+        <Route key={path} path={path} element={<MobileWrapperPage title={title}><CompliancePolicy /></MobileWrapperPage>} />
+      ))}
       <Route path="/rules" element={<MobileWrapperPage title="规则"><LevelRules /></MobileWrapperPage>} />
-      <Route path="/payment/success" element={<PaymentSuccess />} />
-      <Route path="/payment/fail" element={<PaymentFail />} />
       <Route path="/messages" element={<RequireAuth><MobileWrapperPage title="消息"><MobileMessages /></MobileWrapperPage></RequireAuth>} />
       <Route path="/editor" element={<RequireEmailVerified><MobileWrapperPage title="发布" hideNav><MobileEditor /></MobileWrapperPage></RequireEmailVerified>} />
-      <Route path="/payment" element={<RequireAuth><MobileWrapperPage title="支付" hideNav><MobilePayment /></MobileWrapperPage></RequireAuth>} />
-      <Route path="/me" element={<RequireAuth><MobileWrapperPage title="我的"><MobileUserCenter /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me" element={<MobileWrapperPage title="我的"><MobileUserCenter /></MobileWrapperPage>} />
       <Route path="/me/edit" element={<RequireAuth><MobileWrapperPage title="编辑资料" hideNav><ProfileEdit /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/favorites" element={<RequireAuth><MobileWrapperPage title="我的收藏" hideNav><MyServerFavorites /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/tags" element={<RequireAuth><MobileWrapperPage title="兴趣标签" hideNav><ProfileTags /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/me/news-submit" element={<RequireEmailVerified><MobileWrapperPage title="投稿新闻" hideNav><NewsSubmission /></MobileWrapperPage></RequireEmailVerified>} />
       <Route path="/me/settings" element={<RequireAuth><MobileWrapperPage title="设置"><MobileSettings /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/settings" element={<RequireAuth><MobileWrapperPage title="设置"><MobileSettings /></MobileWrapperPage></RequireAuth>} />
       <Route path="/me/notifications" element={<RequireAuth><MobileWrapperPage title="通知"><MobileNotifications /></MobileWrapperPage></RequireAuth>} />
       <Route path="/tickets" element={<RequireAuth><MobileWrapperPage title="工单"><MobileTicketList /></MobileWrapperPage></RequireAuth>} />
       <Route path="/tickets/:id" element={<RequireAuth><MobileWrapperPage title="工单详情" hideNav><MobileTicketDetail /></MobileWrapperPage></RequireAuth>} />
       <Route path="/tickets/new" element={<RequireEmailVerified><MobileWrapperPage title="新建工单" hideNav><MobileTicketCreate /></MobileWrapperPage></RequireEmailVerified>} />
-      <Route path="/dashboard" element={<RequireAuth><MobileWrapperPage title="仪表盘"><MobileAdminDashboard /></MobileWrapperPage></RequireAuth>} />
-      <Route path="/dashboard/servers" element={<RequireAuth><Navigate to="/servers" replace /></RequireAuth>} />
+      <Route path="/dashboard" element={<MobileWrapperPage title="个人中心"><MobileUserCenter /></MobileWrapperPage>} />
+      <Route path="/dashboard/servers" element={<RequireAuth><MobileWrapperPage title="我的服务器"><MyServers /></MobileWrapperPage></RequireAuth>} />
+      <Route path="/dashboard/billing" element={<CommercialFeatureDisabled />} />
       <Route path="/dashboard/tickets" element={<RequireAuth><Navigate to="/tickets" replace /></RequireAuth>} />
       <Route path="/dashboard/tickets/new" element={<RequireEmailVerified><Navigate to="/tickets/new" replace /></RequireEmailVerified>} />
-      <Route path="/dashboard/tickets/:id" element={<RequireAuth><Navigate to="/tickets" replace /></RequireAuth>} />
-      <Route path="/dashboard/billing" element={<RequireAuth><Navigate to="/payment" replace /></RequireAuth>} />
+      <Route path="/dashboard/tickets/:id" element={<RequireAuth><MobileWrapperPage title="工单详情" hideNav><MobileTicketDetail /></MobileWrapperPage></RequireAuth>} />
       <Route path="/dashboard/profile" element={<RequireAuth><Navigate to="/me" replace /></RequireAuth>} />
+      <Route path="/payment/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/billing/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/marketplace/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/promotion/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/seller/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/shop/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/admin-qianfu/*" element={<CommercialFeatureDisabled />} />
+      <Route path="/admin-promo/*" element={<CommercialFeatureDisabled />} />
       <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-users" element={<RequireAdmin><AdminLayout><AdminUsers /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-review" element={<RequireAdmin><AdminLayout><AdminReview /></AdminLayout></RequireAdmin>} />
@@ -215,9 +270,11 @@ function App() {
       <Route path="/admin-audit-stats" element={<RequireAdmin><AdminLayout><AdminAuditStats /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-moderation" element={<RequireAdmin><AdminLayout><AdminModeration /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-port5555" element={<RequireAdmin><AdminLayout><AdminPortSecurity /></AdminLayout></RequireAdmin>} />
-      <Route path="/admin-qianfu" element={<RequireAdmin><AdminLayout><AdminPaymentConfig /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-settings" element={<RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-mail" element={<RequireAdmin><AdminLayout><AdminMailConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-ai" element={<RequireAdmin><AdminLayout><AdminAiConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-announcements" element={<RequireAdmin><AdminLayout><AdminAnnouncements /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-free-domains" element={<RequireAdmin><AdminLayout><AdminFreeDomains /></AdminLayout></RequireAdmin>} />
       <Route path="/" element={<Navigate to="/mobile" replace />} />
       <Route path="*" element={<Navigate to="/mobile" replace />} />
     </>
@@ -229,6 +286,7 @@ function App() {
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/servers" element={<ServerList />} />
+      <Route path="/news" element={<News />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/server/:id" element={<ServerDetail />} />
       <Route path="/user/:id" element={<UserPublicProfile />} />
@@ -240,38 +298,39 @@ function App() {
       <Route path="/oauth/callback/:provider" element={<OAuthCallback />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
-      <Route path="/promotion" element={<PromotionLanding />} />
-      <Route path="/promotion/tasks" element={<RequireAuth><AdminPromoTasks /></RequireAuth>} />
-      <Route path="/promotion/claims" element={<RequireAuth><AdminPromoClaims /></RequireAuth>} />
+      <Route path="/compliance" element={<ComplianceCenter />} />
+      {compliancePolicyRoutes.map(({ path }) => (
+        <Route key={path} path={path} element={<CompliancePolicy />} />
+      ))}
       <Route path="/rules" element={<LevelRules />} />
       <Route path="/resources" element={<ResourceCenter />} />
       <Route path="/team" element={<Team />} />
       <Route path="/portal/:uuid" element={<ServerPortal />} />
-      <Route path="/shop/:id" element={<MarketplaceShop />} />
-      <Route path="/marketplace/products/:id" element={<MarketplaceDetail />} />
-      <Route path="/marketplace/:id" element={<MarketplaceDetail />} />
-      <Route path="/marketplace/orders/:id" element={<MarketplaceOrderDetail />} />
-      <Route path="/seller/shop" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
-      <Route path="/seller/marketplace" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
-      <Route path="/marketplace/shop" element={<MarketplaceShop />} />
-      <Route path="/marketplace/manage" element={<RequireAuth><MarketplaceManage /></RequireAuth>} />
-      <Route path="/marketplace/orders/:id" element={<MarketplaceOrderDetail />} />
 
       {/* Auth Routes */}
-      <Route path="/verify-code" element={<RequireAuth><VerifyEmail /></RequireAuth>} />
+       <Route path="/verify-code" element={<VerifyEmail />} />
       
-      {/* Payment Results */}
-      <Route path="/payment/success" element={<PaymentSuccess />} />
-      <Route path="/payment/fail" element={<PaymentFail />} />
-
       {/* Locked/Gated Routes */}
-      <Route path="/payment" element={<Payment />} />
       <Route path="/editor" element={<RequireEmailVerified><ServerEditor /></RequireEmailVerified>} />
-      <Route path="/dashboard/*" element={<RequireAuth><Dashboard /></RequireAuth>} />
+      <Route path="/dashboard/*" element={<Dashboard />} />
       <Route path="/tickets" element={<RequireAuth><TicketList /></RequireAuth>} />
+      <Route path="/tickets/new" element={<RequireEmailVerified><TicketCreate /></RequireEmailVerified>} />
       <Route path="/tickets/:id" element={<RequireAuth><TicketDetail /></RequireAuth>} />
       <Route path="/me" element={<RequireAuth><Profile /></RequireAuth>} />
       <Route path="/me/edit" element={<RequireAuth><ProfileEdit /></RequireAuth>} />
+      <Route path="/me/favorites" element={<RequireAuth><MyServerFavorites /></RequireAuth>} />
+      <Route path="/me/tags" element={<RequireAuth><ProfileTags /></RequireAuth>} />
+      <Route path="/me/news-submit" element={<RequireEmailVerified><NewsSubmission /></RequireEmailVerified>} />
+      <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+       <Route path="/me/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+       <Route path="/payment/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/billing/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/marketplace/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/promotion/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/seller/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/shop/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/admin-qianfu/*" element={<CommercialFeatureDisabled />} />
+       <Route path="/admin-promo/*" element={<CommercialFeatureDisabled />} />
 
       {/* Admin Routes */}
       <Route path="/admin" element={<RequireAdmin><AdminLayout><AdminDashboard /></AdminLayout></RequireAdmin>} />
@@ -283,16 +342,16 @@ function App() {
       <Route path="/admin-audit-stats" element={<RequireAdmin><AdminLayout><AdminAuditStats /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-moderation" element={<RequireAdmin><AdminLayout><AdminModeration /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-port5555" element={<RequireAdmin><AdminLayout><AdminPortSecurity /></AdminLayout></RequireAdmin>} />
-      <Route path="/admin-qianfu" element={<RequireAdmin><AdminLayout><AdminPaymentConfig /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-settings" element={<RequireAdmin><AdminLayout><AdminSettings /></AdminLayout></RequireAdmin>} />
       <Route path="/admin-mail" element={<RequireAdmin><AdminLayout><AdminMailConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-ai" element={<RequireAdmin><AdminLayout><AdminAiConfig /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-announcements" element={<RequireAdmin><AdminLayout><AdminAnnouncements /></AdminLayout></RequireAdmin>} />
+      <Route path="/admin-free-domains" element={<RequireAdmin><AdminLayout><AdminFreeDomains /></AdminLayout></RequireAdmin>} />
 
       {/* Redirect mobile path on desktop */}
       <Route path="/mobile" element={<Navigate to="/" replace />} />
-      <Route path="/messages" element={<Navigate to="/tickets" replace />} />
-      <Route path="/me/settings" element={<Navigate to="/me/edit" replace />} />
-      <Route path="/me/notifications" element={<Navigate to="/" replace />} />
-      <Route path="/tickets/new" element={<Navigate to="/tickets" replace />} />
+      <Route path="/messages" element={<RequireAuth><div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6"><MobileMessages /></div></RequireAuth>} />
+      <Route path="/me/notifications" element={<RequireAuth><div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6"><MobileNotifications /></div></RequireAuth>} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" />} />
@@ -302,35 +361,55 @@ function App() {
   return (
     <EntryAnimationGate>
       <Router>
-      <SeoHead />
-      <DynamicBranding />
-      <GlobalProgress />
-      <AnnouncementBanner />
-      <GlobalSettingsPanel />
-      <div className="min-h-screen flex flex-col">
-        {/* Desktop-only header — hidden on mobile */}
-        <div className="hidden md:block">
-          <Navbar />
-        </div>
+        <PrefetchProvider>
+        <SeoHead />
+        <RouteExperience />
+        <Suspense fallback={null}>
+          <DynamicBranding />
+          <AnnouncementBanner />
+        </Suspense>
+        <GlobalProgress />
+        <ToastViewport />
+        <GlobalSettingsPanel />
+        <div className="min-h-screen flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only fixed left-4 top-4 z-[300] rounded-lg bg-black px-4 py-3 text-sm font-bold text-white focus:not-sr-only"
+        >
+          跳到主要内容
+        </a>
+        {/* Desktop-only header — do not fetch the desktop shell for mobile visitors. */}
+        {!isMobileShell ? (
+          <div className="hidden md:block">
+            <Suspense fallback={<div className="h-16 border-b border-zinc-100 bg-white" aria-hidden="true" />}>
+              <Navbar />
+            </Suspense>
+          </div>
+        ) : null}
 
         {/* Page content */}
-        <div className="flex-grow">
+        <main id="main-content" tabIndex={-1} className="flex-grow">
           <Suspense fallback={<LoadingState />}>
             <Routes>
               {isMobileShell ? mobileRoutes : desktopRoutes}
             </Routes>
           </Suspense>
-        </div>
+        </main>
 
-        {/* Desktop-only footer — hidden on mobile */}
-        <div className="hidden md:block">
-          <Footer
-            backendReady={backendReady}
-            backendHealthLoading={backendHealthLoading}
-            backendHealthError={backendHealthError}
-          />
+        {/* Desktop-only footer — do not fetch the desktop shell for mobile visitors. */}
+        {!isMobileShell ? (
+          <div className="hidden md:block">
+            <Suspense fallback={null}>
+              <Footer
+                backendReady={backendReady}
+                backendHealthLoading={backendHealthLoading}
+                backendHealthError={backendHealthError}
+              />
+            </Suspense>
+          </div>
+        ) : null}
         </div>
-      </div>
+        </PrefetchProvider>
       </Router>
     </EntryAnimationGate>
   );

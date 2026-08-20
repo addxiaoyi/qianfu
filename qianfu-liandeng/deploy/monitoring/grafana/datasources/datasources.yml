@@ -1,0 +1,30 @@
+# ============================================
+# Grafana Datasource Provisioning
+# ============================================
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      timeInterval: 15s
+    # 额外标签
+    jsonData:
+      httpMethod: POST
+      timeInterval: 15s
+    # 注意: 如需认证，取消下面注释
+    # secureJsonData:
+    #   httpHeaderValue1: Bearer ${PROMETHEUS_API_TOKEN:}
+
+  - name: Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    editable: false
+    jsonData:
+      httpMethod: GET

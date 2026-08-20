@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { request } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import AdminActionButton from '@/components/AdminActionButton';
-import TicketCard from '@/components/TicketCard';
-import { Plus } from 'lucide-react';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import AdminActionButton from '@/components/ui/AdminActionButton';
+import TicketCard from '@/components/business/TicketCard';
+import { FileWarning, Plus, ReceiptText, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useT } from '@/store/uiStore';
 import { formatDateTime } from '@/utils/serverView';
@@ -45,8 +45,38 @@ const TicketList: React.FC = () => {
     }
   };
 
+  const emptyAction = (
+    <div className="w-full max-w-3xl space-y-7">
+      <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+        {[
+          { icon: ShieldCheck, title: '审核申诉', text: '服务器或资源审核结果需要补充说明。' },
+          { icon: ReceiptText, title: '账户与登录', text: '验证码、登录或账户资料出现异常。' },
+          { icon: FileWarning, title: '举报与故障', text: '反馈违规内容、页面错误或安全问题。' },
+        ].map((item) => (
+          <div key={item.title} className="rounded-2xl border border-zinc-200 bg-white p-4">
+            <item.icon className="h-5 w-5 text-zinc-700" aria-hidden="true" />
+            <div className="mt-3 text-sm font-bold text-zinc-900">{item.title}</div>
+            <p className="mt-1 text-xs font-medium leading-5 text-zinc-500">{item.text}</p>
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => navigate('/tickets/new')} className="inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+        <Plus className="h-4 w-4" aria-hidden="true" /> 新建工单
+      </button>
+      <p className="text-xs font-medium text-zinc-500">提交后可以在这里查看处理状态、管理回复和最终结果。</p>
+    </div>
+  );
+
   return (
-    <StatusWrapper isLoading={isLoading} isError={isError} isEmpty={!isLoading && !isError && ticketCards.length === 0} onRetry={() => refetch()}>
+    <StatusWrapper
+      isLoading={isLoading}
+      isError={isError}
+      isEmpty={!isLoading && !isError && ticketCards.length === 0}
+      onRetry={() => refetch()}
+      emptyTitle="还没有工单记录"
+      emptyDescription="需要审核申诉、账户支持或违规举报时，可以在这里发起并持续跟踪。"
+      emptyAction={emptyAction}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24 bg-white selection:bg-accent selection:text-white">
         <AdminPageHeader
           badge="TICKET_QUEUE"
@@ -54,7 +84,7 @@ const TicketList: React.FC = () => {
           description={t('ticket.list.desc')}
           statusLabel={`OPEN ${openTickets} / RESOLVED ${resolvedTickets}`}
           rightSlot={(
-            <AdminActionButton className="w-full sm:w-auto px-6 sm:px-8 py-4 text-[11px] uppercase tracking-[0.28em] flex items-center justify-center gap-3" onClick={() => navigate('/dashboard/tickets/new')}>
+            <AdminActionButton className="w-full sm:w-auto px-6 sm:px-8 py-4 text-[11px] uppercase tracking-[0.28em] flex items-center justify-center gap-3" onClick={() => navigate('/tickets/new')}>
               <Plus className="w-5 h-5" /> {t('ticket.list.create')}
             </AdminActionButton>
           )}
@@ -68,7 +98,7 @@ const TicketList: React.FC = () => {
               subject={ticket.title}
               status={ticket.status}
               updatedAt={formatDateTime(ticket.updated_at)}
-              href={`/dashboard/tickets/${ticket.id}`}
+              href={`/tickets/${ticket.id}`}
               getStatusIcon={getStatusIcon}
             />
           ))}

@@ -1,0 +1,17 @@
+{{ define "wechat.default.message" }}
+{{ if eq .Status "firing" }}
+【{{ .Status | toUpper }}】{{ range .Alerts }}{{ .Labels.severity | upper }}告警{{ end }}
+{{ else }}
+【{{ .Status | toUpper }}】告警恢复
+{{ end }}
+
+告警名称: {{ .GroupLabels.alertname }}
+{{ range .Alerts }}
+严重程度: {{ .Labels.severity }}
+实例: {{ .Labels.instance }}
+描述: {{ .Annotations.description }}
+{{ if .Annotations.runbook_url }}
+处理手册: {{ .Annotations.runbook_url }}
+{{ end }}
+{{ end }}
+{{ end }}

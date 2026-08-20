@@ -1,0 +1,135 @@
+- generic [ref=f8e2]:
+  - status [ref=f8e3]: 管理控制台 - 千服联灯
+  - status [ref=f8e20]:
+    - generic [ref=f8e21]:
+      - generic [ref=f8e26]:
+        - generic [ref=f8e27]: 系统公告：
+        - text: 平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。
+      - button "关闭当前公告" [ref=f8e28]
+  - button "打开 Gemini 3.5 驱动助手" [ref=f8e32]
+  - generic [ref=f8e7]:
+    - link "跳到主要内容" [ref=f8e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f8e35]:
+      - generic [ref=f8e36]:
+        - generic [ref=f8e37]:
+          - link "千服联灯 QianFu" [ref=f8e38] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f8e61]:
+              - generic [ref=f8e62]: 千服联灯
+              - generic [ref=f8e63]: QianFu
+          - generic [ref=f8e64]:
+            - link "首页" [ref=f8e65] [cursor=pointer]:
+              - /url: /
+            - link "找服" [ref=f8e72] [cursor=pointer]:
+              - /url: /servers
+            - link "新闻" [ref=f8e77] [cursor=pointer]:
+              - /url: /news
+            - link "资源" [ref=f8e82] [cursor=pointer]:
+              - /url: /resources
+            - link "团队" [ref=f8e88] [cursor=pointer]:
+              - /url: /team
+        - generic [ref=f8e93]:
+          - link "访客预览" [ref=f8e94] [cursor=pointer]:
+            - /url: /dashboard
+          - link "登录" [ref=f8e98] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=f8e99] [cursor=pointer]:
+            - /url: /register
+    - main [active] [ref=f8e11]:
+      - main [ref=f8e100]:
+        - region [ref=f8e101]:
+          - paragraph [ref=f8e102]: 当前站点模式
+          - heading "该功能暂未开放" [level=1] [ref=f8e103]
+          - paragraph [ref=f8e104]: 本站目前仅提供服务器展示、发布、账号管理、新闻和工单服务，不提供支付、钱包、商城或推广交易功能。
+          - link "返回首页" [ref=f8e105] [cursor=pointer]:
+            - /url: /
+    - contentinfo [ref=f8e107]:
+      - generic [ref=f8e108]:
+        - generic [ref=f8e109]:
+          - generic [ref=f8e110]:
+            - link "千服联灯" [ref=f8e111] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f8e133]: 面向中文 Minecraft 玩家和服主的服务器发现、免费发布、内容审核与工单支持平台。平台不提供支付、充值、钱包、商城交易或推广返利服务。
+            - generic [ref=f8e134]:
+              - link "前往工单支持" [ref=f8e135] [cursor=pointer]:
+                - /url: /tickets
+              - link "发送邮件联系平台" [ref=f8e138] [cursor=pointer]:
+                - /url: mailto:support@0st.top
+          - generic [ref=f8e142]:
+            - heading "平台" [level=4] [ref=f8e143]
+            - list [ref=f8e144]:
+              - listitem [ref=f8e145]:
+                - link "浏览服务器" [ref=f8e146] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=f8e147]:
+                - link "高级搜索" [ref=f8e148] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=f8e149]:
+                - link "资源中心" [ref=f8e150] [cursor=pointer]:
+                  - /url: /resources
+              - listitem [ref=f8e151]:
+                - link "开发团队" [ref=f8e152] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=f8e153]:
+                - link "等级规则" [ref=f8e154] [cursor=pointer]:
+                  - /url: /rules
+          - generic [ref=f8e155]:
+            - heading "法律与隐私" [level=4] [ref=f8e156]
+            - list [ref=f8e157]:
+              - listitem [ref=f8e158]:
+                - link "服务条款" [ref=f8e159] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=f8e160]:
+                - link "隐私声明" [ref=f8e161] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f8e162]:
+                - link "可接受使用政策" [ref=f8e163] [cursor=pointer]:
+                  - /url: /acceptable-use
+              - listitem [ref=f8e164]:
+                - link "未成年人保护" [ref=f8e165] [cursor=pointer]:
+                  - /url: /minor-protection
+              - listitem [ref=f8e166]:
+                - link "Cookie 与第三方服务" [ref=f8e167] [cursor=pointer]:
+                  - /url: /cookies-and-services
+              - listitem [ref=f8e168]:
+                - link "全部合规规则" [ref=f8e169] [cursor=pointer]:
+                  - /url: /compliance
+          - generic [ref=f8e170]:
+            - heading "平台规则" [level=4] [ref=f8e171]
+            - list [ref=f8e172]:
+              - listitem [ref=f8e173]:
+                - link "等级与签到规则" [ref=f8e174] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=f8e175]:
+                - link "平台禁售清单" [ref=f8e176] [cursor=pointer]:
+                  - /url: /prohibited-items
+              - listitem [ref=f8e177]:
+                - link "举报与内容处置" [ref=f8e178] [cursor=pointer]:
+                  - /url: /reporting-rules
+              - listitem [ref=f8e179]:
+                - link "知识产权投诉" [ref=f8e180] [cursor=pointer]:
+                  - /url: /ip-complaints
+          - generic [ref=f8e181]:
+            - heading "权利与支持" [level=4] [ref=f8e182]
+            - list [ref=f8e183]:
+              - listitem [ref=f8e184]:
+                - link "知识产权投诉" [ref=f8e185] [cursor=pointer]:
+                  - /url: /ip-complaints
+              - listitem [ref=f8e186]:
+                - link "举报与内容处置" [ref=f8e187] [cursor=pointer]:
+                  - /url: /reporting-rules
+              - listitem [ref=f8e188]:
+                - link "工单支持" [ref=f8e189] [cursor=pointer]:
+                  - /url: /tickets
+              - listitem [ref=f8e190]:
+                - link "support@0st.top" [ref=f8e191] [cursor=pointer]:
+                  - /url: mailto:support@0st.top
+        - generic [ref=f8e192]:
+          - generic [ref=f8e193]:
+            - generic [ref=f8e194]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=f8e195] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=f8e196]:
+            - generic [ref=f8e197]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=f8e200]

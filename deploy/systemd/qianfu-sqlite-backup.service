@@ -1,0 +1,19 @@
+[Unit]
+Description=Qianfu local SQLite consistent backup
+ConditionPathExists=/www/wwwroot/qianfu-app/prisma/dev.db
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment=QIANFU_LOCAL_DB_PATH=/www/wwwroot/qianfu-app/prisma/dev.db
+ExecStart=/usr/local/sbin/qianfu-sqlite-backup
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+UMask=0077
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/www/wwwroot/qianfu-app/prisma /www/backup/qianfu/sqlite /var/lib/qianfu-monitor

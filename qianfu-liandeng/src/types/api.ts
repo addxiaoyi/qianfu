@@ -3,7 +3,10 @@ export interface User {
   username: string;
   email: string;
   email_verified: boolean;
-  role: 'user' | 'admin' | 'operator' | 'moderator' | 'normal';
+  avatar_url?: string | null;
+  display_name?: string | null;
+  bio_html?: string | null;
+  role: 'user' | 'admin' | 'super_admin' | 'operator' | 'moderator' | 'normal';
   balance?: string;
   joinDate?: string;
   level?: number;
@@ -12,6 +15,32 @@ export interface User {
   xp_for_next_level?: number;
   level_progress?: number;
   last_checkin_at?: string;
+}
+
+export type LevelRuleKind = 'xp' | 'unlock' | 'badge' | 'permission';
+
+export interface LevelRule {
+  id: string;
+  kind: LevelRuleKind;
+  title: string;
+  description: string;
+  level?: number;
+  xp?: number;
+}
+
+export interface LevelProgress {
+  currentLevel: number;
+  totalXp: number;
+  xpIntoLevel: number;
+  xpForNextLevel: number;
+  progress: number;
+  isMax: boolean;
+}
+
+export interface LevelRulesResponse {
+  rules: LevelRule[];
+  progress?: LevelProgress | null;
+  nextUnlock?: LevelRule | null;
 }
 
 export interface Order {
@@ -43,3 +72,36 @@ export interface ApiError {
   requestId: string;
   details: any[];
 }
+
+export interface CheckinStatus {
+  checkedInToday: boolean;
+  streakDays: number;
+  rewardXp: number;
+  recentCheckinDates?: string[];
+}
+
+export interface CheckinResult {
+  ok?: boolean;
+  alreadyCheckedIn?: boolean;
+  gainedXp?: number;
+  totalXp?: number;
+  level?: number;
+  xp_into_level?: number;
+  xp_for_next_level?: number;
+  level_progress?: number;
+  checkinAt?: string | null;
+}
+
+export interface FavoriteServer {
+  id: string | number;
+  name: string;
+  ip: string;
+  version: string | null;
+  category?: string | null;
+  image?: string | null;
+  players: number;
+  online: boolean;
+  favoritedAt: string;
+}
+
+export type FavoriteServersResponse = FavoriteServer[];

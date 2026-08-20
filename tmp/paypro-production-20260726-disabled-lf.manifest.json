@@ -1,0 +1,20 @@
+{
+  "archive": "paypro-production-20260726-disabled-lf.tar.gz",
+  "archive_bytes": 51520189,
+  "archive_sha256": "cb6518cf64993d55adffa4f0418462b6e180edfb12cc2a487d99757a8f8bb471",
+  "member_count": 24,
+  "jar_sha256": "494fbaf8a8116149de66639ccd4ca84f42234f394b7e3d8bd180ee39aa336719",
+  "schema_sha256": "872b56bbf62f84a37a61bfe505c03b50c8043a3d7995b0ee1d8010dd3cfc5171",
+  "line_endings": {
+    "paypro/.env": "LF",
+    "paypro/artifacts/paypro.jar.sha256": "LF",
+    "paypro/mysql-init/001-schema.sql.sha256": "LF"
+  },
+  "payments": {
+    "alipay_enabled": false,
+    "wechat_enabled": false,
+    "bundled_qr_codes_allowed": false
+  },
+  "qr_asset_count": 0,
+  "source_fix": "prepare.ps1 writes SHA-256 manifests with explicit LF"
+}

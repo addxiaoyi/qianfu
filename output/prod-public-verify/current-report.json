@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-08-13T06:20:35.407Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"healthy\",\"ready\":true,\"timestamp\":\"2026-08-13T06:20:32.501Z\",\"version\":\"1.0.0\",\"uptime\":{\"seconds\":8854,\"human\":\"2h 27m 34s\"},\"services\":{\"database\":{\"status\":\"healthy\",\"latency\":\"1ms\"},\"lo...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"ready\",\"ready\":true,\"cache\":\"connected\",\"metrics\":\"ready\",\"smtp\":\"ready\",\"timestamp\":\"2026-08-13T06:20:32.505Z\",\"checks\":{\"database\":\"ok\",\"cache\":\"ok\",\"metrics\":\"ok\",\"smtp\":\"ok\"}}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/js/index-BdBWX3zV.js",
+    "localBundle": "/assets/js/index-BdBWX3zV.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "true",
+    "manifestError": "",
+    "manifestDistHash": "23e9c8476329033faec2ffb27d1b778467c0f7873daf65b01d6c0bcb2771aa0d",
+    "diagnosis": "ok"
+  },
+  "pay": {
+    "root": {
+      "url": "",
+      "status": null,
+      "ok": true,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": ""
+    },
+    "health": {
+      "url": "",
+      "status": null,
+      "ok": true,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": ""
+    },
+    "apiHealth": {
+      "url": "",
+      "status": null,
+      "ok": true,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": ""
+    },
+    "probeOk": true,
+    "probeError": "",
+    "tlsStatus": "",
+    "certCn": "",
+    "certSan": "",
+    "htmlStatus": "",
+    "looksLikeMainSite": "",
+    "rootMarkerMatch": "",
+    "personalFilingDisabled": "",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "not_configured"
+  },
+  "findings": [],
+  "recommendedActions": [
+    "无需额外动作：当前公网探针未发现主站 API、前端 freshness 或支付域 TLS/vhost 问题。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\current-report.json"
+}

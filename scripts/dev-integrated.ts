@@ -67,7 +67,9 @@ async function killProcessOnPort(port: number): Promise<void> {
           try {
             process.kill(parseInt(pid), 'SIGKILL');
             log(`Terminated process on port ${port} (PID: ${pid})`, 'warn');
-          } catch {}
+          } catch (e) {
+      console.error('[AutoFix] Unhandled exception:', e);
+    }
         }
       }
     }
@@ -207,7 +209,9 @@ async function cleanup() {
               process.kill(service.process.pid, 0);
               service.process.kill('SIGKILL');
             }
-          } catch {}
+          } catch (e) {
+      console.error('[AutoFix] Unhandled exception:', e);
+    }
         }
         
         log(`${name} stopped`, 'success');

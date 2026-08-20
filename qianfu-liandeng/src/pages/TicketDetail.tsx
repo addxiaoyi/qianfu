@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Send, User, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { request } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
+import StatusWrapper from '@/components/ui/StatusWrapper';
 import { toast } from '@/hooks/use-toast';
 import { formatDateTime } from '@/utils/serverView';
 import { useAuthStore } from '@/store/authStore';
@@ -56,6 +56,7 @@ const TicketDetail: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['tickets'] });
       toast({ title: '回复已发送' });
     },
+    onError: () => toast({ variant: 'destructive', title: '回复失败', description: '回复未能发送，内容已为您保留。' }),
   });
   const statusMutation = useMutation({
     mutationFn: (status: string) =>
@@ -69,6 +70,7 @@ const TicketDetail: React.FC = () => {
       void queryClient.invalidateQueries({ queryKey: ['tickets'] });
       toast({ title: '工单状态已更新' });
     },
+    onError: () => toast({ variant: 'destructive', title: '更新失败', description: '工单状态未能更新，请稍后重试。' }),
   });
 
   const messages = useMemo(() => ticket?.messages ?? [], [ticket?.messages]);
@@ -140,6 +142,7 @@ const TicketDetail: React.FC = () => {
         <div className="p-4 bg-card border border-border rounded-3xl shadow-xl">
           <div className="relative">
             <textarea
+              aria-label="工单回复内容"
               value={reply}
               onChange={(event) => setReply(event.target.value)}
               className="w-full bg-transparent p-4 pr-16 min-h-[100px] outline-hidden resize-none"
@@ -148,6 +151,7 @@ const TicketDetail: React.FC = () => {
             <button type="button"
               onClick={() => reply.trim() && replyMutation.mutate(reply.trim())}
               disabled={!reply.trim() || replyMutation.isPending}
+              aria-label="发送工单回复"
               className="absolute bottom-4 right-4 w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-lg shadow-brand/20"
             >
               <Send className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import net from 'node:net';
+import crypto from 'node:crypto';
 
 type CheckResult = {
   name: string;
@@ -25,16 +26,41 @@ const DEFAULT_BASE =
   `http://${DEFAULT_HOST}:${DEFAULT_LOCAL_PORT}`;
 const STARTUP_TIMEOUT_MS = Number(process.env.SMOKE_STARTUP_TIMEOUT_MS || 60000);
 const POLL_INTERVAL_MS = 1500;
+const PROCESS_EXIT_TIMEOUT_MS = Number(process.env.SMOKE_PROCESS_EXIT_TIMEOUT_MS || 5000);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const normalizeBase = (base: string) => base.replace(/\/+$/, '');
 const buildBaseFromPort = (port: number) => `http://${DEFAULT_HOST}:${port}`;
-const waitForExit = (cp: ReturnType<typeof spawn>) =>
-  new Promise<void>((resolve) => {
-    cp.once('exit', () => resolve());
+const buildProbeHeaders = (base: string): Record<string, string> => ({
+  accept: 'application/json',
+  'sec-fetch-site': 'same-origin',
+  'sec-fetch-mode': 'cors',
+  referer: `${normalizeBase(base)}/`,
+  'user-agent': 'Mozilla/5.0 QianfuSmoke/1.0',
+});
+const waitForExit = (
+  cp: ReturnType<typeof spawn>,
+  timeoutMs = PROCESS_EXIT_TIMEOUT_MS,
+): Promise<boolean> => {
+  if (cp.exitCode !== null || cp.signalCode !== null) return Promise.resolve(true);
+  return new Promise<boolean>((resolve) => {
+    let settled = false;
+    let timer: NodeJS.Timeout;
+    const finish = (exited: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      cp.off('exit', onExit);
+      resolve(exited);
+    };
+    const onExit = () => finish(true);
+    timer = setTimeout(() => finish(false), timeoutMs);
+    timer.unref();
+    cp.once('exit', onExit);
   });
+};
 const terminateProcessTree = async (cp: ReturnType<typeof spawn>): Promise<void> => {
-  if (cp.killed) return;
+  if (cp.exitCode !== null || cp.signalCode !== null) return;
   if (process.platform === 'win32') {
     try {
       const killer = spawn('taskkill', ['/pid', String(cp.pid), '/t', '/f'], {
@@ -42,15 +68,18 @@ const terminateProcessTree = async (cp: ReturnType<typeof spawn>): Promise<void>
         windowsHide: true,
       });
       await waitForExit(killer);
-      await waitForExit(cp);
-      return;
+      if (await waitForExit(cp)) return;
     } catch {
       // fallback to default kill below
     }
   }
 
-  cp.kill('SIGTERM');
-  await waitForExit(cp);
+  if (cp.exitCode === null && cp.signalCode === null) {
+    cp.kill('SIGTERM');
+    if (!(await waitForExit(cp))) {
+      console.warn('[smoke:api:local] Managed server did not exit before the cleanup timeout.');
+    }
+  }
 };
 
 const isPortAvailable = (port: number, host = DEFAULT_HOST): Promise<boolean> =>
@@ -108,7 +137,9 @@ const buildCandidateBases = (primaryBase: string): string[] => {
 const probeHealth = async (base: string): Promise<boolean> => {
   for (const p of HEALTH_PATHS) {
     try {
-      const res = await fetch(`${normalizeBase(base)}${p}`);
+      const res = await fetch(`${normalizeBase(base)}${p}`, {
+        headers: buildProbeHeaders(base),
+      });
       if (!res.ok) continue;
       const contentType = res.headers.get('content-type') || '';
       if (contentType.includes('application/json')) return true;
@@ -131,7 +162,9 @@ async function checkEndpoint(
     for (const path of paths) {
       const url = `${base}${path}`;
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, {
+          headers: buildProbeHeaders(base),
+        });
         if (!allowedStatusCodes.includes(res.status)) {
           attempts.push({ url, detail: `HTTP ${res.status}` });
           continue;
@@ -204,6 +237,10 @@ const run = async (): Promise<number> => {
           ...process.env,
           PORT: String(localPort),
           API_PUBLIC_URL: base,
+          // The smoke server runs with production checks enabled. Keep its
+          // signing keys ephemeral and isolated from real wallet data.
+          WALLET_SECRET: process.env.WALLET_SECRET || crypto.randomBytes(32).toString('hex'),
+          MODERATION_ENCRYPTION_KEY: process.env.MODERATION_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex'),
         };
 
     const server = spawn(process.execPath, ['node_modules/tsx/dist/cli.mjs', 'server/index.ts'], {
@@ -213,9 +250,12 @@ const run = async (): Promise<number> => {
     });
 
     let serverExited = false;
+    let cleanupRequested = false;
     server.on('exit', (code, signal) => {
       serverExited = true;
-      console.error(`[smoke:api:local] Server process exited (code=${code ?? 'null'}, signal=${signal ?? 'null'}).`);
+      if (!cleanupRequested) {
+        console.error(`[smoke:api:local] Server process exited (code=${code ?? 'null'}, signal=${signal ?? 'null'}).`);
+      }
     });
     server.on('error', (err) => {
       console.error('[smoke:api:local] Failed to start local API server:', err);
@@ -231,6 +271,7 @@ const run = async (): Promise<number> => {
       if (await probeHealth(base)) {
         console.log('[smoke:api:local] API became healthy, running smoke checks.');
         const failed = await runSmokeChecksAgainstBase(base);
+        cleanupRequested = true;
         await terminateProcessTree(server);
         return failed > 0 ? 1 : 0;
       }
@@ -238,6 +279,7 @@ const run = async (): Promise<number> => {
       await sleep(POLL_INTERVAL_MS);
     }
 
+    cleanupRequested = true;
     await terminateProcessTree(server);
     console.error(`[smoke:api:local] API did not become healthy within ${STARTUP_TIMEOUT_MS}ms at ${base}.`);
     return 1;

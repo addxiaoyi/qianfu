@@ -8,8 +8,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ChevronRight, Mail, KeyRound, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { useT, type TranslationKey } from '@/store/uiStore';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const STORIES: { id: string; badge: string; titleKey: TranslationKey; descKey: TranslationKey }[] = [
   {
@@ -109,7 +110,7 @@ const ForgotPassword: React.FC = () => {
     }
     setSendingCode(true);
     try {
-      await api.post('/auth/forgot-password', { email: values.email }, { skipCsrf: true });
+      await api.post(isRustV2Enabled() ? rustV2Path('/auth/password-reset/request') : '/auth/forgot-password', { email: values.email }, isRustV2Enabled() ? rustV2RequestOptions : undefined);
       setVerifiedEmail(values.email);
       setStep('verify');
       setCountdown(60);
@@ -145,7 +146,7 @@ const ForgotPassword: React.FC = () => {
     }
     setLoading(true);
     try {
-      await api.post('/auth/reset-password', { email: verifiedEmail, code: resetCode, password: values.password }, { skipCsrf: true });
+      await api.post(isRustV2Enabled() ? rustV2Path('/auth/password-reset/complete') : '/auth/reset-password', { email: verifiedEmail, ...(isRustV2Enabled() ? { token: resetCode } : { code: resetCode }), password: values.password }, isRustV2Enabled() ? rustV2RequestOptions : undefined);
       toast({ title: 'Password reset', description: 'Your password has been reset successfully.' });
       navigate('/login');
     } catch (err: any) {
@@ -218,6 +219,8 @@ const ForgotPassword: React.FC = () => {
                   type="button"
                   key={i}
                   onClick={() => setActiveStory(i)}
+                  aria-label={`查看找回密码提示 ${i + 1}`}
+                  aria-current={i === activeStory ? 'true' : undefined}
                   className={`h-1.5 rounded-full transition-all duration-1000 ${
                     i === activeStory ? 'w-24 bg-accent shadow-accent' : 'w-6 bg-zinc-900 hover:bg-zinc-800'
                   }`}
@@ -324,12 +327,13 @@ const ForgotPassword: React.FC = () => {
               >
                 <div className="space-y-8">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic">
+                    <label htmlFor="forgot-email" className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-500 italic">
                       {t('auth.form.email.label')}
                     </label>
                     <div className="relative group">
                       <Mail className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
                       <input
+                        id="forgot-email"
                         {...regIdentify('email')}
                         autoFocus
                         className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent rounded-[2.5rem] focus:bg-white focus:border-accent transition-all duration-500 outline-hidden font-black text-lg italic tracking-tight shadow-xs"
@@ -385,10 +389,11 @@ const ForgotPassword: React.FC = () => {
                     {'验证码已发送至 ' + verifiedEmail}
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic">
+                    <label htmlFor="forgot-code" className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-600 italic">
                       {t('auth.form.code.label')}
                     </label>
                     <input
+                      id="forgot-code"
                       {...regVerify('code')}
                       autoFocus
                       maxLength={6}
@@ -460,12 +465,13 @@ const ForgotPassword: React.FC = () => {
               >
                 <div className="space-y-8">
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic">
+                    <label htmlFor="forgot-password" className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-600 italic">
                       {t('auth.form.password.label')}
                     </label>
                     <div className="relative group">
                       <KeyRound className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
                       <input
+                        id="forgot-password"
                         {...regReset('password')}
                         type="password"
                         autoFocus
@@ -487,12 +493,13 @@ const ForgotPassword: React.FC = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic">
+                    <label htmlFor="forgot-confirm-password" className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-600 italic">
                       {t('auth.form.confirmPassword.label')}
                     </label>
                     <div className="relative group">
                       <KeyRound className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
                       <input
+                        id="forgot-confirm-password"
                         {...regReset('confirmPassword')}
                         type="password"
                         className="w-full pl-20 pr-8 py-7 bg-zinc-50/50 border border-transparent rounded-[2.5rem] focus:bg-white focus:border-accent transition-all duration-500 outline-hidden font-black text-lg italic tracking-tight shadow-xs"

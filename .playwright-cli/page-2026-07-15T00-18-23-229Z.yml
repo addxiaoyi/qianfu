@@ -1,0 +1,94 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e5]:
+    - generic [ref=f1e6]: 系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+    - button [ref=f1e11]
+  - button "设置" [ref=f1e15]
+  - generic [ref=f1e38]:
+    - navigation [ref=f1e40]:
+      - generic [ref=f1e41]:
+        - generic [ref=f1e42]:
+          - link "千服联灯 QianFu" [ref=f1e43] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f1e66]:
+              - generic [ref=f1e67]: 千服联灯
+              - generic [ref=f1e68]: QianFu
+          - generic [ref=f1e69]:
+            - link [ref=f1e70] [cursor=pointer]:
+              - /url: /
+            - link [ref=f1e93] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=f1e116] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=f1e138] [cursor=pointer]:
+              - /url: /team
+            - link [ref=f1e160] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=f1e183] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=f1e206]:
+          - link "登录" [ref=f1e207] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=f1e208] [cursor=pointer]:
+            - /url: /register
+    - paragraph [ref=f1e213]: INITIALIZING_SESSION...
+    - contentinfo [ref=f1e215]:
+      - generic [ref=f1e216]:
+        - generic [ref=f1e217]:
+          - generic [ref=f1e218]:
+            - link "千服联灯" [ref=f1e219] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f1e224]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=f1e225]:
+              - button [ref=f1e226]
+              - button [ref=f1e229]
+              - button [ref=f1e232]
+          - generic [ref=f1e236]:
+            - heading "平台" [level=4] [ref=f1e237]
+            - list [ref=f1e238]:
+              - listitem [ref=f1e239]:
+                - link "浏览服务器" [ref=f1e240] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=f1e241]:
+                - link "高级搜索" [ref=f1e242] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=f1e243]:
+                - link "推广方案" [ref=f1e244] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=f1e245]:
+                - link "资源中心" [ref=f1e246] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=f1e247]:
+            - heading "站点信息" [level=4] [ref=f1e248]
+            - list [ref=f1e249]:
+              - listitem [ref=f1e250]:
+                - link "开发团队" [ref=f1e251] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=f1e252]:
+                - link "等级规则" [ref=f1e253] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=f1e254]:
+                - link "服务条款" [ref=f1e255] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=f1e256]:
+                - link "隐私政策" [ref=f1e257] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=f1e258]:
+            - heading "服务入口" [level=4] [ref=f1e259]
+            - list [ref=f1e260]:
+              - listitem [ref=f1e261] [cursor=pointer]:
+                - link "钱包与账单" [ref=f1e262]:
+                  - /url: /dashboard/billing
+              - listitem [ref=f1e263] [cursor=pointer]:
+                - link "推广中心" [ref=f1e264]:
+                  - /url: /promotion
+              - listitem [ref=f1e265] [cursor=pointer]:
+                - link "工单支持" [ref=f1e266]:
+                  - /url: /tickets
+        - generic [ref=f1e267]:
+          - generic [ref=f1e268]:
+            - generic [ref=f1e269]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=f1e270] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=f1e271]:
+            - generic [ref=f1e272]: 公开 API 检测中
+            - button "返回顶部 ↑" [ref=f1e275]

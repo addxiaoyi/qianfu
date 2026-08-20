@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { User } from '@/types/api';
-import { api, ApiError, getFrontendApiBase, getLocalAuthToken, setLocalAuthToken } from '@/api/request';
+import { api, ApiError, getFrontendApiBase, setLocalAuthToken } from '@/api/request';
 import { normalizeUser } from '@/utils/user';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 interface AuthState {
   user: User | null;
@@ -11,7 +12,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   setAuthenticated: (status: boolean) => void;
   setBackendReady: (ready: boolean) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   hydrateFromSession: () => Promise<void>;
 }
 
@@ -28,15 +29,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   setAuthenticated: (status) => set({ isAuthenticated: status, isLoading: false }),
   setBackendReady: (ready) => set({ backendReady: ready }),
-  logout: () => {
-    const token = getLocalAuthToken();
-    void fetch('/api/v1/logout', {
-      method: 'POST',
-      credentials: 'include',
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    }).catch(() => undefined);
-    setLocalAuthToken(null);
-    set({ user: null, isAuthenticated: false, isLoading: false, backendReady: true });
+  logout: async () => {
+    try {
+      await api.post(
+        isRustV2Enabled() ? rustV2Path('/auth/logout') : '/logout',
+        undefined,
+        isRustV2Enabled() ? rustV2RequestOptions : undefined,
+      );
+    } catch (error) {
+      console.warn('[auth] Server logout failed; clearing local session state.', error);
+    } finally {
+      setLocalAuthToken(null);
+      set({ user: null, isAuthenticated: false, isLoading: false, backendReady: true });
+    }
   },
   hydrateFromSession: async () => {
     if (get().user) {
@@ -47,8 +52,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     hydratePromise = (async () => {
       try {
-        await api.get<{ csrfToken: string }>('/csrf-token', undefined, { useAuth: false, skipCsrf: true });
-        const profile = normalizeUser(await api.get<User>('/profile'));
+        const profile = isRustV2Enabled()
+          ? normalizeUser(await api.get<User | null>(rustV2Path('/auth/me'), undefined, rustV2RequestOptions))
+          : (await api.get<{ csrfToken: string }>('/csrf-token', undefined, { useAuth: false, skipCsrf: true }), normalizeUser(await api.get<User | null>('/session-profile')));
         set({ user: profile, isAuthenticated: !!profile, isLoading: false, backendReady: true });
       } catch (error) {
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {

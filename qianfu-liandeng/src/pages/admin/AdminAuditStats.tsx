@@ -1,41 +1,26 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
 import { api } from '@/api/request';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import AdminStatCard from '@/components/AdminStatCard';
-import GeometricLantern from '@/components/icons/GeometricLantern';
-import StatusWrapper from '@/components/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import AdminStatCard from '@/components/ui/AdminStatCard';
+import GeometricLantern from '@/components/ui/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
 import { formatDateTime } from '@/utils/serverView';
-
-type AuditStats = {
-  period: string;
-  totalEvents: number;
-  todayEvents: number;
-  eventsByType: Record<string, number>;
-  topUsers: Array<{
-    user_id: number;
-    username?: string | null;
-    role?: string | null;
-    event_count: number;
-  }>;
-};
-
-type AuditPoint = {
-  time: string;
-  count: number;
-};
+import {
+  normalizeAuditStatsResponse,
+  normalizeAuditTimeseriesResponse,
+} from '@/utils/frontendResponseNormalization';
 
 const AdminAuditStats: React.FC = () => {
   const { data: stats, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-audit-stats-page'],
-    queryFn: () => api.get<AuditStats>('/audit/stats', { days: 7 }),
+    queryFn: async () => normalizeAuditStatsResponse(await api.get<unknown>('/audit/stats', { days: 7 })),
   });
 
-  const { data: timeseries = [] } = useQuery({
+  const { data: timeseries = [], isError: timeseriesError, refetch: refetchTimeseries } = useQuery({
     queryKey: ['admin-audit-timeseries-page'],
-    queryFn: () => api.get<AuditPoint[]>('/audit/timeseries', { days: 1, interval: 'hour' }),
+    queryFn: async () => normalizeAuditTimeseriesResponse(await api.get<unknown>('/audit/timeseries', { days: 1, interval: 'hour' })),
   });
 
   const chartData = useMemo(() => {
@@ -48,9 +33,19 @@ const AdminAuditStats: React.FC = () => {
 
   const topAction = Object.entries(stats?.eventsByType || {}).sort((a, b) => b[1] - a[1])[0];
 
+  const exportStats = () => {
+    const payload = JSON.stringify({ generatedAt: new Date().toISOString(), stats, timeseries }, null, 2);
+    const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `qianfu-audit-${stats?.period || '7d'}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-16 pb-32 bg-white">
-      <StatusWrapper isLoading={isLoading} isError={isError} onRetry={() => refetch()}>
+      <StatusWrapper isLoading={isLoading} isError={isError || timeseriesError} onRetry={() => { void Promise.all([refetch(), refetchTimeseries()]); }}>
         <AdminPageHeader
           badge="审计统计 / 最近 7 天"
           title="审计洞察"
@@ -59,11 +54,8 @@ const AdminAuditStats: React.FC = () => {
           statusTone="success"
           rightSlot={(
             <div className="flex gap-6">
-              <button type="button" className="group px-10 py-6 border border-zinc-50 rounded-[2.5rem] bg-zinc-50/30 text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 hover:bg-white hover:border-zinc-200 transition-all duration-500 shadow-xs italic active:scale-[0.98]">
+              <button type="button" onClick={exportStats} className="group px-10 py-6 border border-zinc-50 rounded-[2.5rem] bg-zinc-50/30 text-[11px] font-black uppercase tracking-[0.4em] flex items-center gap-4 hover:bg-white hover:border-zinc-200 transition-colors duration-500 shadow-xs italic active:scale-[0.98]">
                 <GeometricLantern variant="data" className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" /> 导出 JSON
-              </button>
-              <button type="button" className="group px-12 py-6 btn-accent rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] flex items-center gap-6 transition-all duration-500 shadow-2xl shadow-accent/20 italic active:scale-[0.98]">
-                生成报告 <ChevronRight className="w-5 h-5 group-hover:translate-x-4 transition-transform duration-500" />
               </button>
             </div>
           )}

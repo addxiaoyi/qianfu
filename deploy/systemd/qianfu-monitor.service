@@ -1,0 +1,16 @@
+[Unit]
+Description=Qianfu production health monitor
+After=network-online.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/local/sbin/qianfu-monitor
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/var/lib/qianfu-monitor
+

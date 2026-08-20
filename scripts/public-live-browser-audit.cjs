@@ -17,7 +17,10 @@ function parseArgs() {
   let waitUntil = process.env.PUBLIC_BROWSER_AUDIT_WAIT_UNTIL || process.env.BROWSER_AUDIT_WAIT_UNTIL || 'commit';
   let concurrency = process.env.PUBLIC_BROWSER_AUDIT_CONCURRENCY || process.env.BROWSER_AUDIT_CONCURRENCY || '3';
   let useSystemProxy = /^(1|true|yes)$/i.test(process.env.PUBLIC_BROWSER_AUDIT_USE_SYSTEM_PROXY || '');
-  let skipPay = /^(1|true|yes)$/i.test(process.env.PUBLIC_BROWSER_AUDIT_SKIP_PAY || '');
+  const includePay = /^(1|true|yes)$/i.test(process.env.PUBLIC_BROWSER_AUDIT_INCLUDE_PAY || '');
+  let skipPay = !includePay || /^(1|true|yes)$/i.test(process.env.PUBLIC_BROWSER_AUDIT_SKIP_PAY || '');
+  let executablePath = process.env.PUBLIC_BROWSER_AUDIT_EXECUTABLE_PATH || '';
+  let hostResolverRules = process.env.PUBLIC_BROWSER_AUDIT_HOST_RESOLVER_RULES || '';
 
   for (let index = 0; index < args.length; index += 1) {
     const token = args[index];
@@ -84,8 +87,22 @@ function parseArgs() {
       useSystemProxy = false;
       continue;
     }
+    if (token === '--executable-path' && args[index + 1]) {
+      executablePath = args[index + 1];
+      index += 1;
+      continue;
+    }
+    if (token === '--host-resolver-rules' && args[index + 1]) {
+      hostResolverRules = args[index + 1];
+      index += 1;
+      continue;
+    }
     if (token === '--skip-pay') {
       skipPay = true;
+      continue;
+    }
+    if (token === '--include-pay') {
+      skipPay = false;
       continue;
     }
     if (token === '--kv') {
@@ -116,6 +133,8 @@ function parseArgs() {
     concurrency,
     useSystemProxy,
     skipPay,
+    executablePath,
+    hostResolverRules,
   };
 }
 
@@ -150,14 +169,24 @@ const BASE_ROUTES = [
   { label: 'servers-history', url: `${BASE_URL}/servers`, expectText: '服务器', expectedTitleIncludes: '服务器' },
   { label: 'search-history', url: `${BASE_URL}/search`, expectText: '搜索', expectedTitleIncludes: '搜索', interaction: 'search-input' },
   { label: 'resources-history', url: `${BASE_URL}/resources`, expectText: '资源', expectedTitleIncludes: '资源' },
+  { label: 'home-mobile', url: `${BASE_URL}/`, expectText: '千服联灯', expectedTitleIncludes: 'Minecraft 服务器发现与发布平台', viewport: { width: 360, height: 780 }, checkHorizontalOverflow: true },
+  { label: 'servers-mobile', url: `${BASE_URL}/servers`, expectText: '服务器', expectedTitleIncludes: '服务器', viewport: { width: 360, height: 780 }, checkHorizontalOverflow: true },
+  { label: 'resources-mobile', url: `${BASE_URL}/resources`, expectText: '资源', expectedTitleIncludes: '资源', viewport: { width: 360, height: 780 }, checkHorizontalOverflow: true },
   { label: 'rules-history', url: `${BASE_URL}/rules`, expectText: '规则', expectedTitleIncludes: '规则' },
   { label: 'login-history', url: `${BASE_URL}/login`, minInputs: 2, expectedTitleIncludes: '登录' },
+  { label: 'oauth-selection-history', url: `${BASE_URL}/login/oauth`, expectText: '第三方快捷登录', expectedTitleIncludes: '登录' },
   { label: 'register-history', url: `${BASE_URL}/register`, minInputs: 2, expectedTitleIncludes: '注册' },
   { label: 'forgot-history', url: `${BASE_URL}/forgot-password`, minInputs: 1, expectedTitleIncludes: '找回密码' },
+  { label: 'reset-password-history', url: `${BASE_URL}/reset-password`, expectText: '重置密码', expectedTitleIncludes: '重置密码' },
+  { label: 'verify-code-history', url: `${BASE_URL}/verify-code`, expectText: '邮箱验证', expectedTitleIncludes: '邮箱验证' },
+  { label: 'terms-history', url: `${BASE_URL}/terms/`, expectText: '服务条款', expectedTitleIncludes: 'Terms of Service' },
+  { label: 'privacy-history', url: `${BASE_URL}/privacy/`, expectText: '隐私声明', expectedTitleIncludes: 'Privacy Notice' },
+  { label: 'compliance-history', url: `${BASE_URL}/compliance`, expectText: '合规与信息服务规则中心', expectedTitleIncludes: '合规与信息服务规则中心' },
+  { label: 'dashboard-billing-history', url: `${BASE_URL}/dashboard/billing`, expectText: '该功能暂未开放', expectedTitleIncludes: '控制台' },
   { label: 'search-hash', url: `${BASE_URL}/#/search`, expectText: '搜索', expectedTitleIncludes: '搜索', interaction: 'search-input' },
   { label: 'servers-hash', url: `${BASE_URL}/#/servers`, expectText: '服务器', expectedTitleIncludes: '服务器' },
   { label: 'resources-hash', url: `${BASE_URL}/#/resources`, expectText: '资源', expectedTitleIncludes: '资源' },
-  { label: 'pay-root', url: `${PAY_URL}/`, expectText: 'qianfu-pay-gateway', expectExactBody: 'qianfu-pay-gateway', allowHttpsErrorInspect: true },
+  { label: 'pay-root', url: `${PAY_URL}/`, expectText: 'PERSONAL_FILING_DISABLED', expectExactBody: 'PERSONAL_FILING_DISABLED', expectedStatus: 410, allowHttpsErrorInspect: true },
 ];
 const ROUTES = CLI.skipPay ? BASE_ROUTES.filter((route) => route.label !== 'pay-root') : BASE_ROUTES;
 
@@ -213,25 +242,24 @@ function isAllowedAnonymousAuthProbe(entry) {
   }
 
   try {
-    return new URL(entry.url).pathname === '/api/v1/profile';
+    return new Set(['/api/v1/profile', '/api/v1/session-profile']).has(new URL(entry.url).pathname);
   } catch {
     return false;
   }
 }
 
 function splitConsoleEntries(consoleEntries, allowedAuthProbeResponses) {
-  let remainingAuthProbeErrors = allowedAuthProbeResponses.length;
+  const hasAllowedAuthProbe = allowedAuthProbeResponses.length > 0;
   const tracked = [];
   const ignored = [];
 
   for (const entry of consoleEntries) {
     const isAuthProbeConsoleNoise =
       entry.type === 'error' &&
-      remainingAuthProbeErrors > 0 &&
+      hasAllowedAuthProbe &&
       /Failed to load resource: the server responded with a status of (401|403)/i.test(entry.text);
 
     if (isAuthProbeConsoleNoise) {
-      remainingAuthProbeErrors -= 1;
       ignored.push(entry);
     } else {
       tracked.push(entry);
@@ -512,6 +540,13 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
     const inputCount = await page.locator('input, textarea, select').count().catch(() => 0);
     const overlayCount = await page.locator('text=/TypeError|ReferenceError|Unhandled|An unexpected error occurred|Cannot read/i').count().catch(() => 0);
     const interactionResult = hasDocument ? await runInteraction(page, route) : null;
+    const dimensions = hasDocument && route.checkHorizontalOverflow
+      ? await page.evaluate(() => ({
+          viewport: window.innerWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          bodyWidth: document.body.scrollWidth,
+        }))
+      : null;
 
     const screenshotPath = path.join(OUT_DIR, `${route.label}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true, timeout: 5000 }).catch(() => {});
@@ -546,7 +581,8 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
     if (hasDocument && !bodyText.trim()) {
       findings.push('empty_body');
     }
-    if (!gotoResponse || gotoResponse.status() !== 200) {
+    const expectedStatus = route.expectedStatus || 200;
+    if (!gotoResponse || gotoResponse.status() !== expectedStatus) {
       findings.push(`document_status=${gotoResponse ? gotoResponse.status() : 'null'}`);
     }
     if (overlayCount > 0) {
@@ -570,6 +606,9 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
     if (interactionResult && !interactionResult.ok) {
       findings.push(`interaction_failed=${interactionResult.detail}`);
     }
+    if (dimensions && (dimensions.documentWidth > dimensions.viewport + 1 || dimensions.bodyWidth > dimensions.viewport + 1)) {
+      findings.push(`horizontal_overflow=${JSON.stringify(dimensions)}`);
+    }
     if (hasDocument && route.expectExactBody && bodyText.trim() !== route.expectExactBody) {
       findings.push(`body_mismatch=${textSnippet}`);
     } else if (hasDocument && route.expectText && !bodyText.includes(route.expectText)) {
@@ -588,6 +627,7 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
       inputCount,
       overlayCount,
       interactionResult,
+      dimensions,
       consoleEntries: trackedConsoleEntries,
       ignoredConsoleEntries,
       requestFailures: trackedRequestFailures,
@@ -615,6 +655,8 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
       textSnippet: '',
       inputCount: 0,
       overlayCount: 0,
+      interactionResult: null,
+      dimensions: null,
       consoleEntries,
       requestFailures,
       errorResponses,
@@ -628,7 +670,8 @@ async function inspectWithContext(context, route, findingsPrefix = []) {
 }
 
 async function auditRoute(browser, route) {
-  const normalContext = await browser.newContext({ viewport: { width: 1440, height: 960 } });
+  const viewport = route.viewport || { width: 1440, height: 960 };
+  const normalContext = await browser.newContext({ viewport });
   try {
     const normalResult = await inspectWithContext(normalContext, route);
     const hasCertError = normalResult.findings.some((finding) => finding.includes('ERR_CERT'));
@@ -639,7 +682,7 @@ async function auditRoute(browser, route) {
     await normalContext.close();
   }
 
-  const relaxedContext = await browser.newContext({ viewport: { width: 1440, height: 960 }, ignoreHTTPSErrors: true });
+  const relaxedContext = await browser.newContext({ viewport, ignoreHTTPSErrors: true });
   try {
     return await inspectWithContext(relaxedContext, route, ['certificate_error_detected']);
   } finally {
@@ -743,10 +786,18 @@ async function auditRoutes(browser) {
 
 async function main() {
   await ensureDir(OUT_DIR);
-  const browser = await chromium.launch({
+  const browserArgs = CLI.useSystemProxy ? [] : [...CHROMIUM_DIRECT_PROXY_ARGS];
+  if (CLI.hostResolverRules) {
+    browserArgs.push(`--host-resolver-rules=${CLI.hostResolverRules}`);
+  }
+  const launchOptions = {
     headless: true,
-    args: CLI.useSystemProxy ? [] : CHROMIUM_DIRECT_PROXY_ARGS,
-  });
+    args: browserArgs,
+  };
+  if (CLI.executablePath) {
+    launchOptions.executablePath = CLI.executablePath;
+  }
+  const browser = await chromium.launch(launchOptions);
   let results = [];
   await writeReport(results);
 

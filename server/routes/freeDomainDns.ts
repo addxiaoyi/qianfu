@@ -1,0 +1,34 @@
+import { Router } from 'express';
+import { authenticate, hasPermission } from '../middleware/auth';
+import { csrfProtection } from '../middleware/csrf';
+import { adminLimiter } from '../middleware/rateLimiter';
+import {
+  getServerDomainStatus,
+  listFreeDomainSuffixes,
+  listAdminFreeDomainSuffixes,
+  listAdminDnsTasks,
+  revokeServerDomain,
+  retryDnsTask,
+  runDnsTasks,
+  upsertAdminFreeDomainSuffix,
+  startCloudflareOauth,
+  cloudflareOauthCallback,
+  revokeCloudflareOauthController,
+} from '../controllers/freeDomainDnsController';
+
+const router = Router();
+router.get('/free-domain-suffixes', listFreeDomainSuffixes);
+router.get('/servers/:serverId/domain', authenticate, getServerDomainStatus);
+router.post('/servers/:serverId/domain/revoke', authenticate, csrfProtection, revokeServerDomain);
+router.get('/admin/free-domain-dns/oauth/cloudflare/callback', cloudflareOauthCallback);
+router.use('/admin', authenticate, adminLimiter, hasPermission(['manage_content']));
+router.get('/admin/free-domain-suffixes', listAdminFreeDomainSuffixes);
+router.get('/admin/dns-tasks', listAdminDnsTasks);
+router.post('/admin/free-domain-suffixes', csrfProtection, upsertAdminFreeDomainSuffix);
+router.put('/admin/free-domain-suffixes/:id', csrfProtection, upsertAdminFreeDomainSuffix);
+router.post('/admin/dns-tasks/:id/retry', csrfProtection, retryDnsTask);
+router.post('/admin/dns-tasks/run', csrfProtection, runDnsTasks);
+router.get('/admin/free-domain-suffixes/:id/oauth/cloudflare/start', startCloudflareOauth);
+router.post('/admin/free-domain-suffixes/:id/oauth/cloudflare/revoke', csrfProtection, revokeCloudflareOauthController);
+
+export default router;

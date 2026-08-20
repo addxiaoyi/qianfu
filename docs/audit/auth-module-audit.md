@@ -1,7 +1,34 @@
 # Auth 模块安全审计报告
 
 **审计日期**: 2026-05-11
+**最近复核**: 2026-07-31
 **审计范围**: `server/controllers/authController.ts`, `server/controllers/authCodeController.ts`, `server/controllers/registerController.ts`, `server/routes/auth.ts`, `server/middleware/auth.ts`, `server/services/devAuth.ts`
+
+## 复核状态（2026-07-31）
+
+| 编号 | 状态 | 当前实现与证据 |
+|------|------|----------------|
+| P0-1 Dev Auth 默认凭据 | 已修复 | 启用开发绕过时强制配置显式用户名和至少 12 位强密码；缺失或弱凭据 fail-closed |
+| P0-2 Dev Auth 字段类型错误 | 已修复 | 用户创建不再重复写入 `last_login_at` |
+| P0-3 注册跳过验证码 | 已修复 | 新用户与已有用户注册路径均要求验证码验证 |
+| P1-1 验证码密钥弱 | 已修复 | 统一通过安全配置读取 JWT 密钥，不保留 `change-me` 回退 |
+| P1-2 登录锁存竞态 | 已修复 | 验证失败次数迁移到 Redis 原子 `INCR` + 15 分钟 TTL；成功后删除计数键 |
+| P1-4 修改密码强度 | 已修复 | 新密码执行 12 位复杂度策略，并拒绝与当前密码相同 |
+| P2-1 验证码随机数 | 已修复 | 邮箱、手机和注册验证码统一使用 `crypto.randomInt` |
+| P2-3 动态 crypto 导入 | 已修复 | 控制器统一使用顶部静态导入 |
+| P2-2 JSON 权限白名单 | 已修复 | 新增统一已知权限目录；已知角色使用角色配置中的基础权限，补充权限执行白名单过滤，高权限权限必须匹配明确角色 |
+| P2-4 会话标识枚举 | 已修复 | 会话列表仅返回用户绑定的 HMAC 不透明引用；撤销接口拒绝原始 handle，并且响应和审计日志均不再记录原始 handle |
+
+本轮回归证据：
+
+- 权限与 Auth 定向测试：6 个文件、21 个测试通过
+- 会话与 Auth 定向测试：4 个文件、28 个测试通过
+- 全量 Vitest：136 个文件、651 个测试通过
+- 原始用户权限 JSON 授权旁路静态扫描：通过
+- 原始 SuperTokens session handle 响应与审计泄露静态扫描：通过
+- `npm run typecheck`：通过
+- `npm run typecheck:server`：通过
+- `npm run build`：通过
 
 ---
 
@@ -181,6 +208,8 @@ export const getSessions = async (req, res, next) => {
 **问题**: 用户可以查看所有会话详情（包括 handle），虽然不泄露完整 token，但为会话枚举攻击提供信息。
 
 **修复建议**: 对会话 ID 进行哈希处理后再返回。
+
+**复核结果（2026-07-31）**: 已实现 `session-reference:v1` HMAC 不透明引用，输入按上下文、用户 ID 和 session handle 分段编码。列表接口只返回 `sess_` 引用；撤销接口只接受严格格式的引用并在当前用户会话集合内以常量时间比较解析。原始 handle 不再出现在 API 响应或撤销审计记录中。
 
 ---
 

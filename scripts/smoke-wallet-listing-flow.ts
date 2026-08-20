@@ -1,6 +1,9 @@
 import crypto from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import bcrypt from 'bcrypt';
+import { loginWithCsrf } from './lib/smoke-session-login';
+import { createScriptPrismaClient } from './utils/prismaClient';
 
 type Status = 'PASS' | 'FAIL' | 'WARN';
 
@@ -23,11 +26,17 @@ type SessionState = {
   cookie: string;
 };
 
-const BASE_URL = (process.env.SMOKE_WEB_BASE_URL || 'https://mc-u.top').replace(/\/+$/, '');
-const ADMIN_IDENTIFIER = process.env.SMOKE_ADMIN_IDENTIFIER || 'dev_local';
-const ADMIN_PASSWORD = process.env.SMOKE_ADMIN_PASSWORD || 'dev123456';
+const BASE_URL = (process.env.SMOKE_WEB_BASE_URL || 'http://127.0.0.1:3000').replace(/\/+$/, '');
+const ADMIN_IDENTIFIER = process.env.SMOKE_ADMIN_IDENTIFIER?.trim() || '';
+const ADMIN_PASSWORD = process.env.SMOKE_ADMIN_PASSWORD || '';
+const ALLOW_MUTATION = process.env.SMOKE_WALLET_LISTING_ALLOW_MUTATION === '1';
+const ALLOW_REMOTE = process.env.SMOKE_WALLET_LISTING_ALLOW_REMOTE === '1';
+const ALLOW_PRODUCTION = process.env.SMOKE_WALLET_LISTING_ALLOW_PRODUCTION === '1';
+const USE_EXTERNAL_PAYMENT = process.env.SMOKE_WALLET_LISTING_USE_EXTERNAL_PAYMENT === '1';
 const LISTING_USER_EMAIL = process.env.SMOKE_LISTING_USER_EMAIL || '';
 const LISTING_USER_PASSWORD = process.env.SMOKE_LISTING_USER_PASSWORD || '';
+const CREATE_USER_DIRECT = process.env.SMOKE_WALLET_LISTING_CREATE_USER_DIRECT === '1';
+const CREATE_DISPOSABLE_ADMIN = process.env.SMOKE_WALLET_LISTING_CREATE_ADMIN === '1';
 const RECHARGE_AMOUNT = Number(process.env.SMOKE_LISTING_RECHARGE_AMOUNT || '10');
 const LISTING_PLAN = process.env.SMOKE_LISTING_PLAN || 'basic-monthly';
 const THUMBNAIL_PATH = process.env.SMOKE_LISTING_THUMBNAIL || '/uploads/probe.png';
@@ -40,6 +49,9 @@ const PLAN_PRICE_MAP: Record<string, number> = {
   'pro-quarterly': 20,
   'vip-yearly': 90,
 };
+
+let generatedListingUserId: number | null = null;
+let generatedAdminUserId: number | null = null;
 
 const browserHeaders: HeadersInit = {
   'User-Agent':
@@ -136,6 +148,45 @@ function _requireEnv(value: string, name: string) {
   }
 }
 
+function isLoopbackTarget(baseUrl = BASE_URL): boolean {
+  const hostname = new URL(baseUrl).hostname.toLowerCase();
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+}
+
+function assertSafeTarget(): void {
+  if (!ALLOW_MUTATION) {
+    throw new Error('Set SMOKE_WALLET_LISTING_ALLOW_MUTATION=1 to authorize wallet and listing writes');
+  }
+
+  const target = new URL(BASE_URL);
+  const hostname = target.hostname.toLowerCase();
+  const isLoopback = isLoopbackTarget();
+  const isProduction = hostname === 'mc-u.top' || hostname.endsWith('.mc-u.top');
+
+  if (CREATE_USER_DIRECT && !isLoopback) {
+    throw new Error('Direct disposable listing users are allowed only for loopback targets');
+  }
+
+  if (isProduction && !ALLOW_PRODUCTION) {
+    throw new Error('Production wallet/listing smoke is blocked; set SMOKE_WALLET_LISTING_ALLOW_PRODUCTION=1 explicitly');
+  }
+  if (!isLoopback && !ALLOW_REMOTE && !ALLOW_PRODUCTION) {
+    throw new Error('Remote wallet/listing smoke is blocked; set SMOKE_WALLET_LISTING_ALLOW_REMOTE=1 for an isolated test host');
+  }
+  if (CREATE_DISPOSABLE_ADMIN && !isLoopback) {
+    throw new Error('Disposable smoke administrators are allowed only for loopback targets');
+  }
+  if (!CREATE_DISPOSABLE_ADMIN && (!ADMIN_IDENTIFIER || !ADMIN_PASSWORD)) {
+    throw new Error('SMOKE_ADMIN_IDENTIFIER and SMOKE_ADMIN_PASSWORD are required; no default credentials are allowed');
+  }
+  if (!Number.isFinite(RECHARGE_AMOUNT) || RECHARGE_AMOUNT < 0.1 || RECHARGE_AMOUNT > 10_000) {
+    throw new Error('SMOKE_LISTING_RECHARGE_AMOUNT must be between 0.1 and 10000');
+  }
+  if (!(LISTING_PLAN in PLAN_PRICE_MAP)) {
+    throw new Error(`Unsupported listing plan: ${LISTING_PLAN}`);
+  }
+}
+
 async function createVerifiedListingUser(adminSession: SessionState, adminAuth: { token: string; csrfToken: string }) {
   const now = Date.now();
   const email = `listing_${now}_${crypto.randomBytes(4).toString('hex')}@example.com`;
@@ -161,6 +212,7 @@ async function createVerifiedListingUser(adminSession: SessionState, adminAuth: 
   if (!createdUserId) {
     throw new Error(`listing bootstrap missing created user id for ${email}`);
   }
+  generatedListingUserId = createdUserId;
 
   const verify = await requestJson(`/api/v1/admin/users/${createdUserId}/email-verification`, {
     method: 'PATCH',
@@ -175,7 +227,124 @@ async function createVerifiedListingUser(adminSession: SessionState, adminAuth: 
     throw new Error(`listing bootstrap verify flag update failed: ${safeMsg(verify)}`);
   }
 
-  return { email, password, username };
+  return { id: createdUserId, email, password, username };
+}
+
+async function createDirectListingUser() {
+  const now = Date.now();
+  const email = `listing_${now}_${crypto.randomBytes(4).toString('hex')}@example.com`;
+  const username = `listing_${now.toString().slice(-8)}_${crypto.randomBytes(2).toString('hex')}`.slice(0, 28);
+  const password = `List_${crypto.randomBytes(4).toString('hex')}_A1`;
+  const prisma = createScriptPrismaClient();
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        display_name: 'Wallet Listing Smoke User',
+        password_hash: passwordHash,
+        password_changed_at: new Date(),
+        role: 'NORMAL',
+        permissions: JSON.stringify([]),
+        email_verified: true,
+      },
+      select: { id: true },
+    });
+    generatedListingUserId = user.id;
+    return { id: user.id, email, password, username };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+async function createDisposableAdmin() {
+  if (!isLoopbackTarget()) {
+    throw new Error('Disposable smoke administrators are allowed only for loopback targets');
+  }
+
+  const now = Date.now();
+  const email = `smoke_admin_${now}_${crypto.randomBytes(4).toString('hex')}@example.com`;
+  const username = `smoke_admin_${now.toString().slice(-8)}_${crypto.randomBytes(2).toString('hex')}`.slice(0, 28);
+  const password = `Admin_${crypto.randomBytes(6).toString('hex')}_A1`;
+  const prisma = createScriptPrismaClient();
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        display_name: 'Wallet Listing Smoke Admin',
+        password_hash: passwordHash,
+        password_changed_at: new Date(),
+        role: 'ADMIN',
+        permissions: JSON.stringify(['admin', 'manage_users', 'review_servers', 'manage_content', 'system_config']),
+        email_verified: true,
+      },
+      select: { id: true },
+    });
+    generatedAdminUserId = user.id;
+    return { id: user.id, email, password, username };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+async function cleanupGeneratedUser(userId: number): Promise<void> {
+  const prisma = createScriptPrismaClient();
+  try {
+    await prisma.$transaction(async (tx: any) => {
+      const wallets = await tx.wallet.findMany({
+        where: { user_id: userId },
+        select: { id: true },
+      });
+      const walletIds = wallets.map((wallet: { id: number }) => wallet.id);
+      if (walletIds.length > 0) {
+        await tx.transaction.deleteMany({ where: { wallet_id: { in: walletIds } } });
+        await tx.wallet.deleteMany({ where: { id: { in: walletIds } } });
+      }
+
+      const servers = await tx.server.findMany({
+        where: { owner_id: userId },
+        select: { id: true },
+      });
+      const serverIds = servers.map((server: { id: number }) => server.id);
+      if (serverIds.length > 0) {
+        await tx.serverStatusHistory.deleteMany({ where: { server_id: { in: serverIds } } });
+        await tx.serverComment.deleteMany({ where: { server_id: { in: serverIds } } });
+        await tx.serverLike.deleteMany({ where: { server_id: { in: serverIds } } });
+        await tx.serverVersion.deleteMany({ where: { server_id: { in: serverIds } } });
+        await tx.serverStatus.deleteMany({ where: { serverId: { in: serverIds } } });
+        await tx.reviewHistory.deleteMany({ where: { server_id: { in: serverIds } } });
+        await tx.report.deleteMany({ where: { target_type: 'SERVER', target_id: { in: serverIds } } });
+        await tx.server.deleteMany({ where: { id: { in: serverIds } } });
+      }
+
+      await tx.ticketMessage.updateMany({ where: { sender_id: userId }, data: { sender_id: null } });
+      await tx.auditLog.updateMany({ where: { user_id: userId }, data: { user_id: null } });
+      await tx.moderationLog.updateMany({ where: { user_id: userId }, data: { user_id: null } });
+      await tx.server.updateMany({ where: { reviewed_by: userId }, data: { reviewed_by: null } });
+      await tx.report.updateMany({ where: { handler_id: userId }, data: { handler_id: null } });
+      await tx.apiKey.deleteMany({ where: { user_id: userId } });
+      await tx.session.deleteMany({ where: { user_id: userId } });
+      await tx.notification.deleteMany({ where: { user_id: userId } });
+      await tx.userBioVersion.deleteMany({ where: { user_id: userId } });
+      await tx.serverComment.deleteMany({ where: { user_id: userId } });
+      await tx.serverLike.deleteMany({ where: { user_id: userId } });
+      await tx.reviewHistory.deleteMany({ where: { reviewer_id: userId } });
+      await tx.permissionHistory.deleteMany({ where: { user_id: userId } });
+      await tx.report.deleteMany({ where: { reporter_id: userId } });
+      await tx.promoVerifyLog.deleteMany({ where: { user_id: userId } });
+      await tx.promoWalletTransaction.deleteMany({ where: { user_id: userId } });
+      await tx.promoClaimRecord.deleteMany({ where: { user_id: userId } });
+      await tx.promoPlatformBinding.deleteMany({ where: { user_id: userId } });
+      await tx.user.delete({ where: { id: userId } });
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 function normalizeListData(payload: any): any[] {
@@ -215,31 +384,9 @@ async function waitPublicCleared(marker: string, maxAttempts = 8, intervalMs = 1
   };
 }
 
-async function loginWithSession(session: SessionState, identifier: string, password: string) {
-  const login = await requestJson('/api/v1/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier, password }),
-  }, session);
-  if (!login.ok) {
-    throw new Error(`Login failed for ${identifier}: ${safeMsg(login)}`);
-  }
-  const token = login.data?.data?.token || '';
-  if (!token) {
-    throw new Error(`Login token missing for ${identifier}`);
-  }
-  const csrf = await requestJson('/api/v1/csrf-token', {}, session);
-  if (!csrf.ok) {
-    throw new Error(`CSRF token request failed for ${identifier}: ${safeMsg(csrf)}`);
-  }
-  const csrfToken = csrf.data?.data?.csrfToken || csrf.data?.csrfToken || '';
-  if (!csrfToken) {
-    throw new Error(`CSRF token missing for ${identifier}`);
-  }
-  return { token, csrfToken, login, csrf };
-}
-
 async function main() {
+  assertSafeTarget();
+
   const checks: Check[] = [];
   const adminSession: SessionState = { cookie: '' };
   const userSession: SessionState = { cookie: '' };
@@ -247,13 +394,18 @@ async function main() {
 
   let createdServerId: number | null = null;
 
-  const adminAuth = await loginWithSession(adminSession, ADMIN_IDENTIFIER, ADMIN_PASSWORD);
+  const adminAccount = CREATE_DISPOSABLE_ADMIN
+    ? await createDisposableAdmin()
+    : { email: ADMIN_IDENTIFIER, password: ADMIN_PASSWORD };
+  const adminAuth = await loginWithCsrf(requestJson, adminSession, adminAccount.email, adminAccount.password);
   const listingUser = LISTING_USER_EMAIL && LISTING_USER_PASSWORD
     ? { email: LISTING_USER_EMAIL, password: LISTING_USER_PASSWORD }
-    : await createVerifiedListingUser(adminSession, adminAuth);
-  const userAuth = await loginWithSession(userSession, listingUser.email, listingUser.password);
+    : CREATE_USER_DIRECT
+      ? await createDirectListingUser()
+      : await createVerifiedListingUser(adminSession, adminAuth);
+  const userAuth = await loginWithCsrf(requestJson, userSession, listingUser.email, listingUser.password);
 
-  add(checks, 'admin-login', 'PASS', `admin=${ADMIN_IDENTIFIER}`, adminAuth.login.status);
+  add(checks, 'admin-login', 'PASS', `admin=${adminAccount.email}`, adminAuth.login.status);
   add(checks, 'user-login', 'PASS', `user=${listingUser.email}`, userAuth.login.status);
 
   const adminHeaders = {
@@ -297,36 +449,58 @@ async function main() {
     walletBeforeResp.status,
   );
 
-  const createRecharge = await requestJson('/api/v1/payment/create', {
-    method: 'POST',
-    headers: userHeaders,
-    body: JSON.stringify({
-      planId: 'custom',
-      amount: RECHARGE_AMOUNT,
-      paymentMethod: 'alipay',
-    }),
-  }, userSession);
-  const rechargeOrderId = createRecharge.data?.data?.orderId || createRecharge.data?.data?.paymentId;
-  add(
-    checks,
-    'create-recharge',
-    createRecharge.ok && typeof rechargeOrderId === 'string' ? 'PASS' : 'FAIL',
-    createRecharge.ok ? `orderId=${String(rechargeOrderId)}` : safeMsg(createRecharge),
-    createRecharge.status,
-  );
+  if (isLoopbackTarget() && !USE_EXTERNAL_PAYMENT) {
+    const directRecharge = await requestJson('/api/v1/wallet/recharge', {
+      method: 'POST',
+      headers: userHeaders,
+      body: JSON.stringify({ amount: RECHARGE_AMOUNT }),
+    }, userSession);
+    add(
+      checks,
+      'create-recharge',
+      directRecharge.ok ? 'PASS' : 'FAIL',
+      directRecharge.ok ? 'local wallet recharge completed' : safeMsg(directRecharge),
+      directRecharge.status,
+    );
+    add(
+      checks,
+      'complete-recharge',
+      directRecharge.ok ? 'PASS' : 'FAIL',
+      directRecharge.ok ? 'local smoke recharge bypassed external payment' : 'local recharge did not complete',
+      directRecharge.status,
+    );
+  } else {
+    const createRecharge = await requestJson('/api/v1/payment/create', {
+      method: 'POST',
+      headers: userHeaders,
+      body: JSON.stringify({
+        planId: 'custom',
+        amount: RECHARGE_AMOUNT,
+        paymentMethod: 'alipay',
+      }),
+    }, userSession);
+    const rechargeOrderId = createRecharge.data?.data?.orderId || createRecharge.data?.data?.paymentId;
+    add(
+      checks,
+      'create-recharge',
+      createRecharge.ok && typeof rechargeOrderId === 'string' ? 'PASS' : 'FAIL',
+      createRecharge.ok ? `orderId=${String(rechargeOrderId)}` : safeMsg(createRecharge),
+      createRecharge.status,
+    );
 
-  const completeRecharge = await requestJson('/api/v1/payment/admin/complete-order', {
-    method: 'POST',
-    headers: adminHeaders,
-    body: JSON.stringify({ orderId: rechargeOrderId }),
-  }, adminSession);
-  add(
-    checks,
-    'complete-recharge',
-    completeRecharge.ok ? 'PASS' : 'FAIL',
-    completeRecharge.ok ? 'admin completed recharge order' : safeMsg(completeRecharge),
-    completeRecharge.status,
-  );
+    const completeRecharge = await requestJson('/api/v1/payment/admin/complete-order', {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({ orderId: rechargeOrderId }),
+    }, adminSession);
+    add(
+      checks,
+      'complete-recharge',
+      completeRecharge.ok ? 'PASS' : 'FAIL',
+      completeRecharge.ok ? 'admin completed recharge order' : safeMsg(completeRecharge),
+      completeRecharge.status,
+    );
+  }
 
   const walletAfterRechargeResp = await requestJson('/api/v1/wallet', {
     headers: userReadHeaders,
@@ -480,12 +654,31 @@ async function main() {
   }
   console.log(`[smoke:wallet-listing] Report written to: ${fullReportPath}`);
 
-  if (failed.length > 0) {
-    process.exit(1);
-  }
-}
+   if (failed.length > 0) {
+     process.exitCode = 1;
+   }
+ }
 
 main().catch((error) => {
   console.error('[smoke:wallet-listing] Unexpected error:', error);
-  process.exit(1);
+  process.exitCode = 1;
+}).finally(async () => {
+  if (generatedListingUserId !== null) {
+    try {
+      await cleanupGeneratedUser(generatedListingUserId);
+      console.log(`[smoke:wallet-listing] Cleaned generated user ${generatedListingUserId}`);
+    } catch (error) {
+      console.error('[smoke:wallet-listing] Cleanup failed:', error);
+      process.exitCode = 1;
+    }
+  }
+  if (generatedAdminUserId !== null) {
+    try {
+      await cleanupGeneratedUser(generatedAdminUserId);
+      console.log(`[smoke:wallet-listing] Cleaned generated admin ${generatedAdminUserId}`);
+    } catch (error) {
+      console.error('[smoke:wallet-listing] Admin cleanup failed:', error);
+      process.exitCode = 1;
+    }
+  }
 });

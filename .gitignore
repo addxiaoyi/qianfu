@@ -38,6 +38,9 @@ dist-ssr
 prisma/dev.db
 prisma/dev.db-shm
 prisma/dev.db-wal
+prisma/generated/
+prisma/test-migration-*
+prisma/-migration-*
 *.db
 *.db-journal
 
@@ -49,6 +52,10 @@ eslint-output.json
 # Test results
 test-results/
 coverage/
+
+# Python runtime
+__pycache__/
+*.py[cod]
 
 # Backup files
 *.tar.gz
@@ -80,6 +87,9 @@ prisma/migrations/migration_lock.toml
 .next/
 out/
 
+# Rust v2 build output
+rust-v2/target/
+
 # Vite
 .vite/
 
@@ -94,3 +104,6 @@ bun.lock
 
 # Bun cache
 .bun/
+
+# Local deployment and verification snapshots
+.runtime/

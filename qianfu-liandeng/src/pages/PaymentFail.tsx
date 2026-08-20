@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { XCircle, RefreshCw, MessageSquare, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useT } from '@/store/uiStore';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 
 const PaymentFail: React.FC = () => {
   const t = useT();

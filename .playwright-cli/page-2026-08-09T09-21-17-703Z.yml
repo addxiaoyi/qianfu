@@ -1,0 +1,205 @@
+- generic [ref=e2]:
+  - status [ref=e3]: 推广中心 - 千服联灯
+  - status [ref=e16]:
+    - generic [ref=e17]:
+      - generic [ref=e22]:
+        - generic [ref=e23]: 系统公告：
+        - text: 支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+      - button "关闭当前公告" [ref=e24]
+  - button "打开 Gemini 3.5 驱动助手" [ref=e28]
+  - generic [ref=e7]:
+    - link "跳到主要内容" [ref=e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - link "千服联灯 QianFu" [ref=e34] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e57]:
+              - generic [ref=e58]: 千服联灯
+              - generic [ref=e59]: QianFu
+          - generic [ref=e60]:
+            - link "首页" [ref=e61] [cursor=pointer]:
+              - /url: /
+            - link "找服" [ref=e68] [cursor=pointer]:
+              - /url: /servers
+            - link "新闻" [ref=e73] [cursor=pointer]:
+              - /url: /news
+            - link "资源" [ref=e79] [cursor=pointer]:
+              - /url: /resources
+            - link "团队" [ref=e85] [cursor=pointer]:
+              - /url: /team
+            - generic [ref=e90]:
+              - link "推广" [expanded] [ref=e91] [cursor=pointer]:
+                - /url: /promotion
+              - generic [ref=e306]:
+                - generic [ref=e308]:
+                  - generic [ref=e309]: 推广中心
+                  - generic [ref=e310]: 了解推广方式、参与条件与平台规则。
+                - generic [ref=e311]:
+                  - link "推广说明 登录后可用 查看参与方式、奖励规则与注意事项" [ref=e312] [cursor=pointer]:
+                    - /url: /promotion
+                    - generic [ref=e320]:
+                      - generic [ref=e321]:
+                        - generic [ref=e322]: 推广说明
+                        - generic [ref=e323]: 登录后可用
+                      - generic [ref=e324]: 查看参与方式、奖励规则与注意事项
+                  - link "个人主页 查看个人信息、奖励记录与相关页面" [ref=e327] [cursor=pointer]:
+                    - /url: /me
+                    - generic [ref=e333]:
+                      - generic [ref=e334]: 个人主页
+                      - generic [ref=e335]: 查看个人信息、奖励记录与相关页面
+        - generic [ref=e95]:
+          - link "访客预览" [ref=e96] [cursor=pointer]:
+            - /url: /dashboard
+          - link "登录" [ref=e100] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=e101] [cursor=pointer]:
+            - /url: /register
+    - main [active] [ref=e11]:
+      - generic [ref=e338]:
+        - generic [ref=e340]:
+          - paragraph [ref=e341]: PROMOTION SERVICE
+          - generic [ref=e342]:
+            - heading "推广服务说明" [level=1] [ref=e343]
+            - paragraph [ref=e344]: 千服联灯为服务器和内容创作者提供公开推广任务、材料提交、审核和奖励结算服务。所有任务、金额和完成条件以平台实际展示为准，不代表平台保证播放量、排名或转化结果。
+          - generic [ref=e345]:
+            - link "登录后进入推广中心" [ref=e346] [cursor=pointer]:
+              - /url: /promotion/tasks-center
+            - link "查看退款政策" [ref=e349] [cursor=pointer]:
+              - /url: /refund-policy
+        - generic [ref=e350]:
+          - article [ref=e351]:
+            - heading "推广服务" [level=2] [ref=e356]
+            - paragraph [ref=e357]: 用户可以在任务中心查看公开任务，绑定对应平台账号，提交符合要求的内容链接和证明材料。
+          - article [ref=e358]:
+            - heading "内容审核" [level=2] [ref=e362]
+            - paragraph [ref=e363]: 平台会核验链接、账号归属、公开数据和任务条件。审核中、已通过、已驳回和已结算状态会在账户内显示。
+          - article [ref=e364]:
+            - heading "奖励结算" [level=2] [ref=e368]
+            - paragraph [ref=e369]: 奖励金额、数据观察期和结算条件以具体任务规则为准。只有通过审核并满足任务条件的申请，才会进入结算流程。
+        - generic [ref=e371]:
+          - generic [ref=e372]:
+            - paragraph [ref=e373]: BEFORE SUBMITTING
+            - heading "提交前请确认" [level=2] [ref=e374]
+          - list [ref=e375]:
+            - listitem [ref=e376]: 公开链接可以正常访问，且内容与任务要求一致。
+            - listitem [ref=e380]: 提交的账号标识和证明材料真实、完整，不包含他人隐私或支付凭据。
+            - listitem [ref=e384]: 任务未明确承诺固定曝光或收益；平台可以因违规、数据异常或证据不足拒绝申请。
+        - generic [ref=e388]:
+          - article [ref=e389]:
+            - heading "退款与争议" [level=2] [ref=e390]
+            - paragraph [ref=e391]: 与推广或平台服务订单有关的退款、服务未履行、重复扣款和支付争议，按平台退款政策处理；法定权利优先。请保留订单号、任务链接和相关证据。
+            - link "阅读退款政策" [ref=e392] [cursor=pointer]:
+              - /url: /refund-policy
+          - article [ref=e395]:
+            - heading "需要帮助" [level=2] [ref=e396]
+            - paragraph [ref=e397]: 账户、审核、奖励结算或退款问题，请先通过登录后的工单提交；也可以发送邮件至平台支持地址。
+            - link "support@0st.top" [ref=e398] [cursor=pointer]:
+              - /url: mailto:support@0st.top
+    - contentinfo [ref=e198]:
+      - generic [ref=e199]:
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - link "千服联灯" [ref=e202] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e224]: 面向中文 Minecraft 玩家和服主的服务器发现、发布、数字资源交易与支持平台。公开规则、卖家身份、订单、交付和争议均保留可核验记录。
+            - generic [ref=e225]:
+              - link "前往推广中心" [ref=e226] [cursor=pointer]:
+                - /url: /promotion
+              - link "前往工单支持" [ref=e229] [cursor=pointer]:
+                - /url: /tickets
+              - link "发送邮件联系平台" [ref=e232] [cursor=pointer]:
+                - /url: mailto:support@0st.top
+          - generic [ref=e236]:
+            - heading "平台" [level=4] [ref=e237]
+            - list [ref=e238]:
+              - listitem [ref=e239]:
+                - link "浏览服务器" [ref=e240] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=e241]:
+                - link "高级搜索" [ref=e242] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=e243]:
+                - link "资源中心" [ref=e244] [cursor=pointer]:
+                  - /url: /resources
+              - listitem [ref=e245]:
+                - link "玩家市场" [ref=e246] [cursor=pointer]:
+                  - /url: /marketplace/shop
+              - listitem [ref=e247]:
+                - link "开发团队" [ref=e248] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e249]:
+                - link "等级规则" [ref=e250] [cursor=pointer]:
+                  - /url: /rules
+          - generic [ref=e251]:
+            - heading "法律与隐私" [level=4] [ref=e252]
+            - list [ref=e253]:
+              - listitem [ref=e254]:
+                - link "服务条款" [ref=e255] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e256]:
+                - link "隐私声明" [ref=e257] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=e258]:
+                - link "退款政策" [ref=e259] [cursor=pointer]:
+                  - /url: /refund-policy
+              - listitem [ref=e260]:
+                - link "可接受使用政策" [ref=e261] [cursor=pointer]:
+                  - /url: /acceptable-use
+              - listitem [ref=e262]:
+                - link "未成年人保护" [ref=e263] [cursor=pointer]:
+                  - /url: /minor-protection
+              - listitem [ref=e264]:
+                - link "Cookie 与第三方服务" [ref=e265] [cursor=pointer]:
+                  - /url: /cookies-and-services
+              - listitem [ref=e266]:
+                - link "全部合规规则" [ref=e267] [cursor=pointer]:
+                  - /url: /compliance
+          - generic [ref=e268]:
+            - heading "交易规则" [level=4] [ref=e269]
+            - list [ref=e270]:
+              - listitem [ref=e271]:
+                - link "收费项目披露" [ref=e272] [cursor=pointer]:
+                  - /url: /pricing-disclosure
+              - listitem [ref=e273]:
+                - link "数字商品交付" [ref=e274] [cursor=pointer]:
+                  - /url: /digital-delivery
+              - listitem [ref=e275]:
+                - link "玩家市场交易" [ref=e276] [cursor=pointer]:
+                  - /url: /marketplace-rules
+              - listitem [ref=e277]:
+                - link "商家入驻协议" [ref=e278] [cursor=pointer]:
+                  - /url: /merchant-agreement
+              - listitem [ref=e279]:
+                - link "钱包使用规则" [ref=e280] [cursor=pointer]:
+                  - /url: /wallet-rules
+              - listitem [ref=e281]:
+                - link "平台禁售清单" [ref=e282] [cursor=pointer]:
+                  - /url: /prohibited-items
+          - generic [ref=e283]:
+            - heading "权利与支持" [level=4] [ref=e284]
+            - list [ref=e285]:
+              - listitem [ref=e286]:
+                - link "知识产权投诉" [ref=e287] [cursor=pointer]:
+                  - /url: /ip-complaints
+              - listitem [ref=e288]:
+                - link "举报与内容处置" [ref=e289] [cursor=pointer]:
+                  - /url: /reporting-rules
+              - listitem [ref=e290]:
+                - link "工单支持" [ref=e291] [cursor=pointer]:
+                  - /url: /tickets
+              - listitem [ref=e292]:
+                - link "钱包与账单" [ref=e293] [cursor=pointer]:
+                  - /url: /dashboard/billing
+              - listitem [ref=e294]:
+                - link "support@0st.top" [ref=e295] [cursor=pointer]:
+                  - /url: mailto:support@0st.top
+        - generic [ref=e296]:
+          - generic [ref=e297]:
+            - generic [ref=e298]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e299] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e300]:
+            - generic [ref=e301]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=e304]

@@ -164,6 +164,7 @@ async function main() {
         htmlInfo.body.includes(`https://${mainSiteHost}/`))
   );
   const rootMarkerMatch = htmlInfo.body.includes('qianfu-pay-gateway');
+  const personalFilingDisabled = htmlInfo.statusCode === 410 && htmlInfo.body.includes('PERSONAL_FILING_DISABLED');
 
   printField('host', host);
   printField('tls_status', computeTlsStatus(tlsInfo, expectHost));
@@ -175,6 +176,7 @@ async function main() {
   printField('og_url', ogUrl);
   printField('looks_like_main_site', looksLikeMainSite ? 'true' : 'false');
   printField('root_marker_match', rootMarkerMatch ? 'true' : 'false');
+  printField('personal_filing_disabled', personalFilingDisabled ? 'true' : 'false');
 }
 
 main().catch((error) => {

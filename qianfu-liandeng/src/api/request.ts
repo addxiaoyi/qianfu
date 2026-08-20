@@ -1,6 +1,8 @@
-import { toast } from '@/hooks/use-toast';
+import { notifyError } from '../lib/error-notification';
 import { staticT } from '@/store/uiStore';
 import { sanitizeUrl } from '@/utils/urlValidator';
+import { resolveHttpErrorMessage } from './errorMessage';
+import { NonJsonResponseError, readJsonResponse } from './responseParsing';
 
 const URL_FIELDS = new Set([
   'url', 'imageUrl', 'coverUrl', 'avatarUrl', 'bannerUrl',
@@ -44,6 +46,20 @@ export interface RequestOptions extends RequestInit {
   skipCsrf?: boolean;
 }
 
+function combineAbortSignals(timeoutSignal: AbortSignal, callerSignal?: AbortSignal): AbortSignal {
+  if (!callerSignal) return timeoutSignal;
+  const mergedController = new AbortController();
+  const abort = () => mergedController.abort();
+  if (timeoutSignal.aborted || callerSignal.aborted) {
+    mergedController.abort();
+    return mergedController.signal;
+  }
+
+  timeoutSignal.addEventListener('abort', abort, { once: true });
+  callerSignal.addEventListener('abort', abort, { once: true });
+  return mergedController.signal;
+}
+
 export class ApiError extends Error {
   status: number;
   data: any;
@@ -82,12 +98,29 @@ const BACKEND_FALLBACKS = ['http://localhost:3000', 'http://localhost:3001'];
 let localAuthTokenMemory: string | null = null;
 
 const getApiBase = () => import.meta.env.VITE_API_URL || DEFAULT_API_BASE;
+const isRustV2Enabled = () => String(import.meta.env.VITE_API_V2 || '').toLowerCase() === 'true';
+const rustV2Path = (value: string) => {
+  if (!isRustV2Enabled()) return value;
+  const suffixIndex = value.search(/[?#]/);
+  const pathname = suffixIndex === -1 ? value : value.slice(0, suffixIndex);
+  const suffix = suffixIndex === -1 ? '' : value.slice(suffixIndex);
+  const path = pathname.replace(/^\/api\/v1/, '');
+  // Do not infer compatibility from a matching resource name. The v1 browser
+  // flows currently use different session and server payload contracts.
+  const isV2DnsCatalog = /^\/dns\/suffixes\/?$/.test(path);
 
-const normalizePath = (url: string) => {
+  return isV2DnsCatalog ? `/api/v2${path}${suffix}` : value;
+};
+
+export const normalizePath = (url: string) => {
   if (url.startsWith('http')) return url;
   const apiBase = getApiBase();
   const base = url.startsWith('/api') ? url : `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
-  return base.startsWith('/api/v1') ? base : base.replace(/^\/api(\/|$)/, '/api/v1$1');
+  if (/^\/api\/v\d+(\/|$)/.test(base)) {
+    return rustV2Path(base);
+  }
+  const normalized = base.replace(/^\/api(\/|$)/, '/api/v1$1');
+  return rustV2Path(normalized);
 };
 
 let csrfTokenPromise: Promise<string | null> | null = null;
@@ -244,6 +277,7 @@ export async function request<T = any>(
 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
+  const signal = combineAbortSignals(controller.signal, fetchOptions.signal);
 
   try {
     if (typeof window !== 'undefined') {
@@ -263,7 +297,7 @@ export async function request<T = any>(
     const response = await fetch(requestUrl, {
       ...fetchOptions,
       headers,
-      signal: controller.signal,
+      signal,
       credentials: 'include',
     });
 
@@ -279,11 +313,9 @@ export async function request<T = any>(
 
       const code = getErrorCode(errorData);
       let message = errorData?.error?.message || errorData?.message || staticT('common.error');
-      if (response.status === 502) {
-        message = '后端服务未就绪，请稍后再试';
-      }
+      message = resolveHttpErrorMessage(response.status, code, message);
       if (response.status === 404) {
-        message = `[NETWORK_ERR] Target endpoint not found (404). Please ensure the backend server is active and the API route is correct.`;
+        message = errorData?.error?.message || '请求的内容不存在或已下架';
       }
 
       if (isSessionExpired(response.status, code)) {
@@ -303,9 +335,8 @@ export async function request<T = any>(
       }
 
       if (!(isSessionExpired(response.status, code))) {
-        toast({
+        notifyError(message, {
           title: staticT('common.sys_hint'),
-          description: message,
           variant: 'destructive',
         });
       }
@@ -314,21 +345,31 @@ export async function request<T = any>(
     }
 
     if (response.status === 204) return {} as T;
-    if (responseType === 'blob') return (await response.blob()) as any;
-    if (responseType === 'text') return (await response.text()) as any;
+    if (responseType === 'blob') return (await response.blob()) as unknown;
+    if (responseType === 'text') return (await response.text()) as unknown;
 
-    const result = await response.json();
+    let result: any;
+    try {
+      result = await readJsonResponse<any>(response);
+    } catch (error) {
+      if (error instanceof NonJsonResponseError) {
+        throw new ApiError(error.message, response.status, {
+          error: { code: error.code },
+        });
+      }
+      throw error;
+    }
     const sanitized = sanitizeResponseData(result);
     return sanitized.data !== undefined ? sanitized.data : sanitized;
   } catch (error: any) {
     clearTimeout(id);
     if (error.name === 'AbortError') {
-      toast({
+      const timeoutMessage = staticT('common.net_timeout_desc');
+      notifyError(timeoutMessage, {
         title: staticT('common.net_timeout'),
-        description: staticT('common.net_timeout_desc'),
         variant: 'destructive',
       });
-      throw new Error('Timeout');
+      throw new Error(timeoutMessage);
     }
     if (error instanceof ApiError && isSessionExpired(error.status, error.code)) {
       await invalidateCsrfToken();

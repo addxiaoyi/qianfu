@@ -6,6 +6,7 @@ import { api } from '../../api/request';
 import { cn } from '../../utils/cn';
 import { formatDateTime } from '../../utils/serverView';
 import { toArray } from '../../utils/apiData';
+import { toast } from '../../hooks/use-toast';
 
 interface Notification {
   id: number | string;
@@ -46,11 +47,13 @@ const MobileNotifications: React.FC = () => {
   const markReadMutation = useMutation({
     mutationFn: (id: Notification['id']) => api.patch(`/notifications/${id}/read`, {}),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => toast({ variant: 'destructive', title: '通知状态更新失败' }),
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: () => api.post('/notifications/read-all', {}),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => toast({ variant: 'destructive', title: '无法标记全部已读' }),
   });
 
   const filtered = useMemo(
@@ -65,8 +68,8 @@ const MobileNotifications: React.FC = () => {
         <div className="flex items-center justify-between px-4 py-4">
           <h1 className="text-base font-black uppercase tracking-tight">通知</h1>
           {unreadCount > 0 && (
-            <button type="button" onClick={() => markAllReadMutation.mutate()} className="text-xs font-bold text-primary">
-              全部已读
+            <button type="button" onClick={() => markAllReadMutation.mutate()} disabled={markAllReadMutation.isPending} className="text-xs font-bold text-primary disabled:opacity-50">
+              {markAllReadMutation.isPending ? '处理中…' : '全部已读'}
             </button>
           )}
         </div>
@@ -74,6 +77,7 @@ const MobileNotifications: React.FC = () => {
           <button
             type="button"
             onClick={() => setFilter('all')}
+            aria-pressed={filter === 'all'}
             className={cn('px-4 py-1.5 rounded-lg text-xs font-bold transition-colors', filter === 'all' ? 'bg-black text-white' : 'bg-gray-100 text-muted-foreground')}
           >
             全部
@@ -81,6 +85,7 @@ const MobileNotifications: React.FC = () => {
           <button
             type="button"
             onClick={() => setFilter('unread')}
+            aria-pressed={filter === 'unread'}
             className={cn('px-4 py-1.5 rounded-lg text-xs font-bold transition-colors', filter === 'unread' ? 'bg-black text-white' : 'bg-gray-100 text-muted-foreground')}
           >
             未读 {unreadCount > 0 ? unreadCount : ''}
@@ -102,7 +107,8 @@ const MobileNotifications: React.FC = () => {
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center">
               <Bell className="w-8 h-8 text-muted-foreground" />
             </div>
-            <p className="text-sm text-muted-foreground font-bold">暂无通知</p>
+            <p className="text-sm text-muted-foreground font-bold">{filter === 'unread' ? '没有未读通知' : '暂无通知'}</p>
+            <p className="text-xs text-muted-foreground">{filter === 'unread' ? '所有通知都已处理。' : '审核、工单和账号更新会显示在这里。'}</p>
           </div>
         ) : (
           filtered.map((item, index) => {

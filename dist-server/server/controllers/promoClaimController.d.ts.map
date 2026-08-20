@@ -1,0 +1,1 @@
+{"version":3,"file":"promoClaimController.d.ts","sourceRoot":"","sources":["../../../server/controllers/promoClaimController.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,YAAY,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAGtD,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,oBAAoB,CAAC;AAMtD,eAAO,MAAM,gBAAgB,GAC3B,KAAK,WAAW,EAChB,KAAK,QAAQ,EACb,MAAM,YAAY,KACjB,OAAO,CAAC,OAAO,CAuBjB,CAAC"}

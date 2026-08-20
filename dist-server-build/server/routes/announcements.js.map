@@ -1,0 +1,1 @@
+{"version":3,"file":"announcements.js","sourceRoot":"","sources":["../../../server/routes/announcements.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,SAAS,CAAC;AAEjC,OAAO,EAAE,qBAAqB,EAAE,MAAM,uCAAuC,CAAC;AAE9E,MAAM,MAAM,GAAG,MAAM,EAAE,CAAC;AAExB,MAAM,CAAC,GAAG,CAAC,UAAU,EAAE,qBAAqB,CAAC,CAAC;AAE9C,eAAe,MAAM,CAAC"}

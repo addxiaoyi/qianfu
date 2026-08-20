@@ -1,6 +1,7 @@
 # 千服 (QianFu) 技术审计报告
 
 > **审计日期**: 2026-04-18  
+> **专项复核**: 2026-07-31（M-04 富文本、M-05 钱包金额、M-07 全局前端反馈）
 > **审计范围**: 前端 (`src/`) + 后端 (`server/`) + 构建配置 + Docker  
 > **严重级别**: 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🔵 LOW | ⚪ INFO
 
@@ -291,24 +292,55 @@ src/components/
 
 ---
 
-### 🟡 M-04: SafeHtml 组件 `*` 通配符允许 style 属性
+### 🟡 M-04: 前端富文本 CSS/XSS 清理边界
 
-**文件**: `src/components/ui/safe-html.tsx:22`
-```typescript
-'*': ['id', 'style'] // 任何标签都允许 id 和 style
-```
-**风险**: 攻击者可利用 `style` 属性进行 CSS 注入（虽然 React 环境下风险较低）
+**原审计路径**: `src/components/ui/safe-html.tsx` 已不在当前代码树中。
+**当前相关文件**:
+- `qianfu-liandeng/src/utils/htmlSanitizer.ts`
+- `qianfu-liandeng/src/components/form/GlobalSettingsPanel.tsx`
+- `qianfu-liandeng/src/pages/ServerEditor.tsx`
 
-**修复**: 移除通配符 `*`，仅对需要的标签开放 `style`
+**复核发现**: 当前工具仍使用正则表达式清理 HTML，服务器预览和 AI Markdown 又分别维护 DOMPurify 配置。正则清理可被畸形标签、编码 URL 和属性边界绕过；分散配置还可能遗漏内联 `style`、任意 CSS `class` 或主动内容标签。
+
+**状态**: ✅ 已修复（2026-07-31）
+- 用 DOMPurify 最小白名单替换正则 HTML 清理器。
+- 仅保留安全富文本标签，属性只允许 `href` 和 `title`。
+- 显式拒绝内联 `style`，并剥离 `class`、`id`、`target`、`rel`、事件属性、data/ARIA 属性。
+- 禁止 `script`、`style`、`svg`、`math`、`iframe`、`form`、`object`、`embed` 等主动内容。
+- AI Markdown 与服务器编辑预览统一调用共享 `sanitizeHtml()`。
+- 静态扫描确认当前两个 `dangerouslySetInnerHTML` sink 均已接入共享策略。
+
+**验证证据**:
+- 富文本 sanitizer 定向测试：1 个文件、3 个测试通过。
+- 全量 Vitest：137 个文件、654 个测试通过。
+- `npm run typecheck`：通过。
+- `npm run typecheck:server`：通过。
+- `npm run build`：通过。
 
 ---
 
 ### 🟡 M-05: Wallet Float 精度导致交易签名不匹配
 
-**文件**: `server/lib/wallet.ts` 使用的签名生成依赖 Float 值  
-**风险**: 浮点精度导致服务端和客户端计算的签名不一致
+**状态**: ✅ 已修复（2026-07-31）
 
-**修复**: 金额统一使用整数（分/厘）计算
+**复核结论**:
+- 原审计描述已部分过时：Prisma `Wallet.balance` 与 `Transaction.amount` 当前均为整数分字段。
+- 实际残留风险是元金额入口使用 `parseFloat` / `Math.round(value * 100)` 静默接收亚分金额，以及交易签名未强制整数载荷、使用普通字符串比较。
+
+**修复内容**:
+- `server/utils/currency.ts` 统一执行精确元转分：字符串最多两位小数并使用 `BigInt` 解析；数字仅容忍正常 IEEE-754 噪声，拒绝 `NaN`、`Infinity`、科学计数字符串、超安全整数和亚分金额。
+- 钱包充值、扣款及事务内扣款统一使用正整数分转换；普通扣款在获取 Redis 锁和开启数据库事务前完成金额校验。
+- 支付创建、钱包充值和兑换码金额 schema 统一限制到分精度。
+- 支付环境限额配置在精度非法时告警并回退；支付通知金额返回无效而不是抛出 500；PayPro 金额从整数分格式化，不再使用 `toFixed(2)` 静默舍入。
+- 支付项目测试下单对亚分金额返回明确的 400 校验错误。
+- 交易签名只接受安全整数 `id`、`walletId`、`amount`，校验有效日期和规范字符串字段，并使用 `crypto.timingSafeEqual` 比较签名。
+
+**验证证据**:
+- 钱包与支付定向测试：5 个文件、31 个测试通过。
+- 全量 Vitest：138 个文件、659 个测试通过。
+- `npm run typecheck`：通过。
+- `npm run typecheck:server`：通过。
+- `npm run build`：通过。
 
 ---
 
@@ -325,29 +357,32 @@ src/components/
 
 ---
 
-### 🟡 M-07: 前端缺少全局 loading/error 状态
+### 🟡 M-07: 前端全局 loading/error 状态不完整
 
-**问题**: React Query 请求无统一 loading skeleton 和 error 处理
+**状态**: ✅ 已修复并复核（2026-07-31）
 
-**状态**: ✅ 已实现 - `src/lib/query-client.ts` 已配置完善的全局配置：
-- staleTime: 5 分钟
-- retry: 1 次
-- refetchOnWindowFocus: false
-- 全局错误处理 + toast 通知
-- 错误去重机制 (3.5s)
+**复核结论**:
+- 旧审计声明的 `src/lib/query-client.ts` 在当前前端工程中并不存在；`main.tsx` 实际使用裸 `new QueryClient()`。
+- 请求层虽然会写入 Toast 队列，但应用没有挂载 Toast 视图，因此错误提示不可见。
+- 既有 `GlobalProgress` 仅在路由变化后固定显示 600ms，没有感知真实 query/mutation 活动。
+- 页面级查询错误已有静态审计门禁，要求 `useQuery()` 页面显式处理 `error`、`isError` 或 `status`；本次保留并纳入验证。
 
-**修复**: 实现全局 `QueryClient` 配置
-```typescript
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-```
+**修复内容**:
+- 新增 `qianfu-liandeng/src/lib/query-client.ts`，由 `main.tsx` 使用唯一共享 `QueryClient`。
+- 查询默认 `staleTime` 为 5 分钟，关闭窗口聚焦自动刷新，保留重连刷新；仅网络错误、HTTP 5xx、408 和 429 最多重试一次，其他 4xx 不重试；mutation 默认不重试。
+- `QueryCache` 与 `MutationCache` 提供未覆盖异常兜底；拥有局部 `onError` 或设置 `meta.suppressGlobalError` 的 mutation 可避免全局重复处理。
+- 新增统一 `error-notification.ts`，请求层和 React Query 共用同一通知入口；同标题和正文在 3.5 秒内去重，401/`SESSION_EXPIRED` 交由会话失效流程处理而不重复弹窗。
+- 新增并在应用根部挂载 `ToastViewport`，错误提示使用可见卡片及 `aria-live`/`alert` 语义，并允许用户关闭。
+- `GlobalProgress` 同时观察路由变化、首次/无缓存数据的 `useIsFetching()` 和全部 `useIsMutating()`；已有数据的后台轮询默认不触发顶部进度条，可通过 `meta.showBackgroundProgress` 显式启用或通过 `meta.hideGlobalProgress` 排除。
+
+**验证证据**:
+- 全局反馈定向测试：3 个文件、6 个测试通过。
+- 前端异步错误审计：1 个文件、2 个测试通过，`FRONTEND_ASYNC_ERROR_FINDINGS=0`。
+- 全量 Vitest：139 个文件、662 个测试通过。
+- `npm run typecheck`：通过。
+- `npm run typecheck:server`：通过。
+- `npm run build`：通过。
+- 前端产物：556 个文件、17,237,532 字节，SHA-256 `2b1fc65f74bb47e825b01c8350f0d885551347ea0d904e896d4c53cb8bda4f1e`。
 
 ---
 
@@ -377,99 +412,156 @@ FROM node:20-alpine AS base  # 未锁定具体版本
 
 ### 🟡 M-11: Prisma schema 中 tags/category 等使用 JSON 字符串存储
 
-**文件**: `prisma/schema.prisma:163,184`  
-**问题**: 违反数据库范式，查询效率低（需要 contains 扫描全文）
+**状态**: ✅ 已修复（2026-07-31）
 
-**建议**: 对于核心查询字段，考虑使用 Prisma 的 `String[]` 类型或关联表
+- 新增规范化 `ServerFacet` 关联模型，使用 `kind + normalized_value` 支持标签、版本与网络环境的精确索引查询。
+- `server/controllers/servers/list.ts` 的核心筛选不再对 JSON 字符串执行 `contains` 全文匹配。
+- 创建、更新、版本回滚与跨库同步路径均通过 `replaceServerFacets()` 原子刷新索引。
+- 旧 `tags`、`supported_versions`、`network_env` 字段仅作为 API 序列化兼容层保留。
+- SQLite、MySQL、PostgreSQL 三套迁移均包含历史数据回填。
 
 ---
 
 ### 🟡 M-12: checkin_history 表未在 Prisma schema 管理
 
-**文件**: `server/controllers/userLevelController.ts:30-56`  
-**问题**: 使用 `$executeRawUnsafe` 手动创建表，绕过 Prisma 迁移
+**状态**: ✅ 已修复并完成迁移演练（2026-07-31）
 
-**修复**: 在 `schema.prisma` 中定义 `CheckinHistory` 模型
+- 三套 Prisma schema 均定义 `CheckinHistory` 模型及用户关系、唯一约束和时间索引。
+- 签到控制器已改用 Prisma delegate，不再运行时执行 DDL、`$executeRawUnsafe` 或 `$queryRaw`。
+- 规范化迁移：`prisma/migrations/20260731050000_checkin_and_server_facets/`。
+- 历史数据库演练发现旧控制器创建的 `checkin_history` 虽字段兼容，但没有 `User` 外键；仅使用 `CREATE TABLE IF NOT EXISTS` 无法升级该表。
+- 新增后续迁移 `prisma/migrations/20260731080000_checkin_history_fk_reconciliation/`，避免修改已应用迁移的 checksum：SQLite 重建表，PostgreSQL/MySQL 条件添加外键；三种 provider 均先移除无对应用户的孤儿记录，并建立 `ON DELETE CASCADE`。
+- SQLite 历史数据演练确认：有效签到记录保留、孤儿记录移除、服务器 facets 正确去重回填、重复执行幂等、删除用户后签到记录级联删除。
+- 原 `20260731050000` SQLite 迁移文件 SHA-256 与 `_prisma_migrations.checksum` 均为 `a0995f65e77bfe28af1fa45aa3f9908de6e1b1b3aab7d419329b196b4fa24d3d`，迁移不可变性已验证。
 
 ---
 
 ### 🟡 M-13: paymentController.ts 重复代码 — 充值逻辑
 
-**文件**: `server/controllers/paymentController.ts`  
-**问题**: `xpayNotify` 和 `manualCompletePayment` 有大量重复的充值逻辑（约 40 行相同代码）
+**状态**: ✅ 已修复（2026-07-31）
 
-**修复**: 提取为 `completePaymentWithDeposit()` 私有函数
+- 支付回调与管理员手工完成统一进入 `completePaymentWithSideEffects()`。
+- `manualCompletePayment` 不再重复 Redis 锁、钱包更新和交易副作用代码。
+- `payment-completion-service.test.ts` 固定幂等完成契约。
 
 ---
 
 ### 🟡 M-14: 错误处理器使用 `any` 类型
 
-**文件**: `server/middleware/error.ts:8,12`
-```typescript
-export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
-  let details: any = err.details || null;
-```
-**修复**: 定义 `AppError` 接口类型
+**状态**: ✅ 已修复（2026-07-31）
+
+- `errorHandler` 入参为 `unknown`，通过 `isErrorRecord`、`readString`、`readStatusCode` 显式收窄。
+- 已移除对整个错误对象的未经检查类型断言，同时保留生产脱敏、支付错误映射和堆栈日志策略。
 
 ---
 
 ### 🟡 M-15: 缺少 API 版本管理
 
-**问题**: 所有路由在 `/api` 下，无版本号，未来升级困难
+**状态**: ✅ 已修复
 
-**修复**: 引入版本前缀 `/api/v1`
+- 主路由挂载 `/api/v1`，旧 `/api/*` 仅作为兼容重写入口。
+- 健康检查、OAuth 回调和 CSRF 例外均已同步版本化路径。
 
 ---
 
 ### 🟡 M-16: 部分路由缺少 rate limiter
 
-**检查**: `server/routes/index.ts` 中的路由配置  
-**问题**: `eventsRoutes`, `statsRoutes`, `assetsRoutes` 等未配置独立的 rate limiter
+**状态**: ✅ 已修复并验证（2026-07-31）
+
+- `events` 使用 `adminLimiter`。
+- `stats`（包括 Web Vitals 上报）使用 `serversLimiter`。
+- `assets` 使用 `staticDataLimiter`。
 
 ---
 
 ### 🟡 M-17: 缺少 CORS origin 白名单配置
 
-**文件**: `server/bootstrap/security.ts`  
-**修复**: 确保生产环境配置了具体的 `origin` 白名单而非 `*`
+**状态**: ✅ 已修复并验证
+
+- `server/bootstrap/security.ts` 通过 `getAllowedOrigins()` 汇总显式白名单。
+- 生产环境不接受通配符 origin，支持 `CORS_ALLOWED_ORIGINS` 的受控配置。
 
 ---
 
 ### 🟡 M-18: logger.security 方法可能不存在
 
-**文件**: `server/middleware/waf.ts:211,250,274,297,316,334,357`  
-**问题**: 多处调用 `logger.security()`，需确认 Winston 是否定义了该 level
+**状态**: ✅ 已修复并验证
 
-**修复**: 确保 `server/utils/logger.ts` 配置了 `security` transport
+- `server/utils/logger.ts` 已定义 `security(message, meta)`，WAF 调用具有真实实现。
 
 ---
 
 ## 五、低级别改进 (LOW)
 
 ### 🔵 L-01: ESLint max-warnings 500 太宽松
-```json
-"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 500"
-```
 
-**状态**: ✅ 已修复 - 降低到 50，清理语法错误
+**状态**: ✅ 已修复（2026-07-31）
+
+- 发布 lint 范围明确为 `server`、主前端源码与正式测试。
+- 门禁收紧为 `--max-warnings 0`，独立执行结果为 0 errors / 0 warnings。
+- 测试夹具与未挂载可选模块仅使用文件级窄范围 override，不全局关闭规则。
 
 ### 🔵 L-02: TypeScript 版本 5.4.5 可升级到 5.8+
 
+**状态**: ✅ 已修复 — 根项目声明与实际安装统一为 TypeScript `^5.9.3`。
+
 ### 🔵 L-03: 多个 Radix UI 组件未封装统一 theme
+
+**状态**: ✅ 已修复
+
+- 新增 `qianfu-liandeng/src/components/ui/formPrimitives.ts`，集中底层 Radix primitive 与表单主题令牌。
+- `FormRenderer` 不再直接导入 `@radix-ui/*`。
 
 ### 🔵 L-04: `src/lib/` 和 `src/infrastructure/` 职责重叠
 
+**状态**: ✅ 已解决 — 主前端已不存在 `src/infrastructure`，共享基础能力统一位于 `src/lib`、`src/api` 和 `src/utils`。
+
 ### 🔵 L-05: 前端缺少性能监控（Web Vitals）
+
+**状态**: ✅ 已修复
+
+- 浏览器采集 CLS、FCP、INP、LCP、TTFB，优先通过 `sendBeacon` 上报 `/api/v1/web-vitals`。
+- 后端使用 Zod 校验和 `serversLimiter`，成功返回 204。
+- Prometheus 暴露 `qianfu_web_vital_duration_seconds` 与 `qianfu_web_vital_cls_score` Histogram。
 
 ### 🔵 L-06: 测试覆盖率脚本仅覆盖少量文件
 
+**状态**: ✅ 已修复 — `test:coverage:full` 使用 `COVERAGE_SCOPE=full vitest run --coverage`，CI 保留全量覆盖率观测任务。
+
 ### 🔵 L-07: `tinymce` 和 `vditor` 两个富文本编辑器共存，应统一
+
+**状态**: ✅ 已修复 — 删除无源码消费者的 `vditor` 依赖，保留当前实际使用的 TinyMCE。
 
 ### 🔵 L-08: `@types/express` 仍为 v4（Express 已升级到 v5）
 
+**状态**: ✅ 已修复
+
+- `@types/express` 升级至 `^5.0.6`。
+- 新增 `getRouteParam()` 统一收窄 Express 5 的 `string | string[] | undefined` 参数边界，39 处路由参数访问完成迁移。
+
 ### 🔵 L-09: 缺少 CI/CD pipeline 配置
 
+**状态**: ✅ 已修复并验证 — `.github/workflows/ci.yml` 包含 validate、API smoke、frontend build、runtime env 与 full coverage 任务。
+
 ### 🔵 L-10: 缺少 `.nvmrc` / `.node-version` 文件锁定 Node 版本
+
+**状态**: ✅ 已修复 — 两个文件均锁定 `24.11.1`。
+
+### 2026-07-31 复核证据
+
+- 中低风险定向门禁：5 个文件 / 21 个测试通过。
+- 发布收口定向门禁：迁移与环境策略 3 个文件 / 16 个测试通过；OAuth 与异步错误审计 2 个文件 / 8 个测试通过；数据库 schema 对账安全契约 1 个文件 / 3 个测试通过。
+- 最终全量测试：143 个文件 / 679 个测试通过。
+- `npm run lint`：零 warning 门禁通过。
+- `npm run typecheck:server` 与 `npm run typecheck`：均通过。
+- SQLite、PostgreSQL、MySQL 三套 Prisma schema：均通过 `prisma validate`。
+- SQLite 使用随机临时数据库从零执行全部 21 条迁移成功；历史表场景通过 `sqlite-migration-rehearsal.test.ts` 验证数据保留、孤儿清理、facets 回填和级联删除。
+- 本地 `prisma/dev.db` 已应用 21 条迁移，`prisma migrate status` 返回 schema up to date。
+- 合成生产环境通过 `validate-runtime-env.ts`：空白可选 OAuth/邮件变量归一化为未配置，`MODERATION_ENCRYPTION_KEY` 成为生产强密钥必需项，已配置的邮件加密密钥也执行强度校验。
+- PostgreSQL/MySQL 的 schema 和迁移 SQL 静态契约已验证；新增 provider-neutral `schema-reconcile.mjs`，数据库 URL 仅通过子进程环境传递，不进入 Prisma argv、控制台或 JSON 报告，并提供 `db:schema:assert-clean` 与只读 `release:staging:verify` 零漂移门禁。
+- 本机 Docker daemon 未运行、PostgreSQL 5432 无服务且缺少 MySQL 客户端，因此未声称完成真实 PostgreSQL/MySQL 数据库执行演练；真实连接下的 `db:schema:assert-clean` 仍保留为预发布环境必跑项。
+- 生产构建通过：555 个文件、17,246,993 bytes，SHA-256 `4da5714918a6b5b98bbb06dbad58bd824241c3cc63fd398d8d9780de09bc203d`。
+- 新增回归门禁：`medium-audit-closure.test.ts`、`low-audit-closure.test.ts`、`sqlite-migration-rehearsal.test.ts`、`schema-reconcile-security.test.ts`。
 
 ---
 
@@ -507,20 +599,22 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
 - 组件目录重构 (M-02) - 建议后续迭代
 - store 合并 (M-03) ✅ 已完成
 - API 版本管理 (M-15) ✅ 已完成
-- CI/CD pipeline (L-09) - 建议后续迭代
+- CI/CD pipeline (L-09) ✅ 已完成并纳入仓库
 
 ### ✅ Phase 4 — 代码质量清理（已完成）
 - M-14: errorHandler any 类型清理 ✅ 已完成
-- L-01: ESLint warnings 清理 ✅ 已完成（0 warnings）
+- L-01: 活跃发布范围 ESLint 零 warning 门禁 ✅ 已完成
 - L-10: Node 版本锁定文件 ✅ 已完成（.nvmrc, .node-version）
 
 ### ✅ Phase 5 — 增强改进（已完成）
 - M-06: 用户缓存失效策略 ✅ 已完成
 - M-07: React Query 全局配置 ✅ 已实现
-- M-16: Rate limiter ✅ 已验证（所有路由均已配置）
-- L-06: 测试覆盖率提升 ✅ 已完成（83.98% → 85.94%）
-  - 新增测试: `api-utils.test.ts`, `server-store.test.ts`
-  - 扩展测试: `usePaymentStatusPolling.test.tsx`
+- M-11/M-12: 服务器 facets 与签到历史纳入 Prisma 模型和迁移 ✅ 已完成
+- M-13/M-14: 支付完成逻辑与错误边界统一 ✅ 已完成
+- M-16: Rate limiter ✅ 已验证
+- L-02/L-08: TypeScript 与 Express 5 类型栈升级 ✅ 已完成
+- L-03/L-05/L-07: Radix 边界、Web Vitals、编辑器统一 ✅ 已完成
+- L-06/L-09/L-10: 全量覆盖率、CI、Node 锁定 ✅ 已完成
 
 ---
 
@@ -544,4 +638,4 @@ export const errorHandler = (err: any, req: Request, res: Response, _next: NextF
 
 ---
 
-*报告由资深开发工程师 AI 生成，基于 2026-04-18 代码快照。*
+*报告基于 2026-04-18 代码快照生成，并于 2026-07-31 完成中低风险条目实证复核。*

@@ -1,0 +1,236 @@
+<style>
+  .world-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+  }
+
+  .world-option {
+    overflow: hidden;
+    border: 1px solid #3d4248;
+    border-radius: 14px;
+    background: #15181c;
+    cursor: pointer;
+    transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .world-option:hover {
+    border-color: #e0aa4a;
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .22);
+  }
+
+  .world-option[data-selected="true"] {
+    border-color: #e0aa4a;
+    box-shadow: 0 0 0 3px #e0aa4a;
+  }
+
+  .world-preview {
+    position: relative;
+    display: grid;
+    min-height: 280px;
+    place-items: center;
+    overflow: hidden;
+    isolation: isolate;
+    background: #172337;
+  }
+
+  .world-preview::before {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: #172337;
+    content: '';
+  }
+
+  .world-preview::after {
+    position: absolute;
+    right: -10%;
+    bottom: -16%;
+    left: -10%;
+    z-index: -1;
+    height: 42%;
+    background: #1f2933;
+    box-shadow: 0 -28px 0 #273442, 0 -56px 0 #344354;
+    content: '';
+    transform: perspective(140px) rotateX(42deg);
+    transform-origin: bottom;
+  }
+
+  .world-label {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    color: #c7cbd1;
+    font: 600 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .06em;
+  }
+
+  .stars,
+  .stars::before,
+  .stars::after {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #e9edf2;
+    box-shadow: 48px 18px #e9edf2, 102px -2px #91a9c7, 176px 34px #e9edf2, 226px 5px #91a9c7, 270px 64px #e9edf2, -44px 48px #91a9c7;
+    content: '';
+  }
+
+  .stars { top: 38px; left: 48px; opacity: .8; }
+  .stars::before { top: 56px; left: 82px; opacity: .6; }
+  .stars::after { top: 92px; left: 148px; opacity: .5; }
+
+  .portal {
+    position: relative;
+    width: 118px;
+    height: 162px;
+    border: 10px solid #66798d;
+    background: #0b1019;
+    box-shadow: 0 0 0 7px #303b48, 0 0 0 15px #18212b, 0 0 40px 8px rgba(115, 170, 220, .4);
+    transform: perspective(240px) rotateY(-8deg);
+    animation: portal-breathe 2s ease-in-out infinite alternate;
+  }
+
+  .portal::before,
+  .portal::after {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background: #e0aa4a;
+    box-shadow: 22px 18px #d88943, -18px 38px #e4d17a, 30px 90px #d88943, 78px 50px #e4d17a;
+    content: '';
+    animation: particle-rise 1.4s linear infinite;
+  }
+
+  .portal::before { top: 30px; left: -32px; }
+  .portal::after { right: -28px; bottom: 18px; animation-delay: -.7s; }
+
+  @keyframes portal-breathe {
+    from { transform: perspective(240px) rotateY(-8deg) scale(.94); filter: brightness(.85); }
+    to { transform: perspective(240px) rotateY(-8deg) scale(1); filter: brightness(1.18); }
+  }
+
+  @keyframes particle-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    35% { opacity: 1; }
+    to { opacity: 0; transform: translateY(-36px); }
+  }
+
+  .portal-copy {
+    position: absolute;
+    bottom: 24px;
+    color: #f5f1e8;
+    font: 800 19px/1 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: .05em;
+    text-shadow: 3px 3px #111;
+  }
+
+  .flight-preview .cube,
+  .lantern-preview .cube {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    background: #879d83;
+    border: 4px solid #3f584c;
+    box-shadow: inset -7px -7px #526c5a;
+    animation: cube-drift 2.4s ease-in-out infinite alternate;
+  }
+
+  .flight-preview .cube:nth-of-type(1) { left: 14%; bottom: 25%; transform: scale(.7) rotate(12deg); }
+  .flight-preview .cube:nth-of-type(2) { left: 72%; bottom: 20%; transform: scale(1.4) rotate(-9deg); animation-delay: -.5s; }
+  .flight-preview .cube:nth-of-type(3) { left: 42%; bottom: 11%; transform: scale(.9) rotate(4deg); animation-delay: -1s; }
+
+  @keyframes cube-drift {
+    to { margin-bottom: 12px; filter: brightness(1.2); }
+  }
+
+  .flight-logo {
+    position: relative;
+    z-index: 1;
+    color: #f5f1e8;
+    font: 800 24px/1 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -.06em;
+    text-shadow: 4px 4px #111;
+    animation: logo-arrive 1.4s ease-out infinite alternate;
+  }
+
+  .flight-logo small {
+    display: block;
+    margin-top: 9px;
+    color: #e0aa4a;
+    font: 600 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .18em;
+    text-align: center;
+  }
+
+  @keyframes logo-arrive {
+    from { opacity: .2; transform: translateY(16px) scale(.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .lantern-preview {
+    background: #1c2530;
+  }
+
+  .lantern-preview .cube { background: #b9793c; border-color: #694727; box-shadow: inset -7px -7px #81532f; }
+  .lantern-preview .cube:nth-of-type(1) { left: 16%; bottom: 26%; transform: scale(.8); }
+  .lantern-preview .cube:nth-of-type(2) { left: 75%; bottom: 27%; transform: scale(.9); animation-delay: -.8s; }
+  .lantern-preview .cube:nth-of-type(3) { left: 28%; bottom: 48%; transform: scale(.45); animation-delay: -1.4s; }
+  .lantern-body { position: relative; z-index: 1; width: 74px; height: 106px; background: #db994a; border: 10px solid #754628; box-shadow: inset 0 0 0 7px #f3c86a, 0 0 34px 12px rgba(224, 170, 74, .42); animation: lantern-glow 1.6s ease-in-out infinite alternate; }
+  .lantern-body::before, .lantern-body::after { position: absolute; left: 50%; width: 46px; height: 12px; background: #754628; content: ''; transform: translateX(-50%); }
+  .lantern-body::before { top: -28px; }
+  .lantern-body::after { bottom: -28px; }
+  @keyframes lantern-glow { from { filter: brightness(.82); transform: translateY(6px); } to { filter: brightness(1.18); transform: translateY(0); } }
+
+  .world-copy { padding: 16px 18px 18px; }
+  .world-copy h3 { margin: 0 0 7px; color: #f5f1e8; font-size: 17px; }
+  .world-copy p { margin: 0; color: #aeb5bd; font-size: 13px; line-height: 1.6; }
+
+  @media (max-width: 820px) { .world-options { grid-template-columns: 1fr; } }
+</style>
+
+<h2>Minecraft 像素世界：选择场景</h2>
+<p class="subtitle">这次聚焦真实的世界观和镜头感：不是抽象图形，而是让用户像进入一台正在启动的 Minecraft 网络。</p>
+
+<div class="world-options">
+  <div class="world-option" data-choice="portal-arrival" onclick="toggleSelect(this)">
+    <div class="world-preview portal-preview">
+      <span class="world-label">B1 / 1.0s</span>
+      <span class="stars" aria-hidden="true"></span>
+      <div class="portal" aria-hidden="true"></div>
+      <div class="portal-copy">千服联灯</div>
+    </div>
+    <div class="world-copy">
+      <h3>传送门抵达</h3>
+      <p>星空中传送门被点亮，镜头向前推进，最后进入站点首页。品牌记忆最强。</p>
+    </div>
+  </div>
+
+  <div class="world-option" data-choice="voxel-flight" onclick="toggleSelect(this)">
+    <div class="world-preview flight-preview">
+      <span class="world-label">B2 / 1.2s</span>
+      <span class="stars" aria-hidden="true"></span>
+      <span class="cube" aria-hidden="true"></span><span class="cube" aria-hidden="true"></span><span class="cube" aria-hidden="true"></span>
+      <div class="flight-logo">千服联灯<small>SERVER DISCOVERY</small></div>
+    </div>
+    <div class="world-copy">
+      <h3>飞越方块群</h3>
+      <p>镜头从体素地形上方掠过，方块和星点向后退，站点标志在飞行中出现。</p>
+    </div>
+  </div>
+
+  <div class="world-option" data-choice="lantern-guardian" onclick="toggleSelect(this)">
+    <div class="world-preview lantern-preview">
+      <span class="world-label">B3 / 1.0s</span>
+      <span class="stars" aria-hidden="true"></span>
+      <span class="cube" aria-hidden="true"></span><span class="cube" aria-hidden="true"></span><span class="cube" aria-hidden="true"></span>
+      <div class="lantern-body" aria-hidden="true"></div>
+    </div>
+    <div class="world-copy">
+      <h3>灯笼守望</h3>
+      <p>夜色中的体素灯笼逐级亮起，保留 Minecraft 质感，动作更稳、更有仪式感。</p>
+    </div>
+  </div>
+</div>

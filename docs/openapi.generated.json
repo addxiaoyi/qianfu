@@ -4,8 +4,8 @@
       "CreateServerRequest": {
         "summary": "创建服务器请求示例",
         "value": {
-          "description": "欢迎来到千服原版生存",
-          "host": "mc.example.com",
+          "description": "欢迎来到我的世界服务器",
+          "host": "play.example.com",
           "name": "QianFu Vanilla",
           "port": 25565,
           "version": "1.20.1"
@@ -15,7 +15,7 @@
         "summary": "创建服务器成功响应示例",
         "value": {
           "data": {
-            "host": "mc.example.com",
+            "host": "play.example.com",
             "id": 3001,
             "name": "QianFu Vanilla",
             "port": 25565
@@ -334,7 +334,7 @@
           },
           "host": {
             "description": "服务器地址或域名",
-            "example": "mc.example.com",
+            "example": "play.example.com",
             "type": "string"
           },
           "id": {
@@ -569,6 +569,45 @@
           }
         ],
         "summary": "Get current user's server management info",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/me/favorites": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite servers list"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List current user's favorite servers",
         "tags": [
           "Servers"
         ]
@@ -1150,6 +1189,65 @@
         ]
       }
     },
+    "/api/v1/servers/{id}/favorite": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite toggled"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Toggle server favorite",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{id}/favorite-state": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Favorite state"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user's favorite state for a server",
+        "tags": [
+          "Servers"
+        ]
+      }
+    },
     "/api/v1/servers/{id}/like": {
       "post": {
         "parameters": [
@@ -1428,10 +1526,6 @@
     {
       "description": "Development server (v1)",
       "url": "http://localhost:3000/api/v1"
-    },
-    {
-      "description": "Production server (v1)",
-      "url": "https://api.qianfu.example/api/v1"
     }
   ],
   "tags": [

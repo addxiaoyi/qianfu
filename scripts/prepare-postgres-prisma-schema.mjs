@@ -8,7 +8,7 @@ const mysqlTargetPath = path.resolve('prisma/schema.mysql.prisma');
 const source = await fs.readFile(sourcePath, 'utf8');
 
 const withoutLocalGenerator = source.replace(
-  /\ngenerator localClient \{[\s\S]*?\n\}\n/g,
+  /\r?\ngenerator localClient \{[\s\S]*?\r?\n\}\r?\n/g,
   '\n',
 );
 
@@ -20,7 +20,7 @@ function buildSchema(outputDir, provider) {
       'generator client {',
       '  provider      = "prisma-client-js"',
       `  output        = "./generated/${outputDir}"`,
-      '  binaryTargets = ["native", "debian-openssl-3.0.x"]',
+      '  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-1.1.x"]',
       '}',
     ].join('\n'),
   )

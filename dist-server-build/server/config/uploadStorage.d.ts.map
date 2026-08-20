@@ -1,0 +1,1 @@
+{"version":3,"file":"uploadStorage.d.ts","sourceRoot":"","sources":["../../../server/config/uploadStorage.ts"],"names":[],"mappings":"AAEA,MAAM,MAAM,iBAAiB,GAAG,MAAM,CAAC,MAAM,EAAE,MAAM,GAAG,SAAS,CAAC,CAAC;AAEnE,wBAAgB,sBAAsB,CACpC,GAAG,GAAE,iBAA+B,EACpC,GAAG,SAAgB,GAClB,MAAM,CAGR;AAED,eAAO,MAAM,WAAW,QAA2B,CAAC"}

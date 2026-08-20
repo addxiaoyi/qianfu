@@ -26,6 +26,7 @@ $script:State = [ordered]@{
   public_pay_og_url = ''
   public_pay_main_site_fallback = 'unknown'
   public_pay_root_marker_match = 'unknown'
+  public_pay_personal_filing_disabled = 'unknown'
   public_web_frontend_root_status = 'unknown'
   public_web_frontend_bundle = ''
   local_web_frontend_bundle = ''
@@ -284,6 +285,7 @@ function Probe-NodePayDomain {
           'og_url' { $script:State.public_pay_og_url = $value }
           'looks_like_main_site' { $script:State.public_pay_main_site_fallback = $value }
           'root_marker_match' { $script:State.public_pay_root_marker_match = $value }
+          'personal_filing_disabled' { $script:State.public_pay_personal_filing_disabled = $value }
         }
       }
     }
@@ -378,6 +380,7 @@ function Probe-UnifiedPublicDiagnosis {
           'pay_og_url' { $script:State.public_pay_og_url = $value }
           'pay_looks_like_main_site' { $script:State.public_pay_main_site_fallback = $value }
           'pay_root_marker_match' { $script:State.public_pay_root_marker_match = $value }
+          'pay_personal_filing_disabled' { $script:State.public_pay_personal_filing_disabled = $value }
           'pay_diagnosis' { $script:State.public_pay_diagnosis = $value }
         }
       }
@@ -443,9 +446,6 @@ Section 'Public Health'
 Probe-Http -Label 'public-web' -Url "https://$WebDomain/"
 Probe-Http -Label 'public-api-health' -Url "https://$WebDomain/api/health" -Expect 'healthy' -StateKey 'public_web_api_health'
 Probe-Http -Label 'public-api-ready' -Url "https://$WebDomain/api/ready" -Expect 'ready'
-Probe-Http -Label 'public-pay-root' -Url "https://$PayDomain/"
-Probe-Http -Label 'public-pay-health' -Url "https://$PayDomain/health"
-Probe-Http -Label 'public-pay-api-health' -Url "https://$PayDomain/api/health" -Expect 'healthy' -StateKey 'public_pay_api_health'
 Probe-NodePayDomain -DomainName $PayDomain -MainSiteHost $WebDomain
 Probe-FrontendDeploy
 Probe-UnifiedPublicDiagnosis
@@ -472,10 +472,12 @@ if ($script:State.public_pay_main_site_fallback -eq 'true') {
 if ($script:State.public_pay_tls -eq 'wrong_principal' -and $script:State.public_pay_main_site_fallback -eq 'true') {
   Record-Diagnosis 'Pay domain is almost certainly landing on the main-site TLS/vhost instead of a dedicated pay-site block. Prioritize pay.star-web.top server_name matching, certificate binding, and hosting-panel site assignment before adjusting app ports.'
 }
-if ($script:State.public_pay_main_site_fallback -ne 'true' -and $script:State.public_pay_root_marker_match -eq 'false') {
-  Record-Diagnosis 'Pay domain root did not return the expected qianfu-pay-gateway marker. The pay-site template may not be deployed, or another app is still answering on that host.'
+if ($script:State.public_pay_personal_filing_disabled -eq 'true') {
+  Info 'Pay domain is intentionally closed under personal filing mode (410 PERSONAL_FILING_DISABLED).'
+} elseif ($script:State.public_pay_main_site_fallback -ne 'true' -and $script:State.public_pay_personal_filing_disabled -eq 'false') {
+  Record-Diagnosis 'Pay domain did not return the expected PERSONAL_FILING_DISABLED closure. The retained hostname may still have an old vhost or upstream.'
 }
-if ($script:State.public_pay_api_health -eq 'fail') {
+if ($script:State.public_pay_personal_filing_disabled -ne 'true' -and $script:State.public_pay_api_health -eq 'fail') {
   Record-Diagnosis 'Pay domain is still failing from the outside. Check production nginx, DNS, and TLS certificate state for pay.star-web.top.'
 }
 if ($script:State.public_web_frontend_bundle_match -eq 'false') {

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { formatUserId, normalizeUser } from '@/utils/user';
 import { toArray } from '@/utils/apiData';
 import type { CheckinResult, User as ApiUser } from '@/types/api';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 import { toast } from '@/hooks/use-toast';
 import {
   Award,
@@ -57,7 +58,7 @@ const MobileUserCenter: React.FC = () => {
       checkedInToday: boolean;
       streakDays: number;
       rewardXp: number;
-    }>('/user/checkin/status'),
+    }>(isRustV2Enabled() ? rustV2Path('/user/checkin/status') : '/user/checkin/status', undefined, isRustV2Enabled() ? rustV2RequestOptions : undefined),
     enabled: !!user,
     staleTime: 30_000,
     retry: 1,
@@ -93,13 +94,13 @@ const MobileUserCenter: React.FC = () => {
     if (checkingIn || checkinStatus?.checkedInToday) return;
     setCheckingIn(true);
     try {
-      const result = await api.post<CheckinResult>('/user/checkin');
+      const result = await api.post<CheckinResult>(isRustV2Enabled() ? rustV2Path('/user/checkin') : '/user/checkin', {}, isRustV2Enabled() ? rustV2RequestOptions : undefined);
       if (result.ok === false || result.alreadyCheckedIn) {
         await queryClient.invalidateQueries({ queryKey: ['checkin-status'] });
         toast({ title: '今日已签到', description: '今日经验已经领取，不会重复增加。' });
         return;
       }
-      setUser(normalizeUser({
+      if (!isRustV2Enabled()) setUser(normalizeUser({
         ...(user || {}),
         experience_points: result.totalXp ?? user?.experience_points ?? 0,
         level: result.level ?? user?.level ?? 1,

@@ -79,7 +79,10 @@ const MobileTicketList: React.FC = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
-              type="text"
+              type="search"
+              name="ticket-search"
+              aria-label="搜索工单"
+              autoComplete="off"
               value={rawSearch}
               onChange={(e) => setRawSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -112,6 +115,7 @@ const MobileTicketList: React.FC = () => {
               type="button"
               key={tab.key}
               onClick={() => setFilter(tab.key)}
+              aria-pressed={filter === tab.key}
               className={cn(
                 'px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors',
                 filter === tab.key ? 'bg-black text-white' : 'bg-white text-zinc-600',
@@ -132,13 +136,29 @@ const MobileTicketList: React.FC = () => {
             <p className="text-sm font-bold text-muted-foreground">工单加载失败</p>
             <button type="button" onClick={() => refetch()} className="mt-4 text-sm font-black text-black">重试</button>
           </div>
-        ) : filteredTickets.length === 0 ? (
+        ) : tickets.length === 0 ? (
           <div className="py-16 text-center">
             <MessageSquare className="w-12 h-12 text-zinc-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-muted-foreground">暂无工单</p>
-            <Link to="/tickets/new" className="mt-4 inline-block text-sm font-bold text-primary">
-              创建新工单
+            <p className="text-base font-black text-zinc-800">还没有工单</p>
+            <p className="mx-auto mt-2 max-w-xs text-sm leading-6 text-zinc-500">审核申诉、账号问题、充值异常或违规举报都可以在这里留下可追踪记录。</p>
+            <Link to="/tickets/new" className="mt-5 inline-flex rounded-xl bg-black px-5 py-3 text-sm font-bold text-white">
+              新建第一张工单
             </Link>
+          </div>
+        ) : filteredTickets.length === 0 ? (
+          <div className="py-16 text-center">
+            <Search className="mx-auto mb-3 h-10 w-10 text-zinc-300" />
+            <p className="text-sm font-bold text-zinc-700">没有符合条件的工单</p>
+            <button
+              type="button"
+              onClick={() => {
+                setRawSearch('');
+                setFilter('all');
+              }}
+              className="mt-4 text-sm font-bold text-black underline underline-offset-4"
+            >
+              清除搜索和筛选
+            </button>
           </div>
         ) : (
           filteredTickets.map((ticket) => {

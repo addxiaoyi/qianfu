@@ -53,6 +53,40 @@ module.exports = {
     {
       files: ['**/*.test.ts', '**/*.test.tsx', 'setupTests.ts', 'vitest.config.ts'],
       env: { node: true },
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+    {
+      // Optional modules not mounted by the production router. Keep their rules narrow
+      // until they are promoted into a reachable product path.
+      files: [
+        'qianfu-liandeng/src/forms/**/*.ts',
+        'qianfu-liandeng/src/forms/**/*.tsx',
+        'qianfu-liandeng/src/hooks/useDruid.ts',
+        'qianfu-liandeng/src/pages/admin/DruidDashboard.tsx',
+        'qianfu-liandeng/src/hooks/usePermission.tsx',
+        'qianfu-liandeng/src/hooks/useResourcePreload.ts',
+        'qianfu-liandeng/src/utils/resource-preloader.ts',
+        'qianfu-liandeng/src/hooks/useSSE.ts',
+        'qianfu-liandeng/src/hooks/useSkeletonCache.tsx',
+      ],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'react-hooks/exhaustive-deps': 'off',
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+    {
+      files: [
+        'qianfu-liandeng/src/hooks/useRoutePrefetch.tsx',
+        'qianfu-liandeng/src/components/ui/Skeleton.tsx',
+        'qianfu-liandeng/src/pages/CompliancePolicy.tsx',
+      ],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
     },
   ],
 };

@@ -1,0 +1,9 @@
+- generic [ref=f9e2]:
+  - status [ref=f9e3]
+  - progressbar "页面正在加载"
+  - button "打开 Gemini 3.5 驱动助手" [ref=f9e4]
+  - generic [ref=f9e7]:
+    - link "跳到主要内容" [ref=f9e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - main [ref=f9e11]:
+      - paragraph [ref=f9e19]: INITIALIZING

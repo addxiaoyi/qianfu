@@ -1,0 +1,319 @@
+# ============================================
+# 监控告警系统 - Docker Compose 配置
+# ============================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # Prometheus - 指标采集和存储
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: qianfu-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--storage.tsdb.wal-compression'
+      - '--web.enable-lifecycle'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--query.max-concurrency=10'
+      - '--web.enable-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    environment:
+      - PROMETHEUS_RETENTION_TIME=15d
+      - PROMETHEUS_STORAGE_TSDB_PATH=/prometheus
+      # 告警阈值
+      - CPU_WARNING_THRESHOLD=80
+      - CPU_CRITICAL_THRESHOLD=95
+      - MEMORY_WARNING_THRESHOLD=85
+      - MEMORY_CRITICAL_THRESHOLD=95
+      - DISK_WARNING_THRESHOLD=85
+      - DISK_CRITICAL_THRESHOLD=95
+      - HTTP_5XX_WARNING_RATE=0.05
+      - HTTP_5XX_CRITICAL_RATE=0.20
+      - LATENCY_P95_WARNING=1
+      - LATENCY_P95_CRITICAL=5
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+
+  # ==========================================
+  # Alertmanager - 告警管理
+  # ==========================================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: qianfu-alertmanager
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--data.retention=120h'
+      - '--web.external-url=http://localhost:9093'
+      - '--log.level=info'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./alertmanager/templates:/etc/alertmanager/templates:ro
+      - alertmanager_data:/alertmanager
+    environment:
+      # SMTP 配置
+      - SMTP_ENABLED=false
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com:587}
+      - SMTP_FROM=${SMTP_FROM:-alertmanager@example.com}
+      - SMTP_USER=${SMTP_USER:-""}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-""}
+      # 通知配置
+      - ALERT_EMAIL_TO=${ALERT_EMAIL_TO:-alerts@example.com}
+      - DB_ALERT_EMAIL=${DB_ALERT_EMAIL:-dba@example.com}
+      # Slack
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      # 钉钉
+      - DINGTALK_WEBHOOK_URL=${DINGTALK_WEBHOOK_URL:-}
+      # 企业微信
+      - WECHAT_CORP_ID=${WECHAT_CORP_ID:-}
+      - WECHAT_AGENT_ID=${WECHAT_AGENT_ID:-}
+      - WECHAT_API_SECRET=${WECHAT_API_SECRET:-}
+      # 告警时间配置
+      - ALERT_REPEAT_INTERVAL=4h
+      - ALERT_GROUP_WAIT=30s
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+
+  # ==========================================
+  # Grafana - 可视化面板
+  # ==========================================
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: qianfu-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_GUEST=true
+      - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-http://localhost:3000}
+      - GF_SERVER_DOMAIN=${GRAFANA_DOMAIN:-localhost:3000}
+      - GF_FEATURE_TOGGLES_ENABLE=publicDashboards
+      # SMTP 配置
+      - GF_SMTP_ENABLED=${SMTP_ENABLED:-false}
+      - GF_SMTP_HOST=${SMTP_HOST:-smtp.gmail.com:587}
+      - GF_SMTP_USER=${SMTP_USER:-}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - GF_SMTP_FROM_ADDRESS=${SMTP_FROM:-noreply@example.com}
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+      - alertmanager
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+
+  # ==========================================
+  # Node Exporter - 主机指标
+  # ==========================================
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: qianfu-node-exporter
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/textfile_collector'
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - ./textfile_collector:/textfile_collector
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+      - "exporter=node"
+
+  # ==========================================
+  # Nginx Exporter - Web 服务指标
+  # ==========================================
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.0.0
+    container_name: qianfu-nginx-exporter
+    restart: unless-stopped
+    command:
+      - '-nginx.scrape-uri=http://nginx:8080/metrics'
+      - '-web.listen-address=:9113'
+      - '-web.telemetry-path=/metrics'
+    ports:
+      - "9113:9113"
+    networks:
+      - monitoring
+    depends_on:
+      - nginx
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9113/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+      - "exporter=nginx"
+
+  # ==========================================
+  # Postgres Exporter - 数据库指标
+  # ==========================================
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: qianfu-postgres-exporter
+    restart: unless-stopped
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/postgres?sslmode=disable
+    command:
+      - '--extend.query-path=/etc/postgres-exporter/queries.yml'
+      - '--web.listen-address=:9187'
+      - '--web.telemetry-path=/metrics'
+      - '--disable-default-metrics'
+      - '--disable-settings-metrics'
+      - '--web.disable-exposure-metrics'
+    ports:
+      - "9187:9187"
+    volumes:
+      - ./postgres-exporter/queries.yml:/etc/postgres-exporter/queries.yml:ro
+    networks:
+      - monitoring
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+      - "exporter=postgres"
+
+  # ==========================================
+  # Redis Exporter - 缓存指标
+  # ==========================================
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.57.0
+    container_name: qianfu-redis-exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_EXPORTER_CHECK_KEYS=
+      - REDIS_EXPORTER_SCRIPT=
+      - REDIS_EXPORTER_DEBUG=false
+    command:
+      - '--web.listen-address=:9121'
+      - '--web.telemetry-path=/metrics'
+      - '--redis.addr=redis://redis:6379'
+      - '--redis.password=${REDIS_PASSWORD:-}'
+      - '--check-keys=*'
+    ports:
+      - "9121:9121"
+    networks:
+      - monitoring
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9121/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "monitoring=qianfu"
+      - "exporter=redis"
+
+  # ==========================================
+  # Caddy - 反向代理 (可选)
+  # ==========================================
+  # caddy:
+  #   image: caddy:2.7.6
+  #   container_name: qianfu-caddy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #   networks:
+  #     - monitoring
+  #   depends_on:
+  #     - prometheus
+  #     - grafana
+  #     - alertmanager
+  #   labels:
+  #     - "monitoring=qianfu"
+
+# ==========================================
+# 外部服务 (示例 - 取消注释以启用)
+# ==========================================
+# networks:
+#   backend-network:
+#     external: true
+
+# ==========================================
+# 数据卷
+# ==========================================
+volumes:
+  prometheus_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+  grafana_data:
+    driver: local
+  caddy_data:
+    driver: local
+
+# ==========================================
+# 网络
+# ==========================================
+networks:
+  monitoring:
+    driver: bridge
+    name: qianfu-monitoring

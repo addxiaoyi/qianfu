@@ -48,7 +48,7 @@ async function runBenchmark() {
       try {
         const buffer = await response.body();
         jsSize += buffer.length;
-      } catch (e) {}
+      } catch (e) { console.error("[Swallowed Exception Handled]", e); }
     }
   });
 

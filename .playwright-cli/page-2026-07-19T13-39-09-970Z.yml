@@ -1,0 +1,9 @@
+- generic [ref=f7e2]:
+  - status [ref=f7e4]:
+    - generic [ref=f7e5]:
+      - generic [ref=f7e10]:
+        - generic [ref=f7e11]: 系统公告：
+        - text: 支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+      - button "关闭当前公告" [ref=f7e12]
+  - button "打开 Gemini 3.5 驱动助手" [ref=f7e16]
+  - paragraph [ref=f7e24]: INITIALIZING_SESSION...

@@ -1,8 +1,9 @@
 import { api } from '@/api/request';
 import { sanitizeUrl } from '@/utils/urlValidator';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 export type OAuthStatusPayload = {
-  app: {
+  app?: {
     apiPublicUrl: string;
     frontendUrl: string;
     nodeEnv: string;
@@ -10,7 +11,7 @@ export type OAuthStatusPayload = {
   providers: {
     github: {
       backendEnabled: boolean;
-      expectedCallback: string | null;
+      expectedCallback?: string | null;
       frontendCallback?: string | null;
       loginUrl?: string | null;
       flow?: string | null;
@@ -19,9 +20,9 @@ export type OAuthStatusPayload = {
 };
 
 export async function fetchOAuthStatus() {
-  return api.get<OAuthStatusPayload>('/auth/oauth-status', undefined, {
+  return api.get<OAuthStatusPayload>(isRustV2Enabled() ? rustV2Path('/auth/oauth-status') : '/auth/oauth-status', undefined, {
     useAuth: false,
-    skipCsrf: true,
+    ...(isRustV2Enabled() ? rustV2RequestOptions : { skipCsrf: true }),
   });
 }
 
@@ -31,7 +32,8 @@ export async function beginGitHubOAuthLogin(status?: OAuthStatusPayload) {
     throw new Error('GitHub OAuth backend is not configured');
   }
 
-  const loginUrl = sanitizeUrl(resolvedStatus.providers.github.loginUrl || '/api/v1/auth/github/start', '/api/v1/auth/github/start');
+  const fallback = isRustV2Enabled() ? '/api/v2/auth/github/start' : '/api/v1/auth/github/start';
+  const loginUrl = sanitizeUrl(resolvedStatus.providers.github.loginUrl || fallback, fallback);
   const parsed = new URL(loginUrl, window.location.origin);
   if (parsed.origin !== window.location.origin) {
     throw new Error('GitHub OAuth login URL is not trusted');

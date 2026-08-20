@@ -29,7 +29,7 @@ SHA-256：
 如果可以从本机 SSH 登录生产机，也可以让脚本自动上传并执行：
 
 ```powershell
-$env:QF_SSH_HOST = "103.236.92.10"
+$env:QF_SSH_HOST = "121.196.161.249"
 $env:QF_SSH_USER = "root"
 npm run prod:restore:ssh:win
 ```

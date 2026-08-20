@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-07-15T07:21:41.979Z",
+  "baseUrl": "http://127.0.0.1:3060",
+  "listingPlan": "basic-monthly",
+  "rechargeAmount": 10,
+  "marker": "wallet-listing-1784100083879-14c31e",
+  "createdServerId": null,
+  "checks": [
+    {
+      "name": "admin-login",
+      "status": "PASS",
+      "detail": "admin=smoke_admin_1784099826402_d441e2@example.test",
+      "code": 200
+    },
+    {
+      "name": "user-login",
+      "status": "PASS",
+      "detail": "user=listing_1784100085654_f8093371@example.com",
+      "code": 200
+    },
+    {
+      "name": "user-quota",
+      "status": "PASS",
+      "detail": "can_publish=true max_cards=1",
+      "code": 200
+    },
+    {
+      "name": "wallet-before",
+      "status": "PASS",
+      "detail": "balance=0",
+      "code": 200
+    },
+    {
+      "name": "create-recharge",
+      "status": "FAIL",
+      "detail": "PayPro request failed: fetch failed",
+      "code": 502
+    },
+    {
+      "name": "complete-recharge",
+      "status": "FAIL",
+      "detail": "Invalid body parameters",
+      "code": 400
+    },
+    {
+      "name": "wallet-after-recharge",
+      "status": "FAIL",
+      "detail": "balance=0 delta=0",
+      "code": 200
+    },
+    {
+      "name": "create-server",
+      "status": "FAIL",
+      "detail": "余额不足，无法开通服务器发布套餐",
+      "code": 400
+    },
+    {
+      "name": "wallet-after-publish",
+      "status": "FAIL",
+      "detail": "balance=0 publish_delta=0",
+      "code": 200
+    },
+    {
+      "name": "approve-server",
+      "status": "FAIL",
+      "detail": "Invalid params parameters",
+      "code": 400
+    },
+    {
+      "name": "public-visible",
+      "status": "FAIL",
+      "detail": "public_matches=0",
+      "code": 200
+    },
+    {
+      "name": "delete-server",
+      "status": "FAIL",
+      "detail": "Invalid params parameters",
+      "code": 400
+    },
+    {
+      "name": "owned-cleared",
+      "status": "PASS",
+      "detail": "owned_matches=0",
+      "code": 200
+    },
+    {
+      "name": "public-cleared",
+      "status": "PASS",
+      "detail": "public_matches=0 attempts=1",
+      "code": 200
+    }
+  ],
+  "failedCount": 8
+}

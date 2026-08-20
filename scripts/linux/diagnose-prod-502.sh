@@ -18,6 +18,7 @@ PUBLIC_PAY_CANONICAL_URL=""
 PUBLIC_PAY_OG_URL=""
 PUBLIC_PAY_MAIN_SITE_FALLBACK="unknown"
 PUBLIC_PAY_ROOT_MARKER_MATCH="unknown"
+PUBLIC_PAY_PERSONAL_FILING_DISABLED="unknown"
 PUBLIC_WEB_FRONTEND_BUNDLE=""
 PUBLIC_WEB_FRONTEND_ROOT_STATUS="unknown"
 LOCAL_WEB_FRONTEND_BUNDLE=""
@@ -160,6 +161,9 @@ probe_pay_domain() {
         ;;
       root_marker_match)
         PUBLIC_PAY_ROOT_MARKER_MATCH="$value"
+        ;;
+      personal_filing_disabled)
+        PUBLIC_PAY_PERSONAL_FILING_DISABLED="$value"
         ;;
     esac
   done <<< "$output"
@@ -325,6 +329,9 @@ probe_unified_public_diagnose() {
       pay_root_marker_match)
         PUBLIC_PAY_ROOT_MARKER_MATCH="$value"
         ;;
+      pay_personal_filing_disabled)
+        PUBLIC_PAY_PERSONAL_FILING_DISABLED="$value"
+        ;;
       pay_diagnosis)
         PUBLIC_PAY_DIAGNOSIS="$value"
         ;;
@@ -423,9 +430,8 @@ section "Public Health"
 probe_http "public-web" "https://${WEB_DOMAIN}/"
 probe_http "public-api-health" "https://${WEB_DOMAIN}/api/health" "healthy" PUBLIC_WEB_API_HEALTH
 probe_http "public-api-ready" "https://${WEB_DOMAIN}/api/ready" "ready"
-probe_http "public-pay-root" "https://${PAY_DOMAIN}/"
-probe_http "public-pay-health" "https://${PAY_DOMAIN}/health"
-probe_http "public-pay-api-health" "https://${PAY_DOMAIN}/api/health" "healthy" PUBLIC_PAY_API_HEALTH
+# The retained pay hostname is validated by domain-cert-probe so HTTP 410 is
+# treated as an intentional closure rather than an upstream outage.
 probe_pay_domain
 probe_frontend_deploy
 probe_unified_public_diagnose
@@ -443,13 +449,13 @@ fi
 if [[ "$PUBLIC_WEB_FRONTEND_ROOT_STATUS" == "200" && "$PUBLIC_WEB_API_HEALTH" == "fail" ]]; then
   record_diagnosis "Main site static HTML is still serving HTTP 200 while the public API is failing. This usually means the frontend vhost/root is alive, but the API upstream or app process behind /api is broken."
 fi
-if [[ "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3001" == "1" && "$PAY_CONF_PORT_3000" == "0" && "$LOCAL_3000_HEALTH" == "match" ]]; then
+if [[ "$PUBLIC_PAY_PERSONAL_FILING_DISABLED" != "true" && "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3001" == "1" && "$PAY_CONF_PORT_3000" == "0" && "$LOCAL_3000_HEALTH" == "match" ]]; then
   record_diagnosis "Likely root cause: pay domain nginx still points to 127.0.0.1:3001 while local 3000 health is OK."
 fi
-if [[ "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3000" == "0" && "$PAY_CONF_PORT_3001" == "0" ]]; then
+if [[ "$PUBLIC_PAY_PERSONAL_FILING_DISABLED" != "true" && "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3000" == "0" && "$PAY_CONF_PORT_3001" == "0" ]]; then
   record_diagnosis "Pay domain config does not expose a visible qianfu_api upstream match in the inspected file. Re-check pay nginx config path."
 fi
-if [[ "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3000" == "1" && "$LOCAL_3000_HEALTH" == "match" ]]; then
+if [[ "$PUBLIC_PAY_PERSONAL_FILING_DISABLED" != "true" && "$HAVE_PAY_CONF" == "1" && "$PUBLIC_PAY_API_HEALTH" == "fail" && "$PAY_CONF_PORT_3000" == "1" && "$LOCAL_3000_HEALTH" == "match" ]]; then
   record_diagnosis "If pay domain still fails while local 3000 is healthy and nginx points to 3000, inspect DNS, certificate, and server_name / TLS binding."
 fi
 if [[ "$HAVE_PAY_CONF" == "1" && "$PAY_CONF_SERVER_NAME_MATCH" == "false" ]]; then
@@ -467,8 +473,10 @@ fi
 if [[ "$PUBLIC_PAY_TLS_STATUS" == "wrong_principal" && "$PUBLIC_PAY_MAIN_SITE_FALLBACK" == "true" ]]; then
   record_diagnosis "Pay domain is almost certainly landing on the main-site TLS/vhost instead of a dedicated pay-site block. Prioritize pay.star-web.top server_name matching, certificate binding, and hosting-panel site assignment before adjusting app ports."
 fi
-if [[ "$PUBLIC_PAY_MAIN_SITE_FALLBACK" != "true" && "$PUBLIC_PAY_ROOT_MARKER_MATCH" == "false" ]]; then
-  record_diagnosis "Pay domain root did not return the expected qianfu-pay-gateway marker. The pay-site template may not be deployed, or another app is still answering on that host."
+if [[ "$PUBLIC_PAY_PERSONAL_FILING_DISABLED" == "true" ]]; then
+  info "Pay domain is intentionally closed under personal filing mode (410 PERSONAL_FILING_DISABLED)."
+elif [[ "$PUBLIC_PAY_MAIN_SITE_FALLBACK" != "true" && "$PUBLIC_PAY_PERSONAL_FILING_DISABLED" == "false" ]]; then
+  record_diagnosis "Pay domain did not return the expected PERSONAL_FILING_DISABLED closure. The retained hostname may still have an old vhost or upstream."
 fi
 if [[ "$PUBLIC_WEB_FRONTEND_BUNDLE_MATCH" == "false" ]]; then
   record_diagnosis "Main site frontend bundle does not match the current local build (${PUBLIC_WEB_FRONTEND_BUNDLE} vs ${LOCAL_WEB_FRONTEND_BUNDLE}). The deployed static site is stale."
@@ -514,7 +522,7 @@ if [[ "$MODE" == "summary" ]]; then
   printf 'public_pay_canonical_url=%s\n' "$PUBLIC_PAY_CANONICAL_URL"
   printf 'public_pay_og_url=%s\n' "$PUBLIC_PAY_OG_URL"
   printf 'public_pay_main_site_fallback=%s\n' "$PUBLIC_PAY_MAIN_SITE_FALLBACK"
-  printf 'public_pay_root_marker_match=%s\n' "$PUBLIC_PAY_ROOT_MARKER_MATCH"
+  printf 'public_pay_personal_filing_disabled=%s\n' "$PUBLIC_PAY_PERSONAL_FILING_DISABLED"
   printf 'public_web_frontend_root_status=%s\n' "$PUBLIC_WEB_FRONTEND_ROOT_STATUS"
   printf 'public_web_frontend_bundle=%s\n' "$PUBLIC_WEB_FRONTEND_BUNDLE"
   printf 'local_web_frontend_bundle=%s\n' "$LOCAL_WEB_FRONTEND_BUNDLE"

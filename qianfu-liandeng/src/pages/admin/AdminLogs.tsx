@@ -1,11 +1,13 @@
+import { safeJsonParse } from '@/utils/json';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
+import { formatLogTime, formatLogTimestamp } from './adminLogTime';
 
 const logsBadge = 'SYSTEM_IMMUTABLE_LEDGER';
 const adminShellClass = 'space-y-16 pb-32 bg-white';
@@ -39,7 +41,7 @@ const SENSITIVE_KEYS = new Set([
 function redactDetails(details: any): string {
   if (!details) return '';
   try {
-    const obj = typeof details === 'string' ? JSON.parse(details) : details;
+    const obj = typeof details === 'string' ? safeJsonParse(details, {}) : details;
     if (Array.isArray(obj)) {
       return JSON.stringify(obj.map(item => redactObject(item)), null, 2);
     }
@@ -125,22 +127,23 @@ const AdminLogs: React.FC = () => {
          <div className="flex gap-4 w-full xl:w-auto">
             <div className="px-8 py-4 bg-zinc-50/50 rounded-full border border-zinc-50 flex items-center gap-4 shadow-xs">
                <GeometricLantern variant="data" className="w-4 h-4 text-zinc-300" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 italic">归档区：v2.4</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 italic">归档区：v2.4</span>
             </div>
             <div className="px-8 py-4 bg-zinc-50/50 rounded-full border border-zinc-50 flex items-center gap-4 shadow-xs">
                <GeometricLantern variant="activity" className="w-4 h-4 text-green-500 animate-pulse" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 italic">{isLoading ? '加载中' : '数据已加载'}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 italic">{isLoading ? '加载中' : '数据已加载'}</span>
             </div>
             <button type="button" onClick={() => setDangerOnly((value) => !value)} className={`px-8 py-4 bg-white hover:bg-zinc-50 rounded-full border flex items-center gap-4 shadow-xs transition-all italic active:scale-95 group ${dangerOnly ? 'border-accent text-accent' : 'border-zinc-100'}`}>
-               <GeometricLantern variant="settings" className="w-4 h-4 text-zinc-200 group-hover:text-accent transition-colors" />
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 group-hover:text-accent transition-colors">{dangerOnly ? '仅风险' : '筛选'}</span>
+               <GeometricLantern variant="settings" className="w-4 h-4 text-zinc-500 group-hover:text-accent transition-colors" />
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 group-hover:text-accent transition-colors">{dangerOnly ? '仅风险' : '筛选'}</span>
             </button>
          </div>
 
          <div className="relative w-full xl:w-[40rem] group">
-            <GeometricLantern variant="terminal" className="absolute left-10 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
+             <GeometricLantern variant="terminal" className="absolute left-10 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-400 group-focus-within:text-accent transition-all duration-500" />
             <input 
                type="text" 
+               aria-label="搜索审计日志"
                placeholder="按管理员、IP 或操作类型搜索" 
                value={search}
                onChange={(event) => setSearch(event.target.value)}
@@ -155,11 +158,11 @@ const AdminLogs: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-zinc-50/50 border-b border-zinc-100">
-                  <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300 italic">时间</th>
-                  <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300 italic">操作人</th>
-                  <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300 italic">动作</th>
-                  <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300 italic">来源 IP</th>
-                  <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300 italic">数据载荷</th>
+                   <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">时间</th>
+                   <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">操作人</th>
+                   <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">动作</th>
+                   <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">来源 IP</th>
+                   <th className="px-16 py-10 text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 italic">数据载荷</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50">
@@ -176,10 +179,10 @@ const AdminLogs: React.FC = () => {
                       <td className="px-16 py-10 whitespace-nowrap">
                          <div className="space-y-2">
                             <div className="flex items-center gap-3">
-                               <GeometricLantern variant="terminal" className="w-3.5 h-3.5 text-zinc-100 group-hover:text-accent transition-colors" />
-                               <p className="text-xs font-black italic text-zinc-400 group-hover:text-accent transition-colors">{getLogTime(log) ? new Date(getLogTime(log)).toLocaleString() : '--'}</p>
+                                <GeometricLantern variant="terminal" className="w-3.5 h-3.5 text-zinc-500 group-hover:text-accent transition-colors" />
+                                <p className="text-xs font-black italic text-zinc-700 group-hover:text-accent transition-colors">{formatLogTime(getLogTime(log))}</p>
                             </div>
-                            <p className="text-[9px] text-zinc-200 font-black font-mono tracking-tighter pl-6"># {getLogTime(log) ? Date.parse(getLogTime(log)) : '--'}</p>
+                             <p className="text-[9px] text-zinc-500 font-black font-mono tracking-tighter pl-6"># {formatLogTimestamp(getLogTime(log))}</p>
                          </div>
                       </td>
                       <td className="px-16 py-10">
@@ -188,7 +191,7 @@ const AdminLogs: React.FC = () => {
                                <GeometricLantern variant="user" className="w-6 h-6" />
                             </div>
                             <div className="space-y-0.5">
-                               <span className="text-[10px] font-black text-zinc-300 uppercase tracking-widest italic leading-none block">管理员账号</span>
+                                <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest italic leading-none block">管理员账号</span>
                                <span className="text-sm font-black uppercase tracking-tight italic group-hover:translate-x-1 transition-transform inline-block">{getLogActor(log)}</span>
                             </div>
                          </div>
@@ -205,7 +208,7 @@ const AdminLogs: React.FC = () => {
                          </div>
                       </td>
                       <td className="px-16 py-10">
-                         <div className="flex items-center gap-4 text-xs font-black font-mono text-zinc-200 uppercase tracking-tighter group-hover:text-zinc-500 transition-colors italic">
+                          <div className="flex items-center gap-4 text-xs font-black font-mono text-zinc-700 uppercase tracking-tighter group-hover:text-zinc-900 transition-colors italic">
                             <GeometricLantern variant="network" className="w-4 h-4 opacity-50 group-hover:text-accent transition-colors" /> {getLogIp(log)}
                          </div>
                       </td>
@@ -214,7 +217,7 @@ const AdminLogs: React.FC = () => {
                             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                <GeometricLantern variant="terminal" className="w-4 h-4 text-zinc-300" />
                             </div>
-                            <code className="text-[11px] text-zinc-400 group-hover:text-zinc-600 line-clamp-2 break-all font-mono leading-relaxed italic block pr-6">
+                             <code className="text-[11px] text-zinc-700 group-hover:text-zinc-900 line-clamp-2 break-all font-mono leading-relaxed italic block pr-6">
                               {redactDetails(getLogPayload(log))}
                             </code>
                          </div>
@@ -233,8 +236,8 @@ const AdminLogs: React.FC = () => {
                    <div className="absolute inset-0 w-24 h-24 text-zinc-100 opacity-20 animate-ping border border-current rounded-full" />
                 </div>
                 <div className="space-y-4">
-                   <p className="text-[12px] font-black text-zinc-300 uppercase tracking-[0.6em] italic leading-none group-hover/empty:text-accent transition-colors">当前没有匹配记录</p>
-                   <p className="text-[9px] font-black text-zinc-100 uppercase tracking-widest italic">调整搜索关键词或关闭风险筛选后重试</p>
+                    <p className="text-[12px] font-black text-zinc-600 uppercase tracking-[0.6em] italic leading-none group-hover/empty:text-accent transition-colors">当前没有匹配记录</p>
+                    <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest italic">调整搜索关键词或关闭风险筛选后重试</p>
                 </div>
              </div>
           )}

@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { formatDateTime } from '@/utils/serverView';
 
 type ModerationLog = {
@@ -46,7 +46,7 @@ const AdminModeration: React.FC = () => {
     queryFn: () => api.get<ModerationLog[]>('/admin/moderation/logs', { limit: 100 }),
   });
 
-  const { data: settings, isLoading: settingsLoading } = useQuery({
+  const { data: settings, isLoading: settingsLoading, isError: settingsError, refetch: refetchSettings } = useQuery({
     queryKey: ['admin-moderation-settings'],
     queryFn: () => api.get<ModerationSettingsResponse>('/admin/moderation/settings'),
   });
@@ -68,7 +68,7 @@ const AdminModeration: React.FC = () => {
 
   return (
     <div className={adminShellClass}>
-      <StatusWrapper isLoading={isLoading} isError={isError} onRetry={() => refetch()}>
+      <StatusWrapper isLoading={isLoading} isError={isError || settingsError} onRetry={() => { void Promise.all([refetch(), refetchSettings()]); }}>
         <AdminPageHeader
           badge={moderationBadge}
           title="Guard."
@@ -108,6 +108,7 @@ const AdminModeration: React.FC = () => {
             <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-accent transition-colors duration-500" />
             <input
               type="text"
+              aria-label="搜索内容审核记录"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="搜索动作、内容类型、原因或用户"

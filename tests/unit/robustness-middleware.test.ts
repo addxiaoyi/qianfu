@@ -1,11 +1,18 @@
 import express from 'express';
 import request from 'supertest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import {
   createDuplicateRequestGuard,
   createIdempotencyMiddleware,
 } from '../../server/middleware/idempotency';
 import { createRequestTimeoutMiddleware } from '../../server/middleware/requestTimeout';
+
+const middlewareLayersSource = readFileSync(
+  resolve(process.cwd(), 'server/bootstrap/middlewareLayers.ts'),
+  'utf8',
+);
 
 vi.mock('../../server/services/redisService', () => {
   const cache = new Map<string, unknown>();
@@ -124,5 +131,24 @@ describe('robustness middlewares', () => {
     const response = await request(app).get('/api/health');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
+  });
+
+  it('should give uploads an independent timeout before the global API timeout', () => {
+    const uploadRegistration = middlewareLayersSource.indexOf("'/api/v1/upload'");
+    const apiRegistration = middlewareLayersSource.indexOf("'/api',", uploadRegistration);
+
+    expect(uploadRegistration).toBeGreaterThanOrEqual(0);
+    expect(apiRegistration).toBeGreaterThanOrEqual(0);
+    expect(uploadRegistration).toBeLessThan(apiRegistration);
+
+    const uploadBlock = middlewareLayersSource.slice(uploadRegistration, apiRegistration);
+    expect(uploadBlock).toContain('UPLOAD_REQUEST_TIMEOUT_MS');
+    expect(middlewareLayersSource.slice(apiRegistration)).toContain("'/api/v1/upload'");
+  });
+
+  it('keeps the Node HTTP request timeout at or above the upload timeout', async () => {
+    const serverSource = await import('node:fs/promises').then((fs) => fs.readFile('server/index.ts', 'utf8'));
+    expect(serverSource).not.toContain('server.requestTimeout = 30000');
+    expect(serverSource).toContain('UPLOAD_REQUEST_TIMEOUT_MS');
   });
 });

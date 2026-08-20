@@ -7,6 +7,7 @@ import { request } from '@/api/request';
 import { toArray } from '@/utils/apiData';
 import type { ServerListItem } from '@/types/server';
 import { getServerName, getServerPlayersOnline, getServerThumbnail, getServerVersionLabel } from '@/utils/serverView';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const quickActions: { name: string; Icon: LucideIcon; path: string; color: string }[] = [
   { name: '找服', Icon: Server, path: '/servers', color: 'bg-blue-500' },
@@ -19,7 +20,7 @@ const MobileHome: React.FC = () => {
   const navigate = useNavigate();
   const { data: featuredServerResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['mobile-featured-servers'],
-     queryFn: () => request<ServerListItem[]>('/public/servers', { params: { limit: 3, sortBy: 'activity', sortOrder: 'desc' }, useAuth: false }),
+     queryFn: () => request<ServerListItem[]>(isRustV2Enabled() ? rustV2Path('/servers') : '/public/servers', { params: { limit: 3, ...(isRustV2Enabled() ? {} : { sortBy: 'activity', sortOrder: 'desc' }) }, useAuth: false, ...(isRustV2Enabled() ? rustV2RequestOptions : {}) }),
     staleTime: 60_000,
     retry: 1,
   });
@@ -34,7 +35,7 @@ const MobileHome: React.FC = () => {
            animate={{ opacity: 1, y: 0 }}
            className="space-y-4"
          >
-            <h1 className="text-[2rem] font-black leading-[0.98] tracking-tight">
+            <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight">
                发现下一台 <br />
                <span className="text-muted-foreground">想加入的服务器</span>
             </h1>
@@ -77,7 +78,7 @@ const MobileHome: React.FC = () => {
               <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.color} text-white shadow-lg shadow-black/5`}>
                  <Icon className="h-5 w-5" />
               </div>
-              <span className="text-xs font-black uppercase tracking-widest">{item.name}</span>
+              <span className="text-xs font-semibold">{item.name}</span>
            </Link>
            );
          })}
@@ -86,8 +87,8 @@ const MobileHome: React.FC = () => {
       {/* Featured List */}
        <section className="space-y-5 px-1 pb-8 pt-6">
          <div className="flex items-center justify-between gap-4 rounded-2xl bg-white/95 py-2">
-            <h2 className="text-xl font-black uppercase tracking-tight">精选推荐</h2>
-            <Link to="/servers" className="shrink-0 rounded-full px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground active:bg-zinc-100">查看全部</Link>
+            <h2 className="text-lg font-semibold tracking-tight">精选推荐</h2>
+            <Link to="/servers" className="shrink-0 rounded-full px-3 py-2 text-xs font-medium text-muted-foreground active:bg-zinc-100">查看全部</Link>
          </div>
 
          {isLoading ? (
@@ -115,7 +116,7 @@ const MobileHome: React.FC = () => {
                   <div className="flex-grow space-y-1">
                      <h3 className="font-bold">{name}</h3>
                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 bg-black text-white text-[8px] font-black uppercase rounded">{server.category || '服务器'}</span>
+                        <span className="px-2 py-0.5 bg-black text-white text-[8px] font-semibold rounded">{server.category || '服务器'}</span>
                         <span className="text-[10px] font-mono text-muted-foreground">{getServerVersionLabel(server)}</span>
                      </div>
                      <div className="flex items-center gap-2 mt-2">

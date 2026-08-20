@@ -1,0 +1,130 @@
+- generic [ref=f3e2]:
+  - status [ref=f3e3]: 千服联灯
+  - progressbar "页面正在加载"
+  - button "打开 Gemini 3.5 驱动助手" [ref=f3e4]
+  - generic [ref=f3e7]:
+    - link "跳到主要内容" [ref=f3e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f3e10]:
+      - generic [ref=f3e11]:
+        - generic [ref=f3e12]:
+          - link "千服联灯 QianFu" [ref=f3e13] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f3e36]:
+              - generic [ref=f3e37]: 千服联灯
+              - generic [ref=f3e38]: QianFu
+          - generic [ref=f3e39]:
+            - link "首页" [ref=f3e40] [cursor=pointer]:
+              - /url: /
+            - link "找服" [ref=f3e47] [cursor=pointer]:
+              - /url: /servers
+            - link "新闻" [ref=f3e52] [cursor=pointer]:
+              - /url: /news
+            - link "资源" [ref=f3e57] [cursor=pointer]:
+              - /url: /resources
+            - link "团队" [ref=f3e63] [cursor=pointer]:
+              - /url: /team
+        - generic [ref=f3e68]:
+          - link "访客预览" [ref=f3e69] [cursor=pointer]:
+            - /url: /dashboard
+          - link "登录" [ref=f3e73] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=f3e74] [cursor=pointer]:
+            - /url: /register
+    - main [active] [ref=f3e75]:
+      - main [ref=f3e76]:
+        - region [ref=f3e77]:
+          - paragraph [ref=f3e78]: 当前站点模式
+          - heading "该功能暂未开放" [level=1] [ref=f3e79]
+          - paragraph [ref=f3e80]: 本站目前仅提供服务器展示、发布、账号管理、新闻和工单服务，不提供支付、钱包、商城或推广交易功能。
+          - link "返回首页" [ref=f3e81] [cursor=pointer]:
+            - /url: /
+    - contentinfo [ref=f3e83]:
+      - generic [ref=f3e84]:
+        - generic [ref=f3e85]:
+          - generic [ref=f3e86]:
+            - link "千服联灯" [ref=f3e87] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f3e109]: 面向中文 Minecraft 玩家和服主的服务器发现、免费发布、内容审核与工单支持平台。平台不提供支付、充值、钱包、商城交易或推广返利服务。
+            - generic [ref=f3e110]:
+              - link "前往工单支持" [ref=f3e111] [cursor=pointer]:
+                - /url: /tickets
+              - link "发送邮件联系平台" [ref=f3e114] [cursor=pointer]:
+                - /url: mailto:support@0st.top
+          - generic [ref=f3e118]:
+            - heading "平台" [level=4] [ref=f3e119]
+            - list [ref=f3e120]:
+              - listitem [ref=f3e121]:
+                - link "浏览服务器" [ref=f3e122] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=f3e123]:
+                - link "高级搜索" [ref=f3e124] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=f3e125]:
+                - link "资源中心" [ref=f3e126] [cursor=pointer]:
+                  - /url: /resources
+              - listitem [ref=f3e127]:
+                - link "开发团队" [ref=f3e128] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=f3e129]:
+                - link "等级规则" [ref=f3e130] [cursor=pointer]:
+                  - /url: /rules
+          - generic [ref=f3e131]:
+            - heading "法律与隐私" [level=4] [ref=f3e132]
+            - list [ref=f3e133]:
+              - listitem [ref=f3e134]:
+                - link "服务条款" [ref=f3e135] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=f3e136]:
+                - link "隐私声明" [ref=f3e137] [cursor=pointer]:
+                  - /url: /privacy
+              - listitem [ref=f3e138]:
+                - link "可接受使用政策" [ref=f3e139] [cursor=pointer]:
+                  - /url: /acceptable-use
+              - listitem [ref=f3e140]:
+                - link "未成年人保护" [ref=f3e141] [cursor=pointer]:
+                  - /url: /minor-protection
+              - listitem [ref=f3e142]:
+                - link "Cookie 与第三方服务" [ref=f3e143] [cursor=pointer]:
+                  - /url: /cookies-and-services
+              - listitem [ref=f3e144]:
+                - link "全部合规规则" [ref=f3e145] [cursor=pointer]:
+                  - /url: /compliance
+          - generic [ref=f3e146]:
+            - heading "平台规则" [level=4] [ref=f3e147]
+            - list [ref=f3e148]:
+              - listitem [ref=f3e149]:
+                - link "等级与签到规则" [ref=f3e150] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=f3e151]:
+                - link "平台禁售清单" [ref=f3e152] [cursor=pointer]:
+                  - /url: /prohibited-items
+              - listitem [ref=f3e153]:
+                - link "举报与内容处置" [ref=f3e154] [cursor=pointer]:
+                  - /url: /reporting-rules
+              - listitem [ref=f3e155]:
+                - link "知识产权投诉" [ref=f3e156] [cursor=pointer]:
+                  - /url: /ip-complaints
+          - generic [ref=f3e157]:
+            - heading "权利与支持" [level=4] [ref=f3e158]
+            - list [ref=f3e159]:
+              - listitem [ref=f3e160]:
+                - link "知识产权投诉" [ref=f3e161] [cursor=pointer]:
+                  - /url: /ip-complaints
+              - listitem [ref=f3e162]:
+                - link "举报与内容处置" [ref=f3e163] [cursor=pointer]:
+                  - /url: /reporting-rules
+              - listitem [ref=f3e164]:
+                - link "工单支持" [ref=f3e165] [cursor=pointer]:
+                  - /url: /tickets
+              - listitem [ref=f3e166]:
+                - link "support@0st.top" [ref=f3e167] [cursor=pointer]:
+                  - /url: mailto:support@0st.top
+        - generic [ref=f3e168]:
+          - generic [ref=f3e169]:
+            - generic [ref=f3e170]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=f3e171] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=f3e172]:
+            - generic [ref=f3e173]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=f3e176]

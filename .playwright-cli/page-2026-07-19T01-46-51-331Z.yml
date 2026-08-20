@@ -1,0 +1,174 @@
+- generic [ref=e2]:
+  - status [ref=e142]:
+    - generic [ref=e143]:
+      - generic [ref=e148]:
+        - generic [ref=e149]: 系统公告：
+        - text: 支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+      - button "关闭当前公告" [ref=e150]
+  - generic:
+    - button "打开千服 AI 客服" [active] [ref=e4]
+    - button "关闭 AI 客服" [ref=e259]
+    - generic [ref=e260]:
+      - generic [ref=e261]:
+        - generic [ref=e267]:
+          - heading "千服 AI 客服" [level=2] [ref=e268]
+          - paragraph [ref=e269]: 本站知识库 · Minecraft Wiki
+        - button "关闭" [ref=e270]
+      - generic [ref=e274]: 你好，我是千服 AI 客服。可以问我本站投稿、审核、商店、账号与工单问题，也可以咨询 Minecraft 游戏知识。
+      - generic [ref=e277]:
+        - generic [ref=e278]:
+          - textbox "问本站功能或 Minecraft 问题…" [ref=e279]
+          - button "发送" [disabled] [ref=e280]
+        - paragraph [ref=e284]: AI 可能出错，重要信息请以站内规则和原始 Wiki 页面为准
+  - generic [ref=e7]:
+    - navigation [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - link "千服联灯 QianFu" [ref=e12] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e35]:
+              - generic [ref=e36]: 千服联灯
+              - generic [ref=e37]: QianFu
+          - generic [ref=e38]:
+            - link [ref=e39] [cursor=pointer]:
+              - /url: /
+            - link [ref=e45] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=e51] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=e57] [cursor=pointer]:
+              - /url: /team
+            - link [ref=e62] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=e68] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=e72]:
+          - link "登录" [ref=e73] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=e74] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e154]:
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - generic [ref=e157]: "协议: Liandeng_v4.0_Core"
+          - heading "发现下一个世界." [level=1] [ref=e160]
+          - paragraph [ref=e161]: 千服联灯帮助玩家快速发现可靠的 Minecraft 服务器，也让服主用清晰、真实的方式展示自己的作品。
+          - generic [ref=e162]:
+            - link "浏览服务器" [ref=e163] [cursor=pointer]:
+              - /url: /servers
+            - link "查看推广方案" [ref=e169] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=e172]: 平台状态 已连接
+        - generic [ref=e178]: 数据同步 同步中
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - generic [ref=e190]: 站点摘要
+          - heading "Minecraft 服务器发现、发布与支持" [level=2] [ref=e191]
+          - paragraph [ref=e192]: 千服联灯面向中文 Minecraft 玩家和服主，提供公开服务器列表、搜索、资源中心、推广展示、工单支持和移动端入口。 访客可以直接浏览服务器信息，服主可以提交资料并管理展示内容。
+        - generic [ref=e193]:
+          - generic [ref=e194]: 公开服务器列表
+          - generic [ref=e195]: 玩家资源中心
+          - generic [ref=e196]: 工单与通知支持
+          - generic [ref=e197]: 移动端优先体验
+      - generic [ref=e198]:
+        - generic [ref=e199]:
+          - generic [ref=e200]: 了解更多
+          - generic [ref=e201]:
+            - heading "Core Features" [level=2] [ref=e202]
+            - paragraph [ref=e203]: 探索、展示、管理与支持都放在同一条产品路径里，入口更清晰，动作更集中。
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]: / SEC_01
+            - heading "不可篡改的安全" [level=3] [ref=e211]
+            - paragraph [ref=e212]: 基于 SuperTokens 深度认证，保护您的账户与交易安全。所有会话均通过加密令牌进行端到端校验。
+            - generic [ref=e213]: 查看详情
+          - generic [ref=e216]:
+            - generic [ref=e217]: / SEC_02
+            - heading "透明推广位" [level=3] [ref=e222]
+            - paragraph [ref=e223]: 推广位、展示周期和消耗方式都在平台内明确展示，服主可以按预算选择合适方案。
+            - generic [ref=e224]: 查看详情
+          - generic [ref=e227]:
+            - generic [ref=e228]: / SEC_03
+            - heading "人工支持" [level=3] [ref=e233]
+            - paragraph [ref=e234]: 通过工单系统提交问题、充值异常或审核申诉，平台会按流程跟进处理。
+            - generic [ref=e235]: 查看详情
+      - generic [ref=e240]:
+        - generic [ref=e241]:
+          - generic [ref=e242]: 站点指标
+          - generic [ref=e243]:
+            - heading "实时状态" [level=2] [ref=e244]
+            - paragraph [ref=e245]: 这里展示公开列表和平台链路的当前状态，方便访客快速判断是否值得继续浏览。
+        - generic [ref=e246]:
+          - generic [ref=e247]:
+            - paragraph [ref=e248]: 在线节点
+            - paragraph [ref=e249]: "0"
+          - generic [ref=e250]:
+            - paragraph [ref=e251]: 同步延迟
+            - paragraph [ref=e252]: <1s
+          - generic [ref=e253]:
+            - paragraph [ref=e254]: 响应时间
+            - paragraph [ref=e255]: 18ms
+          - generic [ref=e256]:
+            - paragraph [ref=e257]: 可用性
+            - paragraph [ref=e258]: 0%
+    - contentinfo [ref=e81]:
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - link "千服联灯" [ref=e85] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e90]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e91]:
+              - button [ref=e92]
+              - button [ref=e95]
+              - button [ref=e98]
+          - generic [ref=e102]:
+            - heading "平台" [level=4] [ref=e103]
+            - list [ref=e104]:
+              - listitem [ref=e105]:
+                - link "浏览服务器" [ref=e106] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=e107]:
+                - link "高级搜索" [ref=e108] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=e109]:
+                - link "推广方案" [ref=e110] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=e111]:
+                - link "资源中心" [ref=e112] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=e113]:
+            - heading "站点信息" [level=4] [ref=e114]
+            - list [ref=e115]:
+              - listitem [ref=e116]:
+                - link "开发团队" [ref=e117] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e118]:
+                - link "等级规则" [ref=e119] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=e120]:
+                - link "服务条款" [ref=e121] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e122]:
+                - link "隐私政策" [ref=e123] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e124]:
+            - heading "服务入口" [level=4] [ref=e125]
+            - list [ref=e126]:
+              - listitem [ref=e127] [cursor=pointer]:
+                - link "钱包与账单" [ref=e128]:
+                  - /url: /dashboard/billing
+              - listitem [ref=e129] [cursor=pointer]:
+                - link "推广中心" [ref=e130]:
+                  - /url: /promotion
+              - listitem [ref=e131] [cursor=pointer]:
+                - link "工单支持" [ref=e132]:
+                  - /url: /tickets
+        - generic [ref=e133]:
+          - generic [ref=e134]:
+            - generic [ref=e135]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e136] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e137]:
+            - generic [ref=e138]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=e141]

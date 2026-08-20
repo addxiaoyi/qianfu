@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-15T07:10:18.1394493+08:00",
+  "scope": "mc-u.top Qianfu production release and Alibaba Cloud host firewall",
+  "target": {
+    "host": "121.196.161.249",
+    "mainDomain": "mc-u.top",
+    "apiUpstream": "127.0.0.1:3001",
+    "panelPort": 27438
+  },
+  "release": {
+    "id": "20260714-230509",
+    "applicationCurrent": "/www/wwwroot/qianfu-releases/20260714-230509",
+    "frontendCurrent": "/www/wwwroot/mc-u.top/releases/20260714-230509",
+    "localBundle": {
+      "name": "qianfu-baota-release-20260714-230509.tar.gz",
+      "bytes": 98924405,
+      "sha256": "3392ee9ad08e31cfb73aac6eca6ae688607999264dcd8474c1b8ed7750237962"
+    },
+    "serverSnapshotManifest": {
+      "path": "/www/backup/qianfu/releases/20260714-230509/SHA256SUMS",
+      "status": "snapshot created before atomic cutover; remote checksum not collected"
+    }
+  },
+  "networkHardening": {
+    "firewall": {
+      "zone": "public",
+      "sshServiceEnabled": true,
+      "runtimeTcpPorts": [80, 443, 27438],
+      "permanentTcpPorts": [80, 443, 27438],
+      "removedTcpPorts": [888, 3306, 8787, 8788, 9306, 9312],
+      "backupDirectory": "/www/backup/qianfu/firewall/20260714T215558Z"
+    },
+    "publicTcpProbe": {
+      "reachable": [22, 80, 443, 27438],
+      "blockedOrFiltered": [888, 3001, 3306, 3452, 8787, 8788, 9306, 9312]
+    },
+    "cloudSecurityGroup": {
+      "status": "not_verified",
+      "hostFirewallEnforcement": "verified",
+      "requiredInboundPolicy": ["22/tcp", "80/tcp", "443/tcp", "27438/tcp temporarily"],
+      "followUp": "Align the Alibaba Cloud security group with this policy when a responsive authenticated console session is available."
+    },
+    "panelFollowUp": "Keep 27438/tcp limited to a fixed trusted management source after confirming that source address and panel strong authentication."
+  },
+  "verification": {
+    "remotePostChange": {
+      "qianfuApiPm2Status": "online",
+      "migrationStatus": "no pending migrations",
+      "apiHealth": 200,
+      "apiReady": 200
+    },
+    "publicWebStrict": {
+      "status": "passed",
+      "mainRoot": 200,
+      "mainApiHealth": 200,
+      "mainApiReady": 200,
+      "publicMarketplace": 200,
+      "anonymousMarketplaceWrite": 401,
+      "anonymousAdminConfig": 401,
+      "productionDevAuthEndpoint": 404,
+      "frontendManifestDistHash": "6d604de7a3283369bfff6b5ff865a7b2532c8f8f36fc217e4a1804cb01484f45"
+    },
+    "securityRegression": {
+      "securityGate": "12/12 passed",
+      "focusedTests": "83/83 passed",
+      "oauthJwtRedirect": "removed; same-origin HttpOnly session cookie is used",
+      "adminConfig": "authentication, administrator authorization, CSRF, input validation, and secret redaction enabled",
+      "devAuth": "requires NODE_ENV=development and DEV_AUTH_ENABLED=true"
+    }
+  },
+  "knownOutOfScope": {
+    "payDomain": {
+      "host": "pay.star-web.top",
+      "status": "not validated",
+      "reason": "The independent certificate probe reset the connection; this domain was excluded from the web-only release scope."
+    }
+  },
+  "rollback": {
+    "firewall": "Restore /etc/firewalld/zones/public.xml from the recorded firewall backup, then run firewall-cmd --reload.",
+    "release": "Select a verified retained release, repoint both current symlinks to its matching application and frontend directories, then restart qianfu-api. Do not use the known incomplete 20260715-043324, 20260715-044938, 20260715-051126, or 20260715-052821 stages."
+  }
+}

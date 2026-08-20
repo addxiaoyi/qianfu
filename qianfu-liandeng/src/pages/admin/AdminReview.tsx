@@ -1,12 +1,15 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { formatDateTime, parseListField } from '@/utils/serverView';
+import { isImageUrlSafe } from '@/utils/urlValidator';
 
 type ReviewStatus = 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION' | 'PENDING';
 
@@ -14,7 +17,16 @@ type PendingServer = {
   id: number;
   name: string;
   summary?: string | null;
+  content_html?: string | null;
+  thumbnail?: string | null;
   ip?: string | null;
+  link?: string | null;
+  platform?: string | null;
+  category?: string | null;
+  tags?: string | null;
+  online_mode?: boolean | null;
+  network_env?: string | null;
+  listing_plan?: string | null;
   supported_versions?: string | null;
   review_status: string;
   created_at?: string;
@@ -32,11 +44,40 @@ type ReviewStats = {
   userReviewsToday: number;
 };
 
+type ReviewDetailField = {
+  label: string;
+  value: string | number | boolean | null | undefined;
+};
+
 const reviewBadge = 'MODERATION_NODE / DELTA-0';
+
+const stripHtml = (value?: string | null) => String(value || '')
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const displayValue = (value?: string | number | boolean | null) => {
+  if (value === null || value === undefined || value === '') return '未填写';
+  if (typeof value === 'boolean') return value ? '已开启' : '未开启';
+  return String(value);
+};
+
+const reviewDetailFields = (audit: PendingServer): ReviewDetailField[] => [
+  { label: '服务器地址', value: audit.ip },
+  { label: '平台', value: audit.platform },
+  { label: '分类', value: audit.category },
+  { label: '支持版本', value: parseListField(audit.supported_versions).join('、') },
+  { label: '标签', value: parseListField(audit.tags).join('、') },
+  { label: '网络环境', value: parseListField(audit.network_env).join('、') },
+  { label: '正版验证', value: audit.online_mode },
+  { label: '发布套餐', value: audit.listing_plan },
+  { label: '提交时间', value: formatDateTime(audit.created_at) },
+];
 
 const AdminReview: React.FC = () => {
   const queryClient = useQueryClient();
   const [selectedAudit, setSelectedAudit] = useState<PendingServer | null>(null);
+  const [detailAudit, setDetailAudit] = useState<PendingServer | null>(null);
   const [notes, setNotes] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState<'approve' | 'reject' | null>(null);
 
@@ -45,9 +86,20 @@ const AdminReview: React.FC = () => {
     queryFn: () => api.get<PendingServer[]>('/review/pending', { limit: 100 }),
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats, isError: statsError, refetch: refetchStats } = useQuery({
     queryKey: ['admin-review-stats'],
     queryFn: () => api.get<ReviewStats>('/review/stats'),
+  });
+
+  const {
+    data: reviewDetail,
+    isLoading: detailLoading,
+    isError: detailError,
+    refetch: refetchDetail,
+  } = useQuery({
+    queryKey: ['admin-review-detail', detailAudit?.id],
+    queryFn: () => api.get<PendingServer>(`/review/${detailAudit!.id}/detail`),
+    enabled: detailAudit !== null,
   });
 
   const actionMutation = useMutation({
@@ -61,6 +113,7 @@ const AdminReview: React.FC = () => {
       setSelectedAudit(null);
       setNotes('');
     },
+    onError: () => toast({ variant: 'destructive', title: '审核失败', description: '服务器审核状态未能更新，请稍后重试。' }),
   });
 
   const displayStats = useMemo(() => ({
@@ -70,9 +123,16 @@ const AdminReview: React.FC = () => {
     today: stats?.totalTodayReviews ?? 0,
   }), [audits.length, stats]);
 
+  const detailTarget = reviewDetail ?? detailAudit;
+  const openReviewAction = (audit: PendingServer, status: 'approve' | 'reject') => {
+    setDetailAudit(null);
+    setSelectedAudit(audit);
+    setIsDialogOpen(status);
+  };
+
   return (
     <div className="space-y-16 pb-32 bg-white">
-      <StatusWrapper isLoading={isLoading} isError={isError} onRetry={() => refetch()}>
+      <StatusWrapper isLoading={isLoading} isError={isError || statsError} onRetry={() => { void Promise.all([refetch(), refetchStats()]); }}>
         <AdminPageHeader
           badge={reviewBadge}
           title="服务器审核"
@@ -166,14 +226,23 @@ const AdminReview: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row 3xl:flex-col justify-center gap-6 min-w-[320px]">
+                      <button
+                        type="button"
+                        data-review-detail
+                        data-review-detail-trigger
+                        onClick={() => setDetailAudit(audit)}
+                        className="px-12 py-7 border border-zinc-200 rounded-[3rem] text-[12px] font-black uppercase tracking-[0.5em] text-zinc-700 hover:border-black hover:bg-zinc-50 transition-all flex items-center justify-center gap-6 italic active:scale-[0.98]"
+                      >
+                        <GeometricLantern variant="data" className="w-6 h-6" /> 查看详情
+                      </button>
                       <button type="button"
-                        onClick={() => { setSelectedAudit(audit); setIsDialogOpen('approve'); }}
+                        onClick={() => openReviewAction(audit, 'approve')}
                         className="px-12 py-8 btn-accent rounded-[3rem] text-[12px] font-black uppercase tracking-[0.5em] transition-all flex items-center justify-center gap-6 shadow-2xl shadow-accent/20 italic active:scale-[0.98]"
                       >
                         <GeometricLantern variant="spark" className="w-6 h-6" /> 通过审核
                       </button>
                       <button type="button"
-                        onClick={() => { setSelectedAudit(audit); setIsDialogOpen('reject'); }}
+                        onClick={() => openReviewAction(audit, 'reject')}
                         className="px-12 py-8 border border-zinc-50 rounded-[3rem] text-[12px] font-black uppercase tracking-[0.5em] hover:bg-red-500 hover:text-white hover:border-red-500 transition-all flex items-center justify-center gap-6 italic active:scale-[0.98] shadow-xs hover:shadow-2xl hover:shadow-red-500/20"
                       >
                         <GeometricLantern variant="alert" className="w-6 h-6" /> 驳回申请
@@ -196,9 +265,113 @@ const AdminReview: React.FC = () => {
           )}
         </div>
 
-        <AnimatePresence>
-          {isDialogOpen && selectedAudit && (
-            <div className="fixed inset-0 z-[1000] flex items-center justify-center p-8">
+        {typeof document !== 'undefined' ? createPortal(
+          <AnimatePresence>
+            {detailAudit && (
+              <div
+                data-review-detail
+                data-review-detail-dialog
+                className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-8"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="review-detail-title"
+              >
+                <motion.button
+                  type="button"
+                  aria-label="关闭服务器详情"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 cursor-default bg-black/80 backdrop-blur-lg"
+                  onClick={() => setDetailAudit(null)}
+                />
+                <motion.section
+                  initial={{ opacity: 0, scale: 0.96, y: 24 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 24 }}
+                  className="relative max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-[0_40px_100px_rgba(0,0,0,0.35)] sm:max-h-[calc(100dvh-4rem)] sm:rounded-[3rem] sm:p-8"
+                >
+                <div className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-6">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">审核详情 / SERVER_{detailAudit.id}</div>
+                    <h3 id="review-detail-title" className="mt-2 text-2xl font-black tracking-tight text-zinc-950 sm:text-4xl">服务器详情</h3>
+                    <p className="mt-2 text-sm font-bold text-zinc-500">{detailTarget?.name || detailAudit.name}</p>
+                  </div>
+                  <button type="button" aria-label="关闭服务器详情" onClick={() => setDetailAudit(null)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 text-zinc-500 transition hover:border-black hover:text-black">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {detailError ? (
+                  <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-700">
+                    <span>完整详情补充失败，当前仍显示待审列表中的已提交信息。</span>
+                    <button type="button" onClick={() => { void refetchDetail(); }} className="rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-black text-red-700">重试</button>
+                  </div>
+                ) : null}
+                {detailLoading ? (
+                  <div className="mt-6 rounded-2xl border border-zinc-100 bg-zinc-50 p-4 text-center text-sm font-bold text-zinc-500">正在补充完整详情，当前已显示已提交信息…</div>
+                ) : null}
+
+                {detailTarget ? <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+                  <div className="space-y-4">
+                    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-zinc-50">
+                      {detailTarget.thumbnail && isImageUrlSafe(detailTarget.thumbnail) ? (
+                        <img src={detailTarget.thumbnail} alt={`${detailTarget.name}封面`} className="aspect-video w-full object-cover" />
+                      ) : (
+                        <div className="flex aspect-video items-center justify-center text-zinc-300">
+                          <GeometricLantern variant="terminal" className="h-16 w-16" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">提交人</div>
+                      <div className="mt-2 font-black text-zinc-900">{displayValue(detailTarget.owner?.username)}</div>
+                      <div className="mt-1 break-all text-xs font-medium text-zinc-500">{displayValue(detailTarget.owner?.email)}</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-5">
+                    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {reviewDetailFields(detailTarget).map(({ label, value }) => (
+                        <div key={label} className="rounded-xl border border-zinc-100 bg-zinc-50 px-3 py-3">
+                          <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">{label}</dt>
+                          <dd className="mt-1 break-words text-sm font-bold text-zinc-800">{displayValue(value)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+
+                    <div className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm">
+                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">提交简介</div>
+                      <p className="mt-3 whitespace-pre-wrap break-words text-sm font-medium leading-7 text-zinc-600">{displayValue(detailTarget.summary)}</p>
+                    </div>
+                    <div className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm">
+                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">完整介绍</div>
+                      <p className="mt-3 whitespace-pre-wrap break-words text-sm font-medium leading-7 text-zinc-600">{displayValue(stripHtml(detailTarget.content_html))}</p>
+                    </div>
+                    <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
+                      <div className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">外部链接</div>
+                      <p className="mt-2 break-all text-sm font-medium text-zinc-600">{displayValue(detailTarget.link)}</p>
+                    </div>
+                  </div>
+                </div> : null}
+                {detailTarget ? (
+                  <div className="mt-8 grid grid-cols-1 gap-3 border-t border-zinc-100 pt-6 sm:grid-cols-2">
+                    <button type="button" onClick={() => openReviewAction(detailTarget, 'approve')} className="rounded-2xl bg-accent px-4 py-3 text-sm font-black text-white transition hover:bg-accent-medium">通过审核</button>
+                    <button type="button" onClick={() => openReviewAction(detailTarget, 'reject')} className="rounded-2xl border border-red-200 px-4 py-3 text-sm font-black text-red-600 transition hover:bg-red-50">驳回申请</button>
+                    <span className="sr-only">打开审核操作</span>
+                  </div>
+                ) : null}
+                </motion.section>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        ) : null}
+
+        {typeof document !== 'undefined' ? createPortal(
+          <AnimatePresence>
+            {isDialogOpen && selectedAudit && (
+              <div className="fixed inset-0 z-[1000] flex items-center justify-center p-8">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -219,6 +392,7 @@ const AdminReview: React.FC = () => {
                 </div>
 
                 <textarea
+                  aria-label={isDialogOpen === 'approve' ? '审核备注' : '驳回原因'}
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
                   className="w-full h-56 px-10 py-10 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent rounded-[3rem] transition-all duration-700 outline-hidden font-black text-lg italic tracking-tight shadow-xs placeholder:text-zinc-200"
@@ -253,9 +427,11 @@ const AdminReview: React.FC = () => {
                   </button>
                 </div>
               </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        ) : null}
       </StatusWrapper>
     </div>
   );

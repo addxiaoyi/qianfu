@@ -1,0 +1,35 @@
+{
+  "marker": "qfqa_16bf317e2781b2bb",
+  "startedAt": "2026-07-18T12:27:35.962Z",
+  "deployment": "qianfu-20260718-2002",
+  "marketplace": {
+    "productModeration": "PENDING_REVIEW -> APPROVED -> published",
+    "anonymousVisibility": "hidden-before-approval/visible-after-approval",
+    "order": "PENDING -> PAID fixture (payment API not called)",
+    "dispute": "OPEN -> fulfillment blocked 409 -> RESOLVED",
+    "delivery": "DELIVERED and buyer-visible",
+    "review": "created for paid order",
+    "reports": [
+      "PRODUCT",
+      "ORDER"
+    ]
+  },
+  "promotion": {
+    "ownerAuthorization": "create/publish succeeded",
+    "binding": "ACTIVE manual binding created",
+    "claim": "PENDING -> REWARDED",
+    "rewardAmount": 88,
+    "duplicateApprovalStatus": 200,
+    "idempotency": "wallet unchanged and exactly one reward transaction"
+  },
+  "cleanup": {
+    "users": 0,
+    "products": 0,
+    "orders": 0,
+    "tasks": 0,
+    "claims": 0
+  },
+  "ok": true,
+  "completedAt": "2026-07-18T12:28:35.740Z",
+  "cleanupVerified": true
+}

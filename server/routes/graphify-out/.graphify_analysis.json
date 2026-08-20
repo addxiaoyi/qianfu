@@ -1,0 +1,255 @@
+{
+  "communities": {
+    "0": [
+      "cms",
+      "cms_router",
+      "index",
+      "index_registerapiroutes",
+      "notification",
+      "notification_router",
+      "paymentpersonalqr",
+      "paymentpersonalqr_router",
+      "preferences",
+      "preferences_router"
+    ],
+    "1": [
+      "upload",
+      "upload_handleupload",
+      "upload_parsedataurl",
+      "upload_router",
+      "upload_safeoriginalname",
+      "upload_upload"
+    ],
+    "2": [
+      "wallet",
+      "wallet_generaterandomredeemcode",
+      "wallet_normalizeredeemcode",
+      "wallet_parseredeemamount",
+      "wallet_router",
+      "wallet_toisostring"
+    ],
+    "3": [
+      "stats",
+      "stats_getglobalstats",
+      "stats_router",
+      "stats_webvitalschema"
+    ],
+    "4": [
+      "announcementadmin",
+      "announcementadmin_protectwrite",
+      "announcementadmin_router"
+    ],
+    "5": [
+      "apikey",
+      "apikey_noopcsrf",
+      "apikey_router"
+    ],
+    "6": [
+      "assets",
+      "assets_fetchtinymce",
+      "assets_router"
+    ],
+    "7": [
+      "metrics",
+      "metrics_protectmetrics",
+      "metrics_router"
+    ],
+    "8": [
+      "paymentprojects",
+      "paymentprojects_router",
+      "paymentprojects_upload"
+    ],
+    "9": [
+      "publicuploads",
+      "publicuploads_inline_upload_extensions",
+      "publicuploads_router"
+    ],
+    "10": [
+      "reports",
+      "reports_noopcsrf",
+      "reports_router"
+    ],
+    "11": [
+      "servers",
+      "servers_noopcsrf",
+      "servers_router"
+    ],
+    "12": [
+      "visit",
+      "visit_protectvisitstats",
+      "visit_router"
+    ],
+    "13": [
+      "adminsetup",
+      "adminsetup_router"
+    ],
+    "14": [
+      "ai",
+      "ai_router"
+    ],
+    "15": [
+      "announcements",
+      "announcements_router"
+    ],
+    "16": [
+      "audit",
+      "audit_router"
+    ],
+    "17": [
+      "auth",
+      "auth_router"
+    ],
+    "18": [
+      "events",
+      "events_router"
+    ],
+    "19": [
+      "mailconfig",
+      "mailconfig_router"
+    ],
+    "20": [
+      "moderationadmin",
+      "moderationadmin_router"
+    ],
+    "21": [
+      "moderationroutes",
+      "moderationroutes_router"
+    ],
+    "22": [
+      "payment",
+      "payment_router"
+    ],
+    "23": [
+      "paymentxpaybridge",
+      "paymentxpaybridge_router"
+    ],
+    "24": [
+      "permissiongroups",
+      "permissiongroups_router"
+    ],
+    "25": [
+      "port5555",
+      "port5555_router"
+    ],
+    "26": [
+      "promo",
+      "promo_router"
+    ],
+    "27": [
+      "review",
+      "review_router"
+    ],
+    "28": [
+      "staticdataroutes",
+      "staticdataroutes_router"
+    ],
+    "29": [
+      "tickets",
+      "tickets_router"
+    ],
+    "30": [
+      "user",
+      "user_router"
+    ],
+    "31": [
+      "usermanagement",
+      "usermanagement_router"
+    ],
+    "32": [
+      "users",
+      "users_router"
+    ]
+  },
+  "cohesion": {
+    "0": 0.28888888888888886,
+    "1": 0.3333333333333333,
+    "2": 0.3333333333333333,
+    "3": 0.5,
+    "4": 0.6666666666666666,
+    "5": 0.6666666666666666,
+    "6": 0.6666666666666666,
+    "7": 0.6666666666666666,
+    "8": 0.6666666666666666,
+    "9": 0.6666666666666666,
+    "10": 0.6666666666666666,
+    "11": 0.6666666666666666,
+    "12": 0.6666666666666666,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0
+  },
+  "gods": [
+    {
+      "id": "ai_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "announcementadmin_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "announcements_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "apikey_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "assets_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "audit_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "auth_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "cms_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "events_router",
+      "label": "router",
+      "degree": 2
+    },
+    {
+      "id": "mailconfig_router",
+      "label": "router",
+      "degree": 2
+    }
+  ],
+  "surprises": [],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

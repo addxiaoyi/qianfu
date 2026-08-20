@@ -1,96 +1,138 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const COLORS = {
-  reset: '\x1b[0m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  cyan: '\x1b[36m'
-};
+export interface SecurityCheck {
+  code: string;
+  description: string;
+  filePath: string;
+  ok: boolean;
+}
 
-const log = (msg: string, color: keyof typeof COLORS = 'reset') => {
-  console.log(`${COLORS[color]}${msg}${COLORS.reset}`);
-};
+export interface SecurityCheckReport {
+  checks: SecurityCheck[];
+  passed: number;
+  total: number;
+  ok: boolean;
+}
 
-const checkFileExists = (filePath: string, description: string) => {
-  if (fs.existsSync(filePath)) {
-    log(`[PASS] ${description} exists: ${filePath}`, 'green');
-    return true;
-  } else {
-    log(`[FAIL] ${description} missing: ${filePath}`, 'red');
-    return false;
+interface SourceFile {
+  filePath: string;
+  content: string | null;
+  error: string | null;
+}
+
+type LogLine = (line: string) => void;
+
+function readSource(projectRoot: string, relativePath: string): SourceFile {
+  const filePath = path.resolve(projectRoot, relativePath);
+
+  try {
+    return { filePath, content: fs.readFileSync(filePath, 'utf8'), error: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown read error';
+    return { filePath, content: null, error: message };
   }
-};
+}
 
-const checkFileContent = (filePath: string, pattern: RegExp, description: string) => {
-  if (!fs.existsSync(filePath)) {
-    log(`[FAIL] Cannot check content, file missing: ${filePath}`, 'red');
-    return false;
-  }
-  const content = fs.readFileSync(filePath, 'utf-8');
-  if (pattern.test(content)) {
-    log(`[PASS] ${description} detected in ${path.basename(filePath)}`, 'green');
-    return true;
-  } else {
-    log(`[FAIL] ${description} NOT detected in ${path.basename(filePath)}`, 'red');
-    return false;
-  }
-};
+function checkSource(
+  source: SourceFile,
+  code: string,
+  description: string,
+  pattern: RegExp,
+): SecurityCheck {
+  return {
+    code,
+    description,
+    filePath: source.filePath,
+    ok: source.content !== null && pattern.test(source.content),
+  };
+}
 
-const runChecks = async () => {
-  log('Starting Security Checks...', 'cyan');
-  let passed = 0;
-  let total = 0;
+function logCheck(check: SecurityCheck, source: SourceFile, log: LogLine) {
+  const status = check.ok ? 'PASS' : 'FAIL';
+  const suffix = source.error ? `: ${source.error}` : '';
+  log(`[${status}] ${check.description}: ${check.filePath}${suffix}`);
+}
 
-  // 1. Check robots.txt
-  total++;
-  if (checkFileExists(path.join(process.cwd(), 'public', 'robots.txt'), 'robots.txt')) {
-    total++;
-    if (checkFileContent(path.join(process.cwd(), 'public', 'robots.txt'), /Disallow: \/api\//, 'API blocking rules')) {
-      passed++;
+export function runSecurityChecks(
+  projectRoot = process.cwd(),
+  log: LogLine = console.log,
+): SecurityCheckReport {
+  const robots = readSource(projectRoot, 'qianfu-liandeng/public/robots.txt');
+  const viteConfig = readSource(projectRoot, 'qianfu-liandeng/vite.config.ts');
+  const app = readSource(projectRoot, 'server/app.ts');
+  const middleware = readSource(projectRoot, 'server/bootstrap/middlewareLayers.ts');
+  const security = readSource(projectRoot, 'server/bootstrap/security.ts');
+
+  const checks = [
+    checkSource(robots, 'robots.api', 'robots.txt blocks API crawling', /^Disallow:\s*\/api\/\s*$/m),
+    checkSource(robots, 'robots.admin', 'robots.txt blocks admin crawling', /^Disallow:\s*\/admin\/\s*$/m),
+    checkSource(
+      robots,
+      'robots.privateUploads',
+      'robots.txt blocks private uploads crawling',
+      /^Disallow:\s*\/uploads\/private\/\s*$/m,
+    ),
+    checkSource(robots, 'robots.public', 'robots.txt keeps public pages crawlable', /^Allow:\s*\/\s*$/m),
+    checkSource(viteConfig, 'vite.dropConsole', 'production build removes console output', /drop_console\s*:\s*true/),
+    checkSource(viteConfig, 'vite.dropDebugger', 'production build removes debugger statements', /drop_debugger\s*:\s*true/),
+    checkSource(
+      app,
+      'app.middlewareLayers',
+      'application initializes middleware layers',
+      /initializeMiddlewareLayers\s*\(\s*app\s*\)/,
+    ),
+    checkSource(
+      middleware,
+      'middleware.securityHeaders',
+      'middleware layer registers security headers',
+      /registerSecurityHeaders\s*\(\s*app\s*\)/,
+    ),
+    checkSource(
+      middleware,
+      'middleware.antiCrawler',
+      'middleware layer registers anti-crawler protection',
+      /app\.use\s*\(\s*antiCrawler\s*\)/,
+    ),
+    checkSource(security, 'security.helmet', 'security module registers Helmet', /helmet\s*\(/),
+    checkSource(security, 'security.csp', 'security module configures CSP', /contentSecurityPolicy\s*:/),
+    checkSource(
+      security,
+      'security.frameDeny',
+      'security module denies frame embedding',
+      /xFrameOptions\s*:\s*\{\s*action\s*:\s*['"]deny['"]\s*\}/,
+    ),
+  ];
+
+  for (const check of checks) {
+    const source = [robots, viteConfig, app, middleware, security].find((item) => item.filePath === check.filePath);
+    if (!source) {
+      throw new Error(`Security check source not found for ${check.code}`);
     }
-    total++;
-    if (checkFileContent(path.join(process.cwd(), 'public', 'robots.txt'), /GPTBot/, 'AI Bot blocking')) {
-      passed++;
-    }
-    passed++;
+    logCheck(check, source, log);
   }
 
-  // 2. Check Vite Config for console drop
-  total++;
-  if (checkFileContent(path.join(process.cwd(), 'vite.config.ts'), /drop:\s*isProduction\s*\?\s*\['console'/, 'Console log dropping')) {
-    passed++;
+  const passed = checks.filter((check) => check.ok).length;
+  const report = { checks, passed, total: checks.length, ok: passed === checks.length };
+  log(`Security Check Complete: ${report.passed}/${report.total} passed.`);
+  return report;
+}
+
+export function securityCheckExitCode(report: SecurityCheckReport): 0 | 1 {
+  return report.ok ? 0 : 1;
+}
+
+function main() {
+  try {
+    process.exitCode = securityCheckExitCode(runSecurityChecks());
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown security check error';
+    console.error(`Security check failed to run: ${message}`);
+    process.exitCode = 1;
   }
+}
 
-  // 3. Check Server App for security headers registration
-  total++;
-  if (
-    checkFileContent(
-      path.join(process.cwd(), 'server', 'app.ts'),
-      /(registerSecurityHeaders\(app\)|app\.use\(helmet\()/,
-      'Security headers middleware'
-    )
-  ) {
-    passed++;
-  }
-
-  // 4. Check Server App for Anti-Crawler
-  total++;
-  if (checkFileContent(path.join(process.cwd(), 'server', 'app.ts'), /app\.use\(antiCrawler\)/, 'Anti-Crawler middleware')) {
-    passed++;
-  }
-
-  // 5. Check Env for Production Security
-  // This is a static check of the .env.example or just a reminder
-  log('---------------------------------------------------');
-  log('Runtime checks (ensure server is running on localhost:4123 or similar):', 'yellow');
-  
-  // Optional: Check live headers if server is running
-  // Skipping for now as this is a static check script mostly
-  
-  log('---------------------------------------------------');
-  log(`Security Check Complete: ${passed}/${total} passed.`, passed === total ? 'green' : 'yellow');
-};
-
-runChecks().catch(console.error);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}

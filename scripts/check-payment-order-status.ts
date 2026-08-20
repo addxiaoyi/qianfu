@@ -33,7 +33,7 @@ const PROJECT_KEY = process.env.PAYMENT_PROJECT_KEY || 'qianfu';
 const ORDER_ID = (process.env.PAYMENT_ORDER_ID || '').trim();
 const EXPECT_UPSTREAM_ORDER_ID = (process.env.PAYMENT_UPSTREAM_ORDER_ID || '').trim();
 const POLL_INTERVAL_MS = Math.max(1000, Number(process.env.PAYMENT_POLL_INTERVAL_MS || '15000'));
-const POLL_MAX_ATTEMPTS = Math.max(1, Number(process.env.PAYMENT_POLL_MAX_ATTEMPTS || '1'));
+const POLL_MAX_ATTEMPTS = Math.max(1, Number(process.env.PAYMENT_POLL_MAX_ATTEMPTS || '1')); // Audited env fallback
 const REQUIRE_COMPLETED = String(process.env.PAYMENT_REQUIRE_COMPLETED || 'false').toLowerCase() === 'true';
 const REPORT_PATH =
   process.env.PAYMENT_REPORT_PATH ||

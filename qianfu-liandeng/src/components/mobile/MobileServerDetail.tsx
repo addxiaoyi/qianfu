@@ -3,7 +3,7 @@ import { copyText } from '@/utils/clipboard';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
-  Heart, Share2, Users, Server, Clock, MessageSquare, Play, Copy, ShieldCheck, AlertCircle
+  Heart, Share2, Server, MessageSquare, Play, Copy, ShieldCheck, AlertCircle
 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError, api } from '../../api/request';
@@ -11,18 +11,19 @@ import { useAuthStore } from '../../store/authStore';
 import { toast } from '../../hooks/use-toast';
 import { cn } from '../../utils/cn';
 import { toArray } from '../../utils/apiData';
-import { isNumericRouteId } from '../../utils/routeParams';
+import { isServerRouteId } from '../../utils/routeParams';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '../../api/rustV2';
 import { LazyImage } from './MobileLazyImage';
 import {
-  formatDateTime,
   getServerName,
-  getServerPlayersMax,
-  getServerPlayersOnline,
+  getServerDescription,
+  getServerPlatformLabel,
   getServerSummary,
   getServerThumbnail,
   getServerVersionLabel,
   parseListField,
 } from '../../utils/serverView';
+import { sanitizeHtml } from '../../utils/htmlSanitizer';
 
 interface MobileServerDetailProps {
   serverId?: string;
@@ -39,7 +40,8 @@ type TabId = (typeof tabs)[number]['id'];
 const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => {
   const params = useParams();
   const id = serverId || params.id;
-  const isValidServerId = isNumericRouteId(id);
+  const useRustV2 = isRustV2Enabled() && Boolean(id && !/^\d+$/.test(id));
+  const isValidServerId = isServerRouteId(id);
   const isInvalidServerId = !isValidServerId;
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -47,7 +49,7 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
 
   const { data: server, error, isLoading, isError, refetch } = useQuery({
     queryKey: ['server', id, 'mobile'],
-    queryFn: () => api.get<any>(`/servers/${id}`, undefined, { useAuth: false }),
+    queryFn: () => api.get<any>(useRustV2 ? rustV2Path(`/servers/${id}`) : `/servers/${id}`, undefined, useRustV2 ? { ...rustV2RequestOptions, useAuth: false } : { useAuth: false }),
     enabled: isValidServerId,
     retry: (failureCount, queryError) =>
       !(queryError instanceof ApiError && [403, 404].includes(queryError.status)) && failureCount < 1,
@@ -58,7 +60,7 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
 
   const { data: favoriteState, isError: favoriteStateError, refetch: refetchFavoriteState } = useQuery({
     queryKey: ['server-favorite-state', id],
-    queryFn: () => api.get<any>(`/servers/${id}/favorite-state`),
+    queryFn: () => api.get<any>(useRustV2 ? rustV2Path(`/servers/${id}/favorite-state`) : `/servers/${id}/favorite-state`, undefined, useRustV2 ? rustV2RequestOptions : undefined),
     enabled: Boolean(id && server && isAuthenticated),
     retry: false,
   });
@@ -66,17 +68,18 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
   const tags = useMemo(() => parseListField(server?.tags), [server?.tags]);
   const networkEnv = useMemo(() => parseListField(server?.network_env), [server?.network_env]);
   const versions = useMemo(() => parseListField(server?.supported_versions), [server?.supported_versions]);
+  const descriptionHtml = useMemo(() => sanitizeHtml(String(getServerDescription(server))), [server]);
   const similarCategory = server?.category || tags[0];
 
   const { data: similarServerResponse, isError: similarServersError, refetch: refetchSimilarServers } = useQuery({
     queryKey: ['similar-servers', id, similarCategory],
-    queryFn: () => api.get<any>('/public/servers', { limit: 5, category: similarCategory }, { useAuth: false }),
+    queryFn: () => api.get<any>(useRustV2 ? rustV2Path('/servers') : '/public/servers', { limit: 5, ...(useRustV2 ? {} : { category: similarCategory }) }, useRustV2 ? { ...rustV2RequestOptions, useAuth: false } : { useAuth: false }),
     enabled: !!similarCategory,
   });
   const similarServers = toArray<any>(similarServerResponse);
 
   const favoriteMutation = useMutation({
-    mutationFn: () => api.post(`/servers/${id}/favorite`, {}),
+    mutationFn: () => api.post(useRustV2 ? rustV2Path(`/servers/${id}/favorite`) : `/servers/${id}/favorite`, {}, useRustV2 ? rustV2RequestOptions : undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['server-favorite-state', id] });
       queryClient.invalidateQueries({ queryKey: ['server', id, 'mobile'] });
@@ -178,9 +181,6 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
   }
 
   const thumbnail = getServerThumbnail(server);
-  const players = getServerPlayersOnline(server);
-  const maxPlayers = getServerPlayersMax(server);
-  const online = server?.status?.online ?? server?.online;
   const rules = [
     server.online_mode !== undefined ? { title: '在线模式', desc: server.online_mode ? '开启正版验证' : '未开启正版验证' } : null,
     networkEnv.length > 0 ? { title: '网络环境', desc: networkEnv.join(' / ') } : null,
@@ -221,69 +221,35 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
         </div>
 
         <div className="absolute bottom-4 left-4 right-4">
-          <h1 className="text-2xl font-black text-white leading-tight">{getServerName(server)}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[10px] font-bold text-white uppercase">
-              {server.category || tags[0] || 'SERVER'}
-            </span>
-            <span className="text-xs font-mono text-white/80">{getServerVersionLabel(server)}</span>
-          </div>
+          <h1 className="text-2xl font-bold text-white leading-tight">{getServerName(server)}</h1>
+          {(server.category || tags[0] || versions[0]) ? (
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              {server.category || tags[0] ? <span className="px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-[10px] font-semibold text-white">{server.category || tags[0]}</span> : null}
+              {versions[0] ? <span className="text-xs font-mono text-white/80">{getServerVersionLabel(server)}</span> : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
       <div data-testid="server-detail-first-screen" className="px-4 -mt-6 relative z-10">
         <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Users className="w-4 h-4 text-blue-500" />
-                <span className="text-lg font-black">{maxPlayers ? `${players}/${maxPlayers}` : players}</span>
-              </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase">在线人数</p>
+          {rules.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              {rules.map((rule) => (
+                <div key={`${rule.title}-${rule.desc}`}>
+                  <p className="font-bold text-muted-foreground">{rule.title}</p>
+                  <p className="mt-1 font-black break-words">{rule.desc}</p>
+                </div>
+              ))}
             </div>
-            <div className="text-center border-x border-gray-100">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Clock className={cn('w-4 h-4', online === false ? 'text-red-500' : online === true ? 'text-green-500' : 'text-zinc-400')} />
-                <span data-testid="server-detail-status" aria-label="服务器状态" className="text-lg font-black">
-                  {online === true ? '在线' : online === false ? '离线' : '未知'}
-                </span>
-              </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase">状态</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Heart className="w-4 h-4 text-red-500" />
-                <span className="text-lg font-black">{server.like_count ?? 0}</span>
-              </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase">收藏热度</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 border-t border-gray-100 pt-4 text-xs">
-            <div>
-              <p className="font-bold text-muted-foreground">服务器版本</p>
-              <p className="mt-1 font-black font-mono truncate">{getServerVersionLabel(server)}</p>
-            </div>
-            <div>
-              <p className="font-bold text-muted-foreground">服务器平台</p>
-              <p className="mt-1 font-black truncate">{server.platform || 'Java Edition'}</p>
-            </div>
-            <div>
-              <p className="font-bold text-muted-foreground">服务器分类</p>
-              <p className="mt-1 font-black truncate">{server.category || '未分类'}</p>
-            </div>
-            <div>
-              <p className="font-bold text-muted-foreground">更新时间</p>
-              <p className="mt-1 font-black truncate">{formatDateTime(server.updated_at)}</p>
-            </div>
-          </div>
+          ) : null}
 
           {tags.length > 0 && (
             <div className="border-t border-gray-100 pt-4">
               <p className="text-xs font-bold text-muted-foreground mb-2">服务器标签</p>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                  <span key={tag} className="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  <span key={tag} className="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-semibold tracking-wide">
                     {tag}
                   </span>
                 ))}
@@ -319,7 +285,7 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               aria-pressed={activeTab === tab.id}
-              className={cn('flex-1 py-3 text-sm font-bold uppercase tracking-wider relative', activeTab === tab.id ? 'text-black' : 'text-muted-foreground')}
+              className={cn('flex-1 py-3 text-sm font-semibold tracking-wide relative', activeTab === tab.id ? 'text-black' : 'text-muted-foreground')}
             >
               {tab.label}
               {activeTab === tab.id && <motion.div layoutId="tabIndicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />}
@@ -332,34 +298,25 @@ const MobileServerDetail: React.FC<MobileServerDetailProps> = ({ serverId }) => 
         {activeTab === 'info' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider mb-3">服务器介绍</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{getServerSummary(server)}</p>
+              <h3 className="text-sm font-semibold tracking-wide mb-3">服务器介绍</h3>
+              {descriptionHtml ? <div className="prose prose-zinc max-w-none text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: descriptionHtml }} /> : <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">{getServerSummary(server)}</p>}
             </div>
-            <div>
-              <h3 className="text-sm font-black uppercase tracking-wider mb-3">服务器信息</h3>
+            {server.platform || server.category || versions.length > 0 || server.group_number ? (
+              <div>
+              <h3 className="text-sm font-semibold tracking-wide mb-3">服务器信息</h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-xs font-bold text-muted-foreground">平台类型</span>
-                  <span className="text-xs font-black flex items-center gap-1">
-                    <Server className="w-3 h-3" />
-                    {server.platform || 'Java Edition'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-xs font-bold text-muted-foreground">更新时间</span>
-                  <span className="text-xs font-black">{formatDateTime(server.updated_at)}</span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <span className="text-xs font-bold text-muted-foreground">审核状态</span>
-                  <span className="text-xs font-black">{server.review_status || 'UNKNOWN'}</span>
-                </div>
+                {server.platform ? <div className="flex items-center justify-between py-2 border-b border-gray-100"><span className="text-xs font-bold text-muted-foreground">平台类型</span><span className="text-xs font-black flex items-center gap-1"><Server className="w-3 h-3" />{getServerPlatformLabel(server)}</span></div> : null}
+                {server.category ? <div className="flex items-center justify-between py-2 border-b border-gray-100"><span className="text-xs font-bold text-muted-foreground">服务器分类</span><span className="text-xs font-black">{server.category}</span></div> : null}
+                {versions.length > 0 ? <div className="flex items-center justify-between py-2 border-b border-gray-100"><span className="text-xs font-bold text-muted-foreground">支持版本</span><span className="text-xs font-black">{versions.join(' / ')}</span></div> : null}
+                {server.group_number ? <div className="flex items-center justify-between py-2 border-b border-gray-100"><span className="text-xs font-bold text-muted-foreground">发布QQ群</span><span className="text-right text-xs font-black break-all">{server.group_number}</span></div> : null}
               </div>
-            </div>
+              </div>
+            ) : null}
 
-            <div className="bg-gray-50 rounded-2xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">服务器 IP</p>
-              <p className="text-lg font-mono font-black tracking-wider break-all">{server.ip || '暂未公开'}</p>
-            </div>
+            {(server.ip || server.link) ? <div className="bg-gray-50 rounded-2xl p-4">
+              <p className="text-[10px] font-medium tracking-wide text-muted-foreground mb-1">服务器 IP</p>
+              <p className="text-lg font-mono font-black tracking-wider break-all">{server.ip || server.link}</p>
+            </div> : null}
           </motion.div>
         )}
 

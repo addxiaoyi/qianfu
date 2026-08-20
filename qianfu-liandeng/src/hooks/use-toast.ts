@@ -16,9 +16,15 @@ export function toast(props: ToastProps) {
   observers.forEach((observer) => observer(toasts));
   
   setTimeout(() => {
-    toasts = toasts.filter((t) => t.id !== id);
-    observers.forEach((observer) => observer(toasts));
+    dismiss(id);
   }, 3000);
+}
+
+export function dismiss(id: string) {
+  const nextToasts = toasts.filter((toastItem) => toastItem.id !== id);
+  if (nextToasts.length === toasts.length) return;
+  toasts = nextToasts;
+  observers.forEach((observer) => observer(toasts));
 }
 
 export function useToast() {
@@ -32,5 +38,5 @@ export function useToast() {
     };
   }, []);
 
-  return { toasts: activeToasts, toast };
+  return { toasts: activeToasts, toast, dismiss };
 }

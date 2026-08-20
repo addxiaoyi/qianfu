@@ -31,17 +31,17 @@ const MobileMessages: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('inbox');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: notificationResponse } = useQuery({
+  const notificationQuery = useQuery({
     queryKey: ['notifications', 'mobile-messages'],
     queryFn: () => api.get<any>('/notifications'),
   });
-  const notifications = toArray<any>(notificationResponse);
+  const notifications = toArray<any>(notificationQuery.data);
 
-  const { data: ticketResponse } = useQuery({
+  const ticketQuery = useQuery({
     queryKey: ['tickets', 'mobile-messages'],
     queryFn: () => api.get<any>('/tickets', { limit: 50 }),
   });
-  const tickets = toArray<any>(ticketResponse);
+  const tickets = toArray<any>(ticketQuery.data);
 
   const items = useMemo<ConversationItem[]>(() => {
     const noticeItems = notifications.map((item: any) => ({
@@ -96,6 +96,7 @@ const MobileMessages: React.FC = () => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
         <input
           type="text"
+          aria-label="搜索消息"
           placeholder="搜索消息..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -127,10 +128,21 @@ const MobileMessages: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-zinc-200 divide-y divide-zinc-100 overflow-hidden">
-        {filteredMessages.length === 0 ? (
+        {notificationQuery.isLoading || ticketQuery.isLoading ? (
+          <div className="space-y-3 p-4" aria-label="正在加载消息">
+            {[1, 2, 3].map((item) => <div key={item} className="h-16 animate-pulse rounded-xl bg-zinc-100" />)}
+          </div>
+        ) : notificationQuery.isError || ticketQuery.isError ? (
+          <div className="p-8 text-center">
+            <MessageSquare className="w-12 h-12 mx-auto text-red-200 mb-3" />
+            <p className="text-sm font-semibold text-zinc-600">消息加载失败</p>
+            <button type="button" onClick={() => { void notificationQuery.refetch(); void ticketQuery.refetch(); }} className="mt-4 rounded-lg bg-zinc-900 px-4 py-2 text-xs font-bold text-white">重试</button>
+          </div>
+        ) : filteredMessages.length === 0 ? (
           <div className="p-8 text-center">
             <MessageSquare className="w-12 h-12 mx-auto text-zinc-200 mb-3" />
-            <p className="text-sm text-zinc-400">暂无消息</p>
+            <p className="text-sm font-semibold text-zinc-500">{searchQuery.trim() || activeTab !== 'inbox' ? '没有匹配的消息' : '暂无消息'}</p>
+            <p className="mt-2 text-xs text-zinc-400">{searchQuery.trim() || activeTab !== 'inbox' ? '调整搜索或分类条件后重试。' : '系统通知和工单回复会显示在这里。'}</p>
           </div>
         ) : (
           filteredMessages.map((msg, i) => (

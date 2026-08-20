@@ -1,0 +1,2191 @@
+[
+  {
+    "vp": "desktop",
+    "route": "/",
+    "url": "/",
+    "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+    "bodyHeight": 6271,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "发现下一个世界.",
+      "Minecraft 服务器发现、发布与支持",
+      "Core Features",
+      "不可篡改的安全",
+      "透明推广位",
+      "人工支持",
+      "实时状态",
+      "先看页面，再决定怎么使用",
+      "个人控制台总览",
+      "我的服务器",
+      "个人主页",
+      "工单中心",
+      "从访问到完成操作",
+      "玩家找服",
+      "服主发布",
+      "问题处理",
+      "展示真实状态，也说明边界",
+      "数据不凑数",
+      "发布要审核",
+      "过程可追踪"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "千服联灯登录后个人控制台总览快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后我的服务器管理页面快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后个人主页快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后工单中心页面快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/servers",
+    "url": "/servers",
+    "title": "服务器列表 - 千服联灯",
+    "bodyHeight": 1674,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "发现服务器",
+      "Minecraft 服务器公开列表",
+      "暂时没有已公开服务器"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "刷新服务器列表",
+        "title": null
+      },
+      {
+        "text": "全部",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "生存",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "创造",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "极限",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "小游戏",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "角色扮演",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "刷新列表",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "搜索名称、版本、玩法或标签",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/resources",
+    "url": "/resources",
+    "title": "资源中心 - 千服联灯",
+    "bodyHeight": 1883,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "资源中心",
+      "Minecraft 工具、社区与店铺聚合页",
+      "玩家店铺与商品",
+      "Minecraft Official",
+      "MC China"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "精选",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "热销",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "高分",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "最新",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "官方",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "社区",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "百科",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "资源",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "工具",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "软件",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "轻量科技整合包",
+        "width": null,
+        "height": null,
+        "nw": 0
+      },
+      {
+        "alt": "经济商店插件包",
+        "width": null,
+        "height": null,
+        "nw": 0
+      },
+      {
+        "alt": "暮色城堡冒险地图",
+        "width": null,
+        "height": null,
+        "nw": 0
+      }
+    ],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "搜索资源...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/promotion",
+    "url": "/promotion",
+    "title": "推广中心 - 千服联灯",
+    "bodyHeight": 1355,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "推广任务中心",
+      "平台账号绑定",
+      "当前任务"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "可领取任务",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "领取记录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "保存绑定",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [],
+    "inputs": [
+      {
+        "type": "select-one",
+        "name": "",
+        "aria": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "平台用户 ID",
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "平台用户名（可选）",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/team",
+    "url": "/team",
+    "title": "社区团队 - 千服联灯",
+    "bodyHeight": 2369,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "OUR TEAM",
+      "银河",
+      "封神",
+      "木匠",
+      "蓝海狐",
+      "ADDxiaoyi",
+      "龙凌渊",
+      "紫蝎",
+      "倔强男孩",
+      "社区规则",
+      "基础规则",
+      "社区协作",
+      "奖励与激励",
+      "加入我们"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": "Contact via QQ"
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "提交申请",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "了解更多",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/login",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 1340,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "等级进度",
+      "财务状态",
+      "服务与快捷方式",
+      "近期活动日志"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "立即签到XP领取 25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "立即签到 +25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "qianfu_showcase 头颅",
+        "width": null,
+        "height": null,
+        "nw": 160
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/register",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 1340,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "等级进度",
+      "财务状态",
+      "服务与快捷方式",
+      "近期活动日志"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "立即签到XP领取 25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "立即签到 +25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "qianfu_showcase 头颅",
+        "width": null,
+        "height": null,
+        "nw": 160
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/dashboard",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 1340,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "等级进度",
+      "财务状态",
+      "服务与快捷方式",
+      "近期活动日志"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "立即签到XP领取 25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "立即签到 +25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "qianfu_showcase 头颅",
+        "width": null,
+        "height": null,
+        "nw": 160
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/dashboard/servers",
+    "url": "/dashboard/servers",
+    "title": "控制台 - 千服联灯",
+    "bodyHeight": 1340,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "暂无数据"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "立即签到XP领取 25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "qianfu_showcase 头颅",
+        "width": null,
+        "height": null,
+        "nw": 160
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/me",
+    "url": "/me",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 2114,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "qianfu_showcase",
+      "订单记录",
+      "技术支持",
+      "最近动态"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "每日握手",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "立即充值",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "qianfu_showcase 头颅",
+        "width": null,
+        "height": null,
+        "nw": 160
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/payment",
+    "url": "/payment",
+    "title": "支付中心 - 千服联灯",
+    "bodyHeight": 800,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [],
+    "buttons": [],
+    "links": 0,
+    "images": [],
+    "inputs": [],
+    "errors": [
+      "pageerror: useCallback is not defined"
+    ]
+  },
+  {
+    "vp": "desktop",
+    "route": "/tickets",
+    "url": "/tickets",
+    "title": "工单中心 - 千服联灯",
+    "bodyHeight": 915,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "暂无数据"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "desktop",
+    "route": "/settings",
+    "url": "/",
+    "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+    "bodyHeight": 6271,
+    "scrollWidth": 1280,
+    "innerWidth": 1280,
+    "headings": [
+      "发现下一个世界.",
+      "Minecraft 服务器发现、发布与支持",
+      "Core Features",
+      "不可篡改的安全",
+      "透明推广位",
+      "人工支持",
+      "实时状态",
+      "先看页面，再决定怎么使用",
+      "个人控制台总览",
+      "我的服务器",
+      "个人主页",
+      "工单中心",
+      "从访问到完成操作",
+      "玩家找服",
+      "服主发布",
+      "问题处理",
+      "展示真实状态，也说明边界",
+      "数据不凑数",
+      "发布要审核",
+      "过程可追踪"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 0,
+    "images": [
+      {
+        "alt": "千服联灯登录后个人控制台总览快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后我的服务器管理页面快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后个人主页快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      },
+      {
+        "alt": "千服联灯登录后工单中心页面快照",
+        "width": "1280",
+        "height": "800",
+        "nw": 1280
+      }
+    ],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/",
+    "url": "/mobile",
+    "title": "千服联灯移动端 - Minecraft 服务器入口",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "千服联灯",
+      "发现下一台 想加入的服务器",
+      "精选推荐"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "q",
+        "aria": null,
+        "placeholder": "搜索服务器...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/servers",
+    "url": "/servers",
+    "title": "服务器列表 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "发现",
+      "热门搜索",
+      "推荐服务器",
+      "全部服务器"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "全部",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "生存",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "PVP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "RPG",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "小游戏",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "创造",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "模组",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "生存",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "PVP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "RPG",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "模组",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "建筑",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "科技",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "魔法",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "搜索服务器、玩法...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/resources",
+    "url": "/mobile",
+    "title": "千服联灯移动端 - Minecraft 服务器入口",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "千服联灯",
+      "发现下一台 想加入的服务器",
+      "精选推荐"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "q",
+        "aria": null,
+        "placeholder": "搜索服务器...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/promotion",
+    "url": "/promotion",
+    "title": "推广中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "推广中心",
+      "推广任务中心",
+      "平台账号绑定",
+      "当前任务"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "可领取任务",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "领取记录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "保存绑定",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "select-one",
+        "name": "",
+        "aria": null,
+        "placeholder": null,
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "平台用户 ID",
+        "autocomplete": null
+      },
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "平台用户名（可选）",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/team",
+    "url": "/mobile",
+    "title": "千服联灯移动端 - Minecraft 服务器入口",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "千服联灯",
+      "发现下一台 想加入的服务器",
+      "精选推荐"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "q",
+        "aria": null,
+        "placeholder": "搜索服务器...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/login",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "仪表盘",
+      "快速操作"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/register",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "仪表盘",
+      "快速操作"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/dashboard",
+    "url": "/dashboard",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "仪表盘",
+      "快速操作"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/dashboard/servers",
+    "url": "/servers",
+    "title": "服务器列表 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "发现",
+      "热门搜索",
+      "推荐服务器",
+      "全部服务器"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "全部",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "生存",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "PVP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "RPG",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "小游戏",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "创造",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "模组",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "生存",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "PVP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "RPG",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "模组",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "建筑",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "科技",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "魔法",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "搜索服务器、玩法...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/me",
+    "url": "/me",
+    "title": "个人中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "我的",
+      "个人中心",
+      "qianfu_showcase"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "签到 +25 XP",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/payment",
+    "url": "/payment",
+    "title": "支付中心 - 千服联灯",
+    "bodyHeight": 844,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [],
+    "buttons": [],
+    "links": 0,
+    "images": [],
+    "inputs": [],
+    "errors": [
+      "pageerror: useCallback is not defined"
+    ]
+  },
+  {
+    "vp": "mobile",
+    "route": "/tickets",
+    "url": "/tickets",
+    "title": "工单中心 - 千服联灯",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "工单"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "全部",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "进行中",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "处理中",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "已解决",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "已关闭",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 2,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "",
+        "aria": null,
+        "placeholder": "搜索工单...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  },
+  {
+    "vp": "mobile",
+    "route": "/settings",
+    "url": "/mobile",
+    "title": "千服联灯移动端 - Minecraft 服务器入口",
+    "bodyHeight": 895,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "headings": [
+      "千服联灯",
+      "发现下一台 想加入的服务器",
+      "精选推荐"
+    ],
+    "buttons": [
+      {
+        "text": "",
+        "aria": "关闭当前公告",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开 Gemini 3.5 驱动助手",
+        "title": "Gemini 3.5 驱动助手"
+      },
+      {
+        "text": "退出登录",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": "打开导航菜单",
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "",
+        "aria": null,
+        "title": null
+      },
+      {
+        "text": "返回顶部 ↑",
+        "aria": null,
+        "title": null
+      }
+    ],
+    "links": 1,
+    "images": [],
+    "inputs": [
+      {
+        "type": "text",
+        "name": "q",
+        "aria": null,
+        "placeholder": "搜索服务器...",
+        "autocomplete": null
+      }
+    ],
+    "errors": []
+  }
+]

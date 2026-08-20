@@ -1,0 +1,227 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+    - button [ref=e9]
+  - button "设置" [ref=e13]
+  - generic [ref=e36]:
+    - navigation [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - link "千服联灯 QianFu" [ref=e41] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e64]:
+              - generic [ref=e65]: 千服联灯
+              - generic [ref=e66]: QianFu
+          - generic [ref=e67]:
+            - link [ref=e68] [cursor=pointer]:
+              - /url: /
+            - link [ref=e91] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=e114] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=e136] [cursor=pointer]:
+              - /url: /team
+            - link [ref=e158] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=e181] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=e204]:
+          - link "个人中心" [ref=e317] [cursor=pointer]:
+            - /url: /dashboard
+          - button "退出登录" [ref=e340]
+    - generic [ref=e342]:
+      - complementary [ref=e343]:
+        - generic [ref=e344]:
+          - generic [ref=e345]:
+            - generic [ref=e346]: q
+            - generic [ref=e347]:
+              - generic [ref=e348]: qauser1777435736
+              - generic [ref=e349]: "ID: 6"
+          - generic [ref=e350]:
+            - generic [ref=e351]:
+              - generic [ref=e352]: 等级
+              - generic [ref=e353]: Lv.1
+            - generic [ref=e354]:
+              - generic [ref=e355]: 余额
+              - generic [ref=e356]: ¥ 0.00
+        - generic [ref=e360]:
+          - generic [ref=e361]:
+            - generic [ref=e362]: Skin Showcase
+            - generic [ref=e363]: Live
+          - img "qauser1777435736 头颅" [ref=e431]
+          - paragraph [ref=e432]: "Player: qauser1777435736"
+        - generic [ref=e434]:
+          - link "控制台概览" [ref=e435] [cursor=pointer]:
+            - /url: /dashboard
+          - link "我的服务器" [ref=e457] [cursor=pointer]:
+            - /url: /dashboard/servers
+          - link "工单系统" [ref=e480] [cursor=pointer]:
+            - /url: /dashboard/tickets
+          - link "财务管理" [ref=e502] [cursor=pointer]:
+            - /url: /dashboard/billing
+          - link "账号设置" [ref=e525] [cursor=pointer]:
+            - /url: /dashboard/profile
+        - generic [ref=e548]:
+          - generic [ref=e549]:
+            - generic [ref=e550]: 快捷概览
+            - generic [ref=e551]: 实时
+          - generic [ref=e552]:
+            - generic [ref=e553]:
+              - generic [ref=e554]: 服务器位
+              - generic [ref=e578]: 0/1
+              - generic [ref=e579]: 余 1
+            - generic [ref=e580]:
+              - generic [ref=e581]: 未结工单
+              - generic [ref=e604]: "0"
+              - generic [ref=e605]: 清空
+            - generic [ref=e606]:
+              - generic [ref=e607]: 连签
+              - generic [ref=e630]: "0"
+              - generic [ref=e631]: 可签
+          - generic [ref=e632]:
+            - generic [ref=e633]: 账号状态
+            - generic [ref=e634]: 邮箱已验证，可正常操作。
+        - generic [ref=e635]:
+          - generic [ref=e636]:
+            - generic [ref=e637]: 快捷操作
+            - paragraph [ref=e638]: 把高频动作收在一起，减少来回跳转。
+          - generic [ref=e639]:
+            - button "立即签到 XP 领取 25 XP" [ref=e640]:
+              - generic [ref=e663]:
+                - generic [ref=e664]:
+                  - generic [ref=e665]: 立即签到
+                  - generic [ref=e666]: XP
+                - paragraph [ref=e667]: 领取 25 XP
+            - link "发布新服务器 1 0/1 已使用" [ref=e670] [cursor=pointer]:
+              - /url: /editor
+              - generic [ref=e694]:
+                - generic [ref=e695]:
+                  - generic [ref=e696]: 发布新服务器
+                  - generic [ref=e697]: "1"
+                - paragraph [ref=e698]: 0/1 已使用
+            - link "提交工单 NEW 当前支持队列为空" [ref=e701] [cursor=pointer]:
+              - /url: /dashboard/tickets/new
+              - generic [ref=e724]:
+                - generic [ref=e725]:
+                  - generic [ref=e726]: 提交工单
+                  - generic [ref=e727]: NEW
+                - paragraph [ref=e728]: 当前支持队列为空
+            - link "进入账单中心 WALLET 钱包流水与余额变动" [ref=e731] [cursor=pointer]:
+              - /url: /dashboard/billing
+              - generic [ref=e755]:
+                - generic [ref=e756]:
+                  - generic [ref=e757]: 进入账单中心
+                  - generic [ref=e758]: WALLET
+                - paragraph [ref=e759]: 钱包流水与余额变动
+        - button "退出登录" [ref=e762]
+      - generic [ref=e783]:
+        - generic [ref=e784]:
+          - generic [ref=e785]:
+            - banner [ref=e786]:
+              - heading "等级进度" [level=2] [ref=e787]
+              - generic [ref=e788]: Lv.1
+            - generic [ref=e789]:
+              - generic [ref=e790]:
+                - generic [ref=e791]:
+                  - generic [ref=e792]: 0 XP
+                  - paragraph [ref=e793]: 距离下一级还需要 30 XP
+                - generic [ref=e794]: 0%
+              - button "立即签到 +25 XP" [ref=e801]
+          - generic [ref=e823]:
+            - heading "财务状态" [level=2] [ref=e824]
+            - generic [ref=e825]:
+              - generic [ref=e826]:
+                - generic [ref=e827]: 余额
+                - generic [ref=e828]: ¥ 0.00
+              - generic [ref=e829]:
+                - link "充值" [ref=e830] [cursor=pointer]:
+                  - /url: /payment
+                - link "财务账单记录" [ref=e853] [cursor=pointer]:
+                  - /url: /dashboard/billing
+        - generic [ref=e857]:
+          - heading "服务与快捷方式" [level=2] [ref=e858]
+          - generic [ref=e859]:
+            - link "发布服务器 发布服务器" [ref=e860] [cursor=pointer]:
+              - /url: /editor
+              - generic [ref=e884]: 发布服务器
+              - generic [ref=e885]: 发布服务器
+            - link "发起工单 提交工单" [ref=e886] [cursor=pointer]:
+              - /url: /dashboard/tickets/new
+              - generic [ref=e909]: 发起工单
+              - generic [ref=e910]: 提交工单
+            - link "选购推广 购买推广" [ref=e911] [cursor=pointer]:
+              - /url: /promotion
+              - generic [ref=e935]: 选购推广
+              - generic [ref=e936]: 购买推广
+            - link "账号设置 账号设置" [ref=e937] [cursor=pointer]:
+              - /url: /dashboard/profile
+              - generic [ref=e961]: 账号设置
+              - generic [ref=e962]: 账号设置
+        - generic [ref=e963]:
+          - heading "近期活动日志" [level=2] [ref=e964]
+          - generic [ref=e966]:
+            - generic [ref=e991]:
+              - generic [ref=e992]: 账号
+              - generic [ref=e993]: 邮箱已验证，账号功能可正常使用。
+            - generic [ref=e994]: 当前状态
+    - contentinfo [ref=e213]:
+      - generic [ref=e214]:
+        - generic [ref=e215]:
+          - generic [ref=e216]:
+            - link "千服联灯" [ref=e217] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e222]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e223]:
+              - button [ref=e224]
+              - button [ref=e227]
+              - button [ref=e230]
+          - generic [ref=e234]:
+            - heading "平台" [level=4] [ref=e235]
+            - list [ref=e236]:
+              - listitem [ref=e237]:
+                - link "浏览服务器" [ref=e238] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=e239]:
+                - link "高级搜索" [ref=e240] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=e241]:
+                - link "推广方案" [ref=e242] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=e243]:
+                - link "资源中心" [ref=e244] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=e245]:
+            - heading "站点信息" [level=4] [ref=e246]
+            - list [ref=e247]:
+              - listitem [ref=e248]:
+                - link "开发团队" [ref=e249] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e250]:
+                - link "等级规则" [ref=e251] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=e252]:
+                - link "服务条款" [ref=e253] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e254]:
+                - link "隐私政策" [ref=e255] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e256]:
+            - heading "服务入口" [level=4] [ref=e257]
+            - list [ref=e258]:
+              - listitem [ref=e259] [cursor=pointer]:
+                - link "钱包与账单" [ref=e260]:
+                  - /url: /dashboard/billing
+              - listitem [ref=e261] [cursor=pointer]:
+                - link "推广中心" [ref=e262]:
+                  - /url: /promotion
+              - listitem [ref=e263] [cursor=pointer]:
+                - link "工单支持" [ref=e264]:
+                  - /url: /tickets
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - generic [ref=e267]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e268] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e269]:
+            - generic [ref=e270]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=e273]

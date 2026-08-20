@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ChevronLeft } from 'lucide-react';
 import { useT } from '@/store/uiStore';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 
 const TicketCreate: React.FC = () => {
   const t = useT();
@@ -66,10 +66,11 @@ const TicketCreate: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 sm:space-y-10">
         <div className="rounded-[2rem] sm:rounded-[3rem] border border-zinc-100 bg-white p-5 sm:p-8 md:p-12 space-y-8 sm:space-y-10 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
+            <label htmlFor="ticket-subject" className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
                <GeometricLantern variant="terminal" className="w-4 h-4 text-accent" /> {t('ticket.form.subject')}
             </label>
             <input 
+              id="ticket-subject"
               {...register('subject')}
               className="w-full rounded-[1.5rem] border border-zinc-100 bg-zinc-50 px-4 sm:px-5 py-4 outline-none transition-all focus:border-zinc-300 focus:bg-white"
               placeholder={t('ticket.form.subject.placeholder')}
@@ -78,16 +79,16 @@ const TicketCreate: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
+            <label htmlFor="ticket-type" className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
                <GeometricLantern variant="settings" className="w-4 h-4 text-accent" /> {t('ticket.form.type')}
             </label>
             <div className="relative group">
                <select 
+                 id="ticket-type"
                  {...register('type')}
                  className="w-full rounded-[1.5rem] border border-zinc-100 bg-zinc-50 px-4 sm:px-5 py-4 outline-none font-semibold tracking-[0.08em] transition-all appearance-none cursor-pointer uppercase text-sm focus:border-zinc-300 focus:bg-white"
                >
                  <option value="GENERAL">{t('ticket.form.type.general')}</option>
-                 <option value="BILLING">{t('ticket.form.type.billing')}</option>
                  <option value="TECHNICAL">{t('ticket.form.type.technical')}</option>
                  <option value="REPORT">{t('ticket.form.type.report')}</option>
                </select>
@@ -98,10 +99,11 @@ const TicketCreate: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
+            <label htmlFor="ticket-content" className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-400 flex items-center gap-3">
                <GeometricLantern variant="data" className="w-4 h-4 text-accent" /> {t('ticket.form.content')}
             </label>
             <textarea 
+              id="ticket-content"
               {...register('content')}
               className="w-full min-h-44 rounded-[1.5rem] border border-zinc-100 bg-zinc-50 px-4 sm:px-5 py-4 outline-none transition-all focus:border-zinc-300 focus:bg-white resize-y"
               placeholder={t('ticket.form.content.placeholder')}

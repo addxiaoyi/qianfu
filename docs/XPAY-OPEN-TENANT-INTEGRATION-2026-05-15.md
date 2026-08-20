@@ -7,11 +7,11 @@
 
 ## 已验证账号
 - 超级管理员用户名: `addxiaoyi`
-- 超级管理员密码: `Lsc513148`
+- 超级管理员密码: 已从文档移除；请通过受控密钥管理渠道获取并定期轮换。
 
 ## 已验证演示租户
 - `tenantKey`: `demo-tenant`
-- `accessToken`: `9hgXpK0Lm9mPTbblT9S6xZh3TlGCdPLQ2RrXSC60kys`
+- `accessToken`: 已从文档移除；请在运行环境中注入，不要写入仓库。
 - 当前回调地址: `http://127.0.0.1:8888/open/debug/callback-echo`
 
 ## 开放接口

@@ -2,19 +2,24 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { useT, type TranslationKey } from '@/store/uiStore';
-import HomeFeatureCard from '@/components/HomeFeatureCard';
-import HomeStatCard from '@/components/HomeStatCard';
+import HomeFeatureCard from '@/components/business/HomeFeatureCard';
+import HomeStatCard from '@/components/business/HomeStatCard';
+import HomeShowcase from '@/components/business/HomeShowcase';
 import { useQuery } from '@tanstack/react-query';
 import { request } from '@/api/request';
 import { useBackendHealth } from '@/hooks/useBackendHealth';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 interface ServerStats {
   onlineNodes: number;
   syncLatency: string;
   avgResponseTime: string;
   availability: string;
+  totalServers: number;
+  totalUsers: number;
+  totalPlayers: number;
 }
 
 const heroSupportBadges: {
@@ -42,39 +47,37 @@ const featureCards: { titleKey: TranslationKey; descKey: TranslationKey; variant
     titleKey: 'home.feat.security.title',
     descKey: 'home.feat.security.desc',
     variant: 'security',
-    tag: 'SEC_01',
+    tag: '账号安全',
   },
   {
     titleKey: 'home.feat.auction.title',
     descKey: 'home.feat.auction.desc',
     variant: 'spark',
-    tag: 'SEC_02',
+    tag: '免费发布',
   },
   {
     titleKey: 'home.feat.support.title',
     descKey: 'home.feat.support.desc',
     variant: 'terminal',
-    tag: 'SEC_03',
+    tag: '工单支持',
   },
 ];
 
 const sectionHeader = {
   labelClassName: 'text-[10px] font-black uppercase tracking-[0.45em] italic text-accent',
-  titleClassName: 'text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-black',
-  descClassName: 'text-base md:text-lg text-zinc-400 font-bold italic leading-relaxed max-w-2xl',
+  titleClassName: 'text-3xl md:text-4xl font-bold tracking-tight text-black',
+  descClassName: 'text-base md:text-lg text-zinc-600 font-medium leading-relaxed max-w-2xl',
 };
 
 const ctaButtonBase =
-  'group px-8 sm:px-12 py-5 sm:py-6 rounded-[2.5rem] font-black text-[11px] sm:text-[12px] uppercase tracking-[0.35em] sm:tracking-[0.5em] flex items-center justify-center gap-4 sm:gap-6 transition-all italic';
+  'group px-8 sm:px-12 py-5 sm:py-6 rounded-[2.5rem] font-semibold text-sm flex items-center justify-center gap-4 sm:gap-6 transition-all';
 
 
 const metricsHeader = {
-  label: '站点指标',
   title: '实时状态',
-  desc: '这里展示公开列表和平台链路的当前状态，方便访客快速判断是否值得继续浏览。',
-  labelClassName: 'text-[10px] font-black uppercase tracking-[0.45em] italic text-zinc-500',
-  titleClassName: 'text-4xl md:text-5xl font-black tracking-tighter uppercase italic text-white',
-  descClassName: 'text-base md:text-lg text-zinc-500 font-bold italic leading-relaxed max-w-2xl',
+  desc: '公开列表与平台链路的当前数据，每 30 秒自动刷新。',
+  titleClassName: 'text-3xl md:text-4xl font-black tracking-[-0.045em] text-zinc-950',
+  descClassName: 'text-sm md:text-base text-zinc-600 font-medium leading-relaxed max-w-xl',
 };
 
 const containerVariants = {
@@ -100,12 +103,15 @@ const Home: React.FC = () => {
   });
   const { backendDegraded, isLoading: backendHealthLoading } = useBackendHealth();
 
-  const [heroLead = '', ...heroRest] = t('home.hero.title').split(' ');
-
   const { data: statsData, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey: ['server-stats'],
-    queryFn: () => request<ServerStats>('/servers/stats', { useAuth: false }),
+    queryFn: () => request<ServerStats>(isRustV2Enabled() ? rustV2Path('/public/stats') : '/servers/stats', {
+      useAuth: false,
+      ...(isRustV2Enabled() ? rustV2RequestOptions : {}),
+    }),
     staleTime: 30_000,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
     retry: 2,
   });
 
@@ -118,10 +124,13 @@ const Home: React.FC = () => {
   }));
 
   const stats = [
-    { label: 'home.stats.nodes' as const, value: statsLoading ? '—' : String(statsData?.onlineNodes ?? '—') },
-    { label: 'home.stats.latency' as const, value: statsLoading ? '—' : String(statsData?.syncLatency ?? '—') },
-    { label: 'home.stats.response' as const, value: statsLoading ? '—' : String(statsData?.avgResponseTime ?? '—') },
-    { label: 'home.stats.availability' as const, value: statsLoading ? '—' : String(statsData?.availability ?? '—') },
+    { label: 'home.stats.users' as const, value: statsLoading ? '加载中' : String(statsData?.totalUsers ?? '暂无') },
+    { label: 'home.stats.servers' as const, value: statsLoading ? '加载中' : String(statsData?.totalServers ?? '暂无') },
+    { label: 'home.stats.nodes' as const, value: statsLoading ? '加载中' : String(statsData?.onlineNodes ?? '暂无') },
+    { label: 'home.stats.players' as const, value: statsLoading ? '加载中' : String(statsData?.totalPlayers ?? '暂无') },
+    { label: 'home.stats.latency' as const, value: statsLoading ? '加载中' : String(statsData?.syncLatency ?? '暂无') },
+    { label: 'home.stats.response' as const, value: statsLoading ? '加载中' : String(statsData?.avgResponseTime ?? '暂无') },
+    { label: 'home.stats.availability' as const, value: statsLoading ? '加载中' : String(statsData?.availability ?? '暂无数据') },
   ];
 
   return (
@@ -136,7 +145,7 @@ const Home: React.FC = () => {
         style={{ scaleX }}
       />
 
-      <section className="w-full relative overflow-hidden pt-36 sm:pt-40 md:pt-44 pb-44 sm:pb-52 md:pb-60 px-4 sm:px-6 flex flex-col items-center text-center border-b border-zinc-50">
+      <section className="w-full relative overflow-hidden px-4 pb-24 pt-20 sm:px-6 sm:pb-28 sm:pt-24 md:pb-32 flex flex-col items-center text-center border-b border-zinc-100">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] sm:w-[1200px] h-[420px] sm:h-[600px] bg-accent-subtle blur-[100px] sm:blur-[120px] rounded-full pointer-events-none -z-10" />
         <div
           className="absolute inset-0 opacity-[0.03] pointer-events-none -z-10"
@@ -148,7 +157,7 @@ const Home: React.FC = () => {
         />
 
         <div className="max-w-6xl mx-auto flex flex-col items-center relative z-10">
-          <motion.div variants={itemVariants} className="flex items-center gap-3 sm:gap-4 mb-10 sm:mb-12 md:mb-16">
+          <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3 sm:mb-10 sm:gap-4">
             <div className="px-4 sm:px-5 py-2 border border-zinc-100 bg-white rounded-sm text-[9px] sm:text-[10px] font-black uppercase tracking-[0.32em] sm:tracking-[0.4em] italic shadow-xs">
               {t('home.protocol')}
             </div>
@@ -157,15 +166,14 @@ const Home: React.FC = () => {
 
           <motion.h1
             variants={itemVariants}
-            className="text-[3.3rem] sm:text-6xl md:text-[9rem] font-black mb-8 sm:mb-10 md:mb-12 tracking-tighter leading-[0.88] text-black uppercase italic"
+            className="mb-7 text-[2.75rem] font-bold leading-tight tracking-tight text-black sm:text-5xl md:text-6xl lg:text-7xl"
           >
-            {heroLead}.<br />
-            <span className="text-zinc-200">{heroRest.join(' ')}</span>
+            {t('home.hero.title')}
           </motion.h1>
 
           <motion.p
             variants={itemVariants}
-            className="text-base sm:text-lg md:text-2xl text-zinc-400 max-w-2xl mb-10 sm:mb-12 md:mb-16 font-bold leading-relaxed italic px-2 sm:px-0"
+            className="mb-9 max-w-2xl px-2 text-base font-medium leading-relaxed text-zinc-600 sm:px-0 sm:text-lg md:text-xl"
           >
             {t('home.hero.subtitle')}
           </motion.p>
@@ -175,8 +183,8 @@ const Home: React.FC = () => {
               {t('home.hero.explore')}
               <GeometricLantern variant="network" className="w-5 h-5 group-hover:translate-x-3 transition-transform" />
             </Link>
-            <Link to="/promotion" className={`${ctaButtonBase} border border-zinc-100 bg-white text-black hover:bg-zinc-50`}>
-              {t('home.hero.promote')}
+            <Link to="/news" className={`${ctaButtonBase} border border-zinc-100 bg-white text-black hover:bg-zinc-50`}>
+              查看站点新闻
               <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform opacity-50" />
             </Link>
           </motion.div>
@@ -215,9 +223,9 @@ const Home: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 sm:gap-6">
             <div className="space-y-3 max-w-3xl">
               <div className="text-[10px] font-black uppercase tracking-[0.45em] italic text-zinc-400">站点摘要</div>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight uppercase italic">Minecraft 服务器发现、发布与支持</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">Minecraft 服务器发现、发布与支持</h2>
               <p className="text-sm sm:text-base text-zinc-500 font-medium leading-7">
-                千服联灯面向中文 Minecraft 玩家和服主，提供公开服务器列表、搜索、资源中心、推广展示、工单支持和移动端入口。
+                千服联灯面向中文 Minecraft 玩家和服主，提供公开服务器列表、搜索、资料发布、新闻公告和工单支持。
                 访客可以直接浏览服务器信息，服主可以提交资料并管理展示内容。
               </p>
             </div>
@@ -237,12 +245,12 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="w-full max-w-[1400px] mx-auto px-5 sm:px-8 md:px-12 py-28 sm:py-36 md:py-40 lg:py-48">
+      <section className="w-full max-w-[1400px] mx-auto px-5 py-20 sm:px-8 sm:py-24 md:px-12 md:py-28">
         <div className="flex flex-col gap-6 sm:gap-8 md:gap-10 mb-12 sm:mb-14 md:mb-16 lg:mb-20">
           <div className={sectionHeader.labelClassName}>{t('home.learn_more')}</div>
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
-            <h2 className={sectionHeader.titleClassName}>Core Features</h2>
-            <p className={sectionHeader.descClassName}>探索、展示、管理与支持都放在同一条产品路径里，入口更清晰，动作更集中。</p>
+            <h2 className={sectionHeader.titleClassName}>核心功能</h2>
+            <p className={sectionHeader.descClassName}>浏览服务器无需登录。发布资料、管理服务器和提交工单需要账号。</p>
           </div>
         </div>
 
@@ -259,27 +267,27 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="w-full bg-black py-32 sm:py-36 md:py-40 lg:py-48 px-5 sm:px-8 md:px-12 overflow-hidden relative">
-        <div
-          className="absolute inset-0 opacity-[0.05]"
-          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}
-        />
-        <div className="max-w-[1400px] mx-auto relative z-10">
-          <div className="flex flex-col gap-6 sm:gap-8 md:gap-10 mb-12 sm:mb-14 md:mb-16 lg:mb-20">
-            <div className={metricsHeader.labelClassName}>{metricsHeader.label}</div>
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
-              <h2 className={metricsHeader.titleClassName}>{metricsHeader.title}</h2>
-              <p className={metricsHeader.descClassName}>{metricsHeader.desc}</p>
-            </div>
+      <section className="w-full border-y border-zinc-200 bg-[#f5f5f2] px-5 py-20 sm:px-8 sm:py-24 md:px-12">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="mb-10 max-w-2xl space-y-3 sm:mb-12">
+            <h2 className={metricsHeader.titleClassName}>{metricsHeader.title}</h2>
+            <p className={metricsHeader.descClassName}>{metricsHeader.desc}</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 lg:gap-24">
-            {stats.map((s) => (
-              <HomeStatCard key={s.label} label={t(s.label)} value={s.value} />
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12 md:gap-x-8">
+            {stats.map((s, index) => (
+              <HomeStatCard
+                key={s.label}
+                label={t(s.label)}
+                value={s.value}
+                className={`${index < 4 ? 'md:col-span-3' : 'md:col-span-4'} ${index === stats.length - 1 ? 'col-span-2 md:col-span-4' : ''}`}
+              />
             ))}
           </div>
         </div>
       </section>
+
+      <HomeShowcase />
     </motion.div>
   );
 };

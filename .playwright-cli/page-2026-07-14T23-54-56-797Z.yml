@@ -1,0 +1,149 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 系统公告：支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+    - button [ref=e9]
+  - button "设置" [ref=e13]
+  - generic [ref=e36]:
+    - navigation [ref=e38]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - link "千服联灯 QianFu" [ref=e41] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e64]:
+              - generic [ref=e65]: 千服联灯
+              - generic [ref=e66]: QianFu
+          - generic [ref=e67]:
+            - link [ref=e68] [cursor=pointer]:
+              - /url: /
+            - link [ref=e92] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=e115] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=e137] [cursor=pointer]:
+              - /url: /team
+            - link [ref=e159] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=e182] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=e205]:
+          - link "登录" [ref=e206] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=e207] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e486]:
+      - complementary [ref=e487]:
+        - generic [ref=e488]:
+          - link "千服联灯. Minecraft 服务器平台" [ref=e489] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e512]:
+              - generic [ref=e513]: 千服联灯.
+              - generic [ref=e514]: Minecraft 服务器平台
+          - generic [ref=e515]:
+            - generic [ref=e773]:
+              - generic [ref=e774]:
+                - generic [ref=e775]: 服务器内容 / BRAND
+                - generic [ref=e776]: 轮播中
+              - heading "超越地址的艺术" [level=2] [ref=e779]
+              - paragraph [ref=e780]: "\"一个好的服务器是一件艺术品。从 MOTD 的第一行字，到主城的每一块圆石，都在向玩家宣告：这里是一个值得停留的家园。\""
+            - generic [ref=e524]:
+              - button [ref=e525]
+              - button [ref=e526]
+        - generic [ref=e528]:
+          - generic [ref=e529]: 注册与邮箱校验
+          - paragraph [ref=e573]: 注册后会立即发送邮箱验证码，完成验证后即可发布服务器、充值和提交工单。
+      - main [ref=e574]:
+        - generic [ref=e575]:
+          - generic [ref=e576]:
+            - generic [ref=e577]: 创建账号
+            - heading "创建账号." [level=1] [ref=e600]
+            - paragraph [ref=e601]: 注册千服联灯账号，完成邮箱验证后即可发布服务器、充值和提交工单。
+          - generic [ref=e602]:
+            - generic [ref=e603]:
+              - generic [ref=e604]:
+                - text: 用户名或邮箱
+                - textbox "用户名 / 邮箱地址" [ref=e626]: acceptance_20260715_0752
+              - generic [ref=e627]:
+                - text: 邮箱地址
+                - textbox "example@mail.com" [ref=e649]: acceptance-20260715-0752@example.com
+              - generic [ref=e650]:
+                - generic [ref=e651]:
+                  - text: 登录密码
+                  - textbox "••••••••" [ref=e652]: LocalAcceptance!2026
+                - generic [ref=e653]:
+                  - text: 服务器审核
+                  - textbox "••••••••" [ref=e654]: LocalAcceptance!2026
+            - generic [ref=e655]:
+              - button "我已阅读并同意平台《系统协议》" [ref=e656] [cursor=pointer]
+              - link "规则" [ref=e680] [cursor=pointer]:
+                - /url: /terms
+            - button [disabled] [ref=e781]
+          - generic [ref=e685]:
+            - generic [ref=e707]:
+              - generic [ref=e708]: 用户名或邮箱 状态
+              - generic [ref=e709]: 初始化阶段：1
+            - link "已有节点？ 执行登录指令" [ref=e710] [cursor=pointer]:
+              - /url: /login
+              - generic [ref=e711]:
+                - generic [ref=e712]: 已有节点？
+                - generic [ref=e713]: 执行登录指令
+    - contentinfo [ref=e214]:
+      - generic [ref=e215]:
+        - generic [ref=e216]:
+          - generic [ref=e217]:
+            - link "千服联灯" [ref=e218] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e223]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e224]:
+              - button [ref=e225]
+              - button [ref=e228]
+              - button [ref=e231]
+          - generic [ref=e235]:
+            - heading "平台" [level=4] [ref=e236]
+            - list [ref=e237]:
+              - listitem [ref=e238]:
+                - link "浏览服务器" [ref=e239] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=e240]:
+                - link "高级搜索" [ref=e241] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=e242]:
+                - link "推广方案" [ref=e243] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=e244]:
+                - link "资源中心" [ref=e245] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=e246]:
+            - heading "站点信息" [level=4] [ref=e247]
+            - list [ref=e248]:
+              - listitem [ref=e249]:
+                - link "开发团队" [ref=e250] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e251]:
+                - link "等级规则" [ref=e252] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=e253]:
+                - link "服务条款" [ref=e254] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e255]:
+                - link "隐私政策" [ref=e256] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e257]:
+            - heading "服务入口" [level=4] [ref=e258]
+            - list [ref=e259]:
+              - listitem [ref=e260] [cursor=pointer]:
+                - link "钱包与账单" [ref=e261]:
+                  - /url: /dashboard/billing
+              - listitem [ref=e262] [cursor=pointer]:
+                - link "推广中心" [ref=e263]:
+                  - /url: /promotion
+              - listitem [ref=e264] [cursor=pointer]:
+                - link "工单支持" [ref=e265]:
+                  - /url: /tickets
+        - generic [ref=e266]:
+          - generic [ref=e267]:
+            - generic [ref=e268]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e269] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e270]:
+            - generic [ref=e271]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=e274]

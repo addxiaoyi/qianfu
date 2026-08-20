@@ -7,8 +7,9 @@ import type { User } from '@/types/api';
 import { Loader2, Mail, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useT } from '@/store/uiStore';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { normalizeUser } from '@/utils/user';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const VerifyEmail: React.FC = () => {
   const t = useT();
@@ -35,7 +36,11 @@ const VerifyEmail: React.FC = () => {
       if (!email) {
         throw new Error('缺少邮箱地址，请返回登录或注册页重新进入验证流程。');
       }
-      await api.post('/auth/send-code', { email }, { skipCsrf: true });
+      await api.post(
+        isRustV2Enabled() ? rustV2Path('/auth/send-code') : '/auth/send-code',
+        { email },
+        isRustV2Enabled() ? rustV2RequestOptions : undefined,
+      );
       toast({
         title: '验证码发送成功',
         description: '验证码已发送，请查看邮箱。',
@@ -64,7 +69,11 @@ const VerifyEmail: React.FC = () => {
   const handleVerify = async () => {
     setLoading(true);
     try {
-      const result = await api.post<any>('/auth/verify-code', { code, email }, { skipCsrf: true });
+      const result = await api.post<any>(
+        isRustV2Enabled() ? rustV2Path('/auth/verify-code') : '/auth/verify-code',
+        { code, email },
+        isRustV2Enabled() ? rustV2RequestOptions : undefined,
+      );
       const updatedUser = normalizeUser(result?.user ?? (result as User));
       if (!updatedUser) {
         throw new Error('邮箱验证返回缺少用户信息');
@@ -115,6 +124,7 @@ const VerifyEmail: React.FC = () => {
       >
         <button type="button" 
           onClick={() => navigate(-1)}
+          aria-label="返回上一页"
           className="absolute top-8 left-8 p-3 hover:bg-zinc-50 rounded-2xl transition-all group"
         >
           <ChevronLeft className="w-5 h-5 text-zinc-300 group-hover:text-black transition-colors" />
@@ -136,6 +146,10 @@ const VerifyEmail: React.FC = () => {
           <div className="relative">
             <input 
               type="text" 
+              aria-label="6 位邮箱验证码"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full text-center text-5xl tracking-[0.6em] font-mono font-black py-8 bg-zinc-50/50 border border-transparent rounded-[2rem] focus:bg-white focus:border-accent transition-all outline-hidden placeholder:opacity-10 italic"

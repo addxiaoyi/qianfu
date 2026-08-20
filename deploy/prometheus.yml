@@ -41,13 +41,6 @@ scrape_configs:
     metrics_path: '/api/metrics'
     scrape_interval: 10s
 
-  # Payment Service
-  - job_name: 'payment-service'
-    static_configs:
-      - targets: ['payment-service:3003']
-    metrics_path: '/api/metrics'
-    scrape_interval: 30s
-
   # CMS Service
   - job_name: 'cms-service'
     static_configs:

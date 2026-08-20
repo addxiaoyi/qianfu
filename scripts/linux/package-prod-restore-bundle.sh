@@ -163,6 +163,7 @@ require_file package-lock.json
 require_file qianfu-liandeng/package.json
 require_file scripts/linux/restore-prod-public.sh
 require_file scripts/linux/package-prod-restore-bundle.sh
+require_file scripts/linux/optimize-prod-disk.sh
 require_file scripts/linux/repair-prod-edge.sh
 require_file scripts/linux/prod-terminal-minimal-repair.sh
 require_file scripts/linux/prod-terminal-snapshot.sh
@@ -218,6 +219,7 @@ copy_path package-lock.json
 copy_path qianfu-liandeng/package.json
 copy_path scripts/linux/restore-prod-public.sh
 copy_path scripts/linux/package-prod-restore-bundle.sh
+copy_path scripts/linux/optimize-prod-disk.sh
 copy_path scripts/linux/repair-prod-edge.sh
 copy_path scripts/linux/prod-terminal-minimal-repair.sh
 copy_path scripts/linux/prod-terminal-snapshot.sh

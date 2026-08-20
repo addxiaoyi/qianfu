@@ -7,7 +7,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Lock, Loader2 } from 'lucide-react';
 import { useT } from '@/store/uiStore';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 
 const ResetPassword: React.FC = () => {
   const t = useT();
@@ -42,17 +43,23 @@ const ResetPassword: React.FC = () => {
     }
     setLoading(true);
     try {
-      await request('/auth/password-reset', {
+      await request(isRustV2Enabled() ? rustV2Path('/auth/password-reset/complete') : '/auth/password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, token, email }),
+        body: JSON.stringify({ password: values.password, ...(isRustV2Enabled() ? { token } : { token }), email }),
+        ...(isRustV2Enabled() ? rustV2RequestOptions : {}),
       });
       toast({ 
         title: t('auth.reset.success'), 
         description: t('auth.reset.success_desc') 
       });
       navigate('/login');
-    } catch {
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: '密码重置失败',
+        description: error instanceof Error ? error.message : '链接可能已失效，请重新申请验证码。',
+      });
     } finally {
       setLoading(false);
     }
@@ -75,10 +82,11 @@ const ResetPassword: React.FC = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">{t('auth.reset.new_pwd')}</label>
+            <label htmlFor="reset-password" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">{t('auth.reset.new_pwd')}</label>
             <div className="relative group">
               <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-200 group-focus-within:text-accent transition-colors" />
               <input 
+                id="reset-password"
                 {...register('password')}
                 type="password"
                 className="w-full pl-16 pr-8 py-5 bg-zinc-50/50 border border-transparent rounded-2xl focus:bg-white focus:border-accent outline-hidden font-black italic tracking-tight transition-all"
@@ -89,10 +97,11 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">{t('auth.reset.confirm_pwd')}</label>
+            <label htmlFor="reset-confirm-password" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic">{t('auth.reset.confirm_pwd')}</label>
             <div className="relative group">
               <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-200 group-focus-within:text-accent transition-colors" />
               <input 
+                id="reset-confirm-password"
                 {...register('confirmPassword')}
                 type="password"
                 className="w-full pl-16 pr-8 py-5 bg-zinc-50/50 border border-transparent rounded-2xl focus:bg-white focus:border-accent outline-hidden font-black italic tracking-tight transition-all"

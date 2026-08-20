@@ -4,6 +4,7 @@ const path = require('node:path');
 const { chromium, devices } = require('playwright');
 
 const BASE_URL = (process.env.SMOKE_WEB_BASE_URL || 'https://mc-u.top').replace(/\/+$/, '');
+const API_BASE_URL = (process.env.SMOKE_BROWSER_API_BASE_URL || BASE_URL).replace(/\/+$/, '');
 const LOGIN_IDENTIFIER = process.env.SMOKE_LOGIN_IDENTIFIER || '';
 const LOGIN_PASSWORD = process.env.SMOKE_LOGIN_PASSWORD || '';
 const ADMIN_IDENTIFIER = process.env.SMOKE_ADMIN_IDENTIFIER || LOGIN_IDENTIFIER;
@@ -11,11 +12,17 @@ const ADMIN_PASSWORD = process.env.SMOKE_ADMIN_PASSWORD || LOGIN_PASSWORD;
 const OUT_DIR = path.resolve(process.cwd(), process.env.SMOKE_AUTH_NONPAY_OUT_DIR || 'output/prod-auth-nonpay-verify');
 const ADMIN_REQUIRED = /^1|true|yes$/i.test(process.env.QA_ADMIN_REQUIRED || '');
 const USE_SYSTEM_PROXY = /^1|true|yes$/i.test(process.env.SMOKE_BROWSER_USE_SYSTEM_PROXY || '');
+const HOST_RESOLVER_RULES = process.env.SMOKE_BROWSER_HOST_RESOLVER_RULES || '';
+const CONNECT_HOST = process.env.SMOKE_BROWSER_CONNECT_HOST || '';
+const BROWSER_EXECUTABLE_PATH = process.env.SMOKE_BROWSER_EXECUTABLE_PATH || '';
 const NAV_TIMEOUT_MS = Number(process.env.SMOKE_BROWSER_NAV_TIMEOUT_MS || 30000);
 const FETCH_TIMEOUT_MS = Number(process.env.SMOKE_BROWSER_FETCH_TIMEOUT_MS || NAV_TIMEOUT_MS);
 const CONNECT_TIMEOUT_MS = Number(process.env.SMOKE_BROWSER_CONNECT_TIMEOUT_MS || 8000);
 const SKIP_REACHABILITY_PREFLIGHT = /^1|true|yes$/i.test(process.env.SMOKE_BROWSER_SKIP_REACHABILITY_PREFLIGHT || '');
 const CHROMIUM_DIRECT_PROXY_ARGS = ['--proxy-server=direct://', '--proxy-bypass-list=*'];
+if (HOST_RESOLVER_RULES) {
+  CHROMIUM_DIRECT_PROXY_ARGS.push(`--host-resolver-rules=${HOST_RESOLVER_RULES}`);
+}
 
 if (!LOGIN_IDENTIFIER || !LOGIN_PASSWORD) {
   console.error('Missing SMOKE_LOGIN_IDENTIFIER or SMOKE_LOGIN_PASSWORD');
@@ -27,15 +34,16 @@ const USER_DESKTOP_ROUTES = [
   { path: '/dashboard/profile', label: 'dashboard profile', texts: ['钱包余额', '账号状态', 'Profile', '用户ID'] },
   { path: '/me', label: 'profile', texts: ['钱包余额', '账号状态', 'Profile', '用户ID'] },
   { path: '/me/edit', label: 'profile edit', texts: ['账号资料', '基础资料', '密码与安全', 'Identity_Parameter_Sync'] },
+  { path: '/settings', label: 'settings', texts: ['账户偏好', '界面语言', '主题颜色', '账户与支持'] },
+  { path: '/me/settings', label: 'mobile settings route', texts: ['设置', '界面语言', '主题颜色', '账户与支持'] },
+  { path: '/dashboard/servers', label: 'my servers', texts: ['我的服务器', '发布新服务器', '服务器列表', 'My Servers'] },
   { path: '/tickets', label: 'tickets', texts: ['TICKET_QUEUE', '工单', 'Ticket', 'OPEN'] },
   { path: '/editor', label: 'server editor', texts: ['发布服务器', '宣传图封面', '提交审核', 'Publish Server', 'Cover Image'] },
   { path: '/rules', label: 'rules', texts: ['等级与经验规则', '每日签到', 'XP Gain', 'Unlockables'] },
-  { path: '/promotion/tasks', label: 'promo tasks', texts: ['任务列表', '推广任务 / 规则配置', '任务列表已启用', '新建任务'] },
-  { path: '/promotion/claims', label: 'promo claims', texts: ['领取审核', '推广领取 / 审核流转', '审核面板已就绪'] },
 ];
 
 const USER_MOBILE_ROUTES = [
-  { path: '/dashboard', label: 'mobile dashboard', texts: ['仪表盘', '活跃工单', '服务器总数', 'Dashboard'] },
+  { path: '/dashboard', label: 'mobile dashboard', texts: ['个人中心', '我的服务器', '未结工单', '账户设置'] },
   { path: '/me', label: 'mobile profile', texts: ['我的服务器', '工单记录', '个人资料', '账号'] },
   { path: '/me/edit', label: 'mobile profile edit', texts: ['账号资料', '基础资料', '密码与安全', 'Identity_Parameter_Sync'] },
   { path: '/tickets', label: 'mobile tickets', texts: ['工单', '全部', '新建', 'Ticket'] },
@@ -55,6 +63,9 @@ const ADMIN_DESKTOP_ROUTES = [
   { path: '/admin-port5555', label: 'admin port security', texts: ['端口', '5555', '安全态势'] },
   { path: '/admin-settings', label: 'admin settings', texts: ['配置总控', 'System Core', 'Operations'] },
   { path: '/admin-mail', label: 'admin mail', texts: ['邮件配置', '发信总览', '发送探针'] },
+  { path: '/admin-announcements', label: 'admin announcements', texts: ['新闻管理', '系统公告', '公告'] },
+  { path: '/promotion/tasks', label: 'promo tasks', texts: ['任务列表', '推广任务 / 规则配置', '任务列表已启用', '新建任务'] },
+  { path: '/promotion/claims', label: 'promo claims', texts: ['推广投稿 / 审核与结算', '审核结算面板已就绪', '投稿审核'] },
 ];
 
 const PAYMENT_PATH_PATTERNS = [
@@ -80,7 +91,7 @@ function publicUrl(routePath) {
 function getBaseEndpoint() {
   const url = new URL(BASE_URL);
   const port = url.port ? Number(url.port) : (url.protocol === 'https:' ? 443 : 80);
-  return { host: url.hostname, port };
+  return { host: CONNECT_HOST || url.hostname, port };
 }
 
 function testTcpConnect(host, port, timeoutMs = CONNECT_TIMEOUT_MS) {
@@ -229,10 +240,19 @@ async function login(page, identifier, password, requireAdmin = false) {
   if (!profile?.ok) {
     await page.evaluate(
       async ({ identifierValue, passwordValue }) => {
+        const csrfResponse = await fetch('/api/v1/csrf-token', {
+          credentials: 'include',
+          headers: { accept: 'application/json' },
+        });
+        const csrfPayload = await csrfResponse.json().catch(() => null);
+        const csrfToken = csrfPayload?.data?.csrfToken || csrfPayload?.csrfToken || '';
         await fetch('/api/v1/auth/login', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'content-type': 'application/json' },
+          headers: {
+            'content-type': 'application/json',
+            ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+          },
           body: JSON.stringify({ identifier: identifierValue, password: passwordValue }),
         });
       },
@@ -287,10 +307,11 @@ async function validateRoute(contextName, page, route) {
   }
 
   const networkErrors = [];
+  const runtimeErrors = [];
   const onResponse = (response) => {
     const request = response.request();
     const resourceType = request.resourceType();
-    if (!['document', 'fetch', 'xhr'].includes(resourceType)) return;
+    if (!['document', 'fetch', 'xhr', 'script', 'stylesheet'].includes(resourceType)) return;
     if (isIgnorableResponse(response)) return;
     const status = response.status();
     if (status >= 400) {
@@ -302,7 +323,26 @@ async function validateRoute(contextName, page, route) {
     }
   };
 
+  const onPageError = (error) => {
+    runtimeErrors.push({ type: 'pageerror', message: error.message || String(error) });
+  };
+  const onRequestFailed = (request) => {
+    if (isPaymentScoped(request.url())) return;
+    if (request.failure()?.errorText === 'net::ERR_ABORTED') return;
+    runtimeErrors.push({
+      type: 'requestfailed',
+      message: `${request.method()} ${request.url().replace(BASE_URL, '')}: ${request.failure()?.errorText || 'failed'}`,
+    });
+  };
+  const onConsole = (message) => {
+    if (message.type() !== 'error') return;
+    runtimeErrors.push({ type: 'console', message: message.text() });
+  };
+
   page.on('response', onResponse);
+  page.on('pageerror', onPageError);
+  page.on('requestfailed', onRequestFailed);
+  page.on('console', onConsole);
   const result = {
     context: contextName,
     path: route.path,
@@ -311,6 +351,7 @@ async function validateRoute(contextName, page, route) {
     finalUrl: '',
     matchedText: '',
     networkErrors: [],
+    runtimeErrors: [],
   };
 
   try {
@@ -320,19 +361,27 @@ async function validateRoute(contextName, page, route) {
     result.finalUrl = page.url();
     result.matchedText = await expectAnyText(page, route);
     result.networkErrors = networkErrors;
+    result.runtimeErrors = runtimeErrors;
     const hardErrors = networkErrors.filter((item) => item.status >= 500 || item.status === 404);
     if (hardErrors.length > 0) {
       throw new Error(`route had API/document hard errors: ${JSON.stringify(hardErrors)}`);
+    }
+    if (runtimeErrors.length > 0) {
+      throw new Error(`route had browser runtime errors: ${JSON.stringify(runtimeErrors)}`);
     }
     result.ok = true;
     return result;
   } catch (error) {
     result.finalUrl = page.url();
     result.networkErrors = networkErrors;
+    result.runtimeErrors = runtimeErrors;
     result.error = await captureFailure(page, contextName, route, error);
     return result;
   } finally {
     page.off('response', onResponse);
+    page.off('pageerror', onPageError);
+    page.off('requestfailed', onRequestFailed);
+    page.off('console', onConsole);
   }
 }
 
@@ -363,10 +412,32 @@ async function validateRoutes(browser, contextName, contextOptions, routes, cred
   return { profile, results };
 }
 
+function firstCookie(headers) {
+  const values = typeof headers.getSetCookie === 'function'
+    ? headers.getSetCookie()
+    : [headers.get('set-cookie')].filter(Boolean);
+  return values.map((value) => value.split(';')[0]).filter(Boolean).join('; ');
+}
+
 async function loginProfileViaApi(identifier, password) {
-  const resp = await fetchWithTimeout(`${BASE_URL}/api/v1/auth/login`, {
+  const csrfResp = await fetchWithTimeout(`${API_BASE_URL}/api/v1/csrf-token`, {
+    headers: { accept: 'application/json' },
+  });
+  const csrfPayload = await csrfResp.json().catch(() => null);
+  const csrfToken = csrfPayload?.data?.csrfToken || csrfPayload?.csrfToken || '';
+  const cookie = firstCookie(csrfResp.headers);
+  if (!csrfResp.ok || !csrfToken) {
+    return { status: csrfResp.status, ok: false, hasToken: false, role: '', emailVerified: null, username: '' };
+  }
+
+  const resp = await fetchWithTimeout(`${API_BASE_URL}/api/v1/auth/login`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json',
+      'x-csrf-token': csrfToken,
+      ...(cookie ? { cookie } : {}),
+    },
     body: JSON.stringify({ identifier, password }),
   });
   const payload = await resp.json().catch(() => null);
@@ -375,8 +446,12 @@ async function loginProfileViaApi(identifier, password) {
   let profile = getProfileFromEnvelope(payload);
 
   if (token) {
-    const profileResp = await fetchWithTimeout(`${BASE_URL}/api/v1/profile`, {
-      headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
+    const profileResp = await fetchWithTimeout(`${API_BASE_URL}/api/v1/profile`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        accept: 'application/json',
+        ...(cookie ? { cookie } : {}),
+      },
     });
     const profilePayload = await profileResp.json().catch(() => null);
     profile = getProfileFromEnvelope(profilePayload) || profile;
@@ -443,10 +518,12 @@ async function main() {
     }
   }
 
-  const browser = await chromium.launch({
+  const launchOptions = {
     headless: true,
     args: USE_SYSTEM_PROXY ? [] : CHROMIUM_DIRECT_PROXY_ARGS,
-  });
+    ...(BROWSER_EXECUTABLE_PATH ? { executablePath: BROWSER_EXECUTABLE_PATH } : {}),
+  };
+  const browser = await chromium.launch(launchOptions);
   const allResults = [];
   const skipped = [];
 

@@ -1,0 +1,27 @@
+import { Router } from 'express';
+import { authenticate, hasPermission } from '../middleware/auth';
+import { adminLimiter } from '../middleware/rateLimiter';
+import { csrfProtection } from '../middleware/csrf';
+import { deleteMailScheduleEntry, deleteMailRecipientGroupEntry, deleteMailTemplateEntry, getMailConfig, getMailLibrary, getMailInbox, getMailInboxMessage, replyMailInboxMessage, sendMailComposed, importMailLibraryEntries, sendMailBroadcast, sendMailConfigTest, updateMailConfig, upsertMailRecipientGroupEntry, upsertMailScheduleEntry, upsertMailTemplateEntry, } from '../controllers/mailConfigController';
+const router = Router();
+router.use(authenticate);
+router.use(adminLimiter);
+router.use(hasPermission(['system_config']));
+router.get('/', getMailConfig);
+router.get('/library', getMailLibrary);
+router.get('/inbox', getMailInbox);
+router.get('/inbox/:uid', getMailInboxMessage);
+router.put('/', csrfProtection, updateMailConfig);
+router.post('/test', csrfProtection, sendMailConfigTest);
+router.post('/broadcast', csrfProtection, sendMailBroadcast);
+router.post('/compose', csrfProtection, sendMailComposed);
+router.post('/inbox/:uid/reply', csrfProtection, replyMailInboxMessage);
+router.post('/import', csrfProtection, importMailLibraryEntries);
+router.put('/templates/:key', csrfProtection, upsertMailTemplateEntry);
+router.delete('/templates/:key', csrfProtection, deleteMailTemplateEntry);
+router.put('/recipient-groups/:key', csrfProtection, upsertMailRecipientGroupEntry);
+router.delete('/recipient-groups/:key', csrfProtection, deleteMailRecipientGroupEntry);
+router.put('/schedules/:key', csrfProtection, upsertMailScheduleEntry);
+router.delete('/schedules/:key', csrfProtection, deleteMailScheduleEntry);
+export default router;
+//# sourceMappingURL=mailConfig.js.map

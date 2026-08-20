@@ -12,9 +12,20 @@ import {
   UserPen,
   type LucideIcon,
 } from 'lucide-react';
+import { type AccentTheme, useUIStore } from '@/store/uiStore';
+
+const accentOptions: Array<{ value: AccentTheme; label: string; swatch: string }> = [
+  { value: 'zinc', label: '黑曜石', swatch: 'bg-zinc-900' },
+  { value: 'amber', label: '灯笼橙', swatch: 'bg-amber-500' },
+  { value: 'emerald', label: '森林绿', swatch: 'bg-emerald-600' },
+  { value: 'sky', label: '钻石蓝', swatch: 'bg-sky-600' },
+  { value: 'violet', label: '紫颂花', swatch: 'bg-violet-600' },
+  { value: 'rose', label: '地狱红', swatch: 'bg-rose-600' },
+];
 
 const MobileSettings: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const { locale, accent, setLocale, setAccent } = useUIStore();
   const verifyEmailPath = user?.email
     ? `/verify-code?email=${encodeURIComponent(user.email)}`
     : '/verify-code';
@@ -31,6 +42,22 @@ const MobileSettings: React.FC = () => {
   return (
     <div className="bg-white pb-6 text-zinc-900">
       <div className="space-y-5 px-4 py-5">
+        <section className="rounded-2xl border border-zinc-100 bg-white p-4">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">界面语言</div>
+          <div role="group" aria-label="界面语言" className="mt-3 grid grid-cols-2 gap-2">
+            <button type="button" aria-pressed={locale === 'zh'} onClick={() => setLocale('zh')} className={`rounded-xl px-3 py-3 text-sm font-bold ${locale === 'zh' ? 'bg-black text-white' : 'bg-zinc-50 text-zinc-700'}`}>中文</button>
+            <button type="button" aria-pressed={locale === 'en'} onClick={() => setLocale('en')} className={`rounded-xl px-3 py-3 text-sm font-bold ${locale === 'en' ? 'bg-black text-white' : 'bg-zinc-50 text-zinc-700'}`}>English</button>
+          </div>
+          <div className="mt-5 text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">主题颜色</div>
+          <div role="group" aria-label="主题颜色" className="mt-3 grid grid-cols-2 gap-2">
+            {accentOptions.map((option) => (
+              <button key={option.value} type="button" aria-pressed={accent === option.value} onClick={() => setAccent(option.value)} className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-xs font-bold ${accent === option.value ? 'border-black bg-zinc-50' : 'border-zinc-100'}`}>
+                <span aria-hidden="true" className={`h-4 w-4 rounded ${option.swatch}`} />{option.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="rounded-2xl border border-zinc-100 bg-white">
           <div className="border-b border-zinc-100 px-4 py-3">
             <span className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">账户与支持</span>

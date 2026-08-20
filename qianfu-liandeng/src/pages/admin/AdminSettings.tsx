@@ -2,14 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import GeometricLantern, { type LanternVariant } from '@/components/ui/GeometricLantern';
 
 type ConfigEntry = {
   title: string;
   description: string;
   path: string;
-  variant: any;
+  variant: LanternVariant;
   badge: string;
 };
 
@@ -22,10 +22,10 @@ type ConfigGroup = {
 const CONFIG_GROUPS: ConfigGroup[] = [
   {
     title: 'System Core',
-    description: '超管高频系统配置入口，优先处理支付、总控与网络安全。',
+    description: '超管高频系统配置入口，集中处理站点、公告与网络安全。',
     entries: [
-      { title: '支付矩阵', description: '配置 Creem、QiuPay、XPay、TPay 与项目级回调链路。', path: '/admin-qianfu', variant: 'payment', badge: 'PAY' },
       { title: '邮件配置', description: '配置 SMTP、验证码邮件、重置密码与测试发信。', path: '/admin-mail', variant: 'data', badge: 'MAIL' },
+      { title: '公告中心', description: '创建、定时、发布和下线全站顶部公告。', path: '/admin-announcements', variant: 'message', badge: 'NOTICE' },
       { title: '控制总览', description: '进入总控看板，查看站点运行状态与关键指标。', path: '/admin', variant: 'spark', badge: 'CORE' },
       { title: '端口安全', description: '治理端口、入口策略与敏感暴露面。', path: '/admin-port5555', variant: 'network', badge: 'NET' },
     ],
@@ -38,15 +38,6 @@ const CONFIG_GROUPS: ConfigGroup[] = [
       { title: '服务器审核', description: '节点上架审核与状态裁定。', path: '/admin-review', variant: 'security', badge: 'NODE' },
       { title: '工单管理', description: '支持流程与人工处理台。', path: '/admin-tickets', variant: 'activity', badge: 'HELP' },
       { title: '内容审核', description: '站内内容、屏蔽词与风控过滤。', path: '/admin-moderation', variant: 'security', badge: 'SAFE' },
-    ],
-  },
-  {
-    title: 'Growth & Commerce',
-    description: '推广激励与商家端配置面板。',
-    entries: [
-      { title: '激励任务', description: '创建、配置与发布推广任务。', path: '/promotion/tasks', variant: 'spark', badge: 'GROW' },
-      { title: '领取审核', description: '审核奖励领取与发放流转。', path: '/promotion/claims', variant: 'activity', badge: 'CLAIM' },
-      { title: '店铺管理', description: '维护店铺资料、商品与商家前台信息。', path: '/seller/shop', variant: 'data', badge: 'SHOP' },
     ],
   },
   {

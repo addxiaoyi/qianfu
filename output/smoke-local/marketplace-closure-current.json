@@ -1,0 +1,148 @@
+{
+  "timestamp": "2026-08-08T21:14:30.975Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "marker": "marketplace-1786223664397-ddd24c12",
+  "created": {
+    "userIds": [
+      47,
+      48,
+      49
+    ],
+    "productId": "prd_8cf54d9a-5b3d-4f38-805b-da82de037104",
+    "orderId": "ord_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89",
+    "paymentId": "pay_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89"
+  },
+  "cleanupError": null,
+  "checks": [
+    {
+      "name": "disposable-admin",
+      "status": "PASS",
+      "detail": "admin=47"
+    },
+    {
+      "name": "admin-login",
+      "status": "PASS",
+      "detail": "admin=market_admin_marketplace-1786223664397-ddd24c12@example.com",
+      "code": 200
+    },
+    {
+      "name": "disposable-users",
+      "status": "PASS",
+      "detail": "seller=48 buyer=49"
+    },
+    {
+      "name": "seller-create-product",
+      "status": "PASS",
+      "detail": "product=prd_8cf54d9a-5b3d-4f38-805b-da82de037104",
+      "code": 200
+    },
+    {
+      "name": "unapproved-product-blocked",
+      "status": "PASS",
+      "detail": "Product is unavailable",
+      "code": 409
+    },
+    {
+      "name": "cross-owner-update-blocked",
+      "status": "PASS",
+      "detail": "Forbidden",
+      "code": 403
+    },
+    {
+      "name": "admin-approve-product",
+      "status": "PASS",
+      "detail": "status=APPROVED",
+      "code": 200
+    },
+    {
+      "name": "buyer-favorite",
+      "status": "PASS",
+      "detail": "Favorite added",
+      "code": 200
+    },
+    {
+      "name": "buyer-create-order",
+      "status": "PASS",
+      "detail": "order=ord_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89 payment=pay_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89",
+      "code": 200
+    },
+    {
+      "name": "order-idempotency",
+      "status": "PASS",
+      "detail": "replayed=true",
+      "code": 200
+    },
+    {
+      "name": "buyer-can-pay-pending-order",
+      "status": "PASS",
+      "detail": "canPay=true payment=PENDING",
+      "code": 200
+    },
+    {
+      "name": "pending-payment-links-marketplace-order",
+      "status": "PASS",
+      "detail": "status=PENDING marketplaceOrder=ord_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89",
+      "code": 200
+    },
+    {
+      "name": "admin-complete-payment",
+      "status": "PASS",
+      "detail": "payment=pay_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89",
+      "code": 200
+    },
+    {
+      "name": "completed-payment-links-marketplace-order",
+      "status": "PASS",
+      "detail": "status=COMPLETED marketplaceOrder=ord_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89",
+      "code": 200
+    },
+    {
+      "name": "buyer-can-download-paid-order",
+      "status": "PASS",
+      "detail": "payment=PAID fulfillment=DELIVERED canDownload=true",
+      "code": 200
+    },
+    {
+      "name": "buyer-download-issuance",
+      "status": "PASS",
+      "detail": "downloadUrl=/uploads/marketplace-1786223664397-ddd24c12.zip",
+      "code": 200
+    },
+    {
+      "name": "seller-fulfillment-idempotent",
+      "status": "PASS",
+      "detail": "replayed=true",
+      "code": 200
+    },
+    {
+      "name": "buyer-review-after-payment",
+      "status": "PASS",
+      "detail": "review stored",
+      "code": 200
+    },
+    {
+      "name": "buyer-open-dispute",
+      "status": "PASS",
+      "detail": "status=OPEN",
+      "code": 200
+    },
+    {
+      "name": "admin-resolve-dispute",
+      "status": "PASS",
+      "detail": "status=RESOLVED",
+      "code": 200
+    },
+    {
+      "name": "buyer-remove-favorite",
+      "status": "PASS",
+      "detail": "Favorite removed",
+      "code": 200
+    },
+    {
+      "name": "cleanup",
+      "status": "PASS",
+      "detail": "users=3 product=prd_8cf54d9a-5b3d-4f38-805b-da82de037104 order=ord_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89 payment=pay_0aaee057f546f17fefe157354b9e094ceac350d8a199ba8c05c1a3136445cf89 residual=0"
+    }
+  ],
+  "failedCount": 0
+}

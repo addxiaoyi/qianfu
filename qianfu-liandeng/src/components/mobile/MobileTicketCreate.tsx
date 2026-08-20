@@ -33,16 +33,19 @@ export default function MobileTicketCreate() {
       });
       toast({ title: '工单已提交' });
       navigate(`/tickets/${ticket?.id || ''}`.replace(/\/$/, ''));
+    } catch {
+      toast({ variant: 'destructive', title: '提交失败', description: '请检查网络后重试。' });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 py-4 space-y-5 pb-24">
+    <form className="min-h-screen bg-white px-4 py-4 space-y-5 pb-24" onSubmit={(event) => { event.preventDefault(); void handleSubmit(); }}>
       <div>
-        <label className="block text-sm font-medium text-zinc-700 mb-2">标题</label>
+        <label htmlFor="mobile-ticket-title" className="block text-sm font-medium text-zinc-700 mb-2">标题</label>
         <input
+          id="mobile-ticket-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -51,14 +54,15 @@ export default function MobileTicketCreate() {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-zinc-700 mb-2">分类</label>
+      <fieldset>
+        <legend className="block text-sm font-medium text-zinc-700 mb-2">分类</legend>
         <div className="grid grid-cols-2 gap-2">
           {categories.map((cat) => (
             <button
               key={cat.value}
               type="button"
               onClick={() => setCategory(cat)}
+              aria-pressed={category.value === cat.value}
               className={cn(
                 'h-12 rounded-xl border text-sm font-medium transition-colors',
                 category.value === cat.value
@@ -70,11 +74,12 @@ export default function MobileTicketCreate() {
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-700 mb-2">详细描述</label>
+        <label htmlFor="mobile-ticket-content" className="block text-sm font-medium text-zinc-700 mb-2">详细描述</label>
         <textarea
+          id="mobile-ticket-content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="请详细描述您遇到的问题..."
@@ -84,14 +89,13 @@ export default function MobileTicketCreate() {
       </div>
 
       <button
-        type="button"
-        onClick={handleSubmit}
+        type="submit"
         disabled={!canSubmit}
         className="w-full h-14 bg-zinc-900 text-white text-sm font-bold rounded-xl disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
       >
         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
         提交工单
       </button>
-    </div>
+    </form>
   );
 }

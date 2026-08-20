@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import AdminStatCard from '@/components/AdminStatCard';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import AdminStatCard from '@/components/ui/AdminStatCard';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { useT, type TranslationKey } from '@/store/uiStore';
 import { formatDateTime } from '@/utils/serverView';
 
@@ -72,6 +73,8 @@ const PLACEHOLDER_METRICS = [
   { labelKey: 'admin.dash.metrics.tickets' as TranslationKey, value: '—', variant: 'activity', color: 'text-accent', trend: '', tag: 'DAT_04' },
 ] as const;
 
+const ADMIN_DASHBOARD_QUERY_TIMEOUT = 8000;
+
 const classifyActivity = (action: string): RecentActivity['variant'] => {
   const upper = action.toUpperCase();
   if (upper.includes('PAYMENT') || upper.includes('CHECKIN')) return 'payment';
@@ -86,35 +89,45 @@ const AdminDashboard: React.FC = () => {
 
   const { data: userStats, isLoading: userLoading, isError: userError, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-dashboard-user-stats'],
-    queryFn: () => api.get<UserStats>('/admin/stats'),
+    queryFn: () => api.get<UserStats>('/admin/stats', undefined, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
-  const { data: globalStats, isLoading: globalLoading } = useQuery({
+  const { data: globalStats, isLoading: globalLoading, isError: globalError, refetch: refetchGlobal } = useQuery({
     queryKey: ['admin-dashboard-global-stats'],
-    queryFn: () => api.get<GlobalStats>('/stats'),
+    queryFn: () => api.get<GlobalStats>('/stats', undefined, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
-  const { data: reviewStats, isLoading: reviewLoading } = useQuery({
+  const { data: reviewStats, isLoading: reviewLoading, isError: reviewError, refetch: refetchReviews } = useQuery({
     queryKey: ['admin-dashboard-review-stats'],
-    queryFn: () => api.get<ReviewStats>('/review/stats'),
+    queryFn: () => api.get<ReviewStats>('/review/stats', undefined, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
-  const { data: tickets = [], isLoading: ticketLoading } = useQuery({
+  const { data: tickets = [], isLoading: ticketLoading, isError: ticketError, refetch: refetchTickets } = useQuery({
     queryKey: ['admin-dashboard-tickets'],
-    queryFn: () => api.get<TicketRecord[]>('/tickets', { limit: 5 }),
+    queryFn: () => api.get<TicketRecord[]>('/tickets', { limit: 5 }, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
-  const { data: auditStats, isLoading: auditStatsLoading } = useQuery({
+  const { data: auditStats, isLoading: auditStatsLoading, isError: auditStatsError, refetch: refetchAuditStats } = useQuery({
     queryKey: ['admin-dashboard-audit-stats'],
-    queryFn: () => api.get<AuditStats>('/audit/stats', { days: 7 }),
+    queryFn: () => api.get<AuditStats>('/audit/stats', { days: 7 }, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
-  const { data: auditLogs = [], isLoading: auditLogsLoading } = useQuery({
+  const { data: auditLogs = [], isLoading: auditLogsLoading, isError: auditLogsError, refetch: refetchAuditLogs } = useQuery({
     queryKey: ['admin-dashboard-audit-logs'],
-    queryFn: () => api.get<AuditLog[]>('/audit/logs', { limit: 5 }),
+    queryFn: () => api.get<AuditLog[]>('/audit/logs', { limit: 5 }, { timeout: ADMIN_DASHBOARD_QUERY_TIMEOUT }),
+    retry: false,
   });
 
   const isLoading = userLoading || globalLoading || reviewLoading || ticketLoading || auditStatsLoading || auditLogsLoading;
+  const isError = userError || globalError || reviewError || ticketError || auditStatsError || auditLogsError;
+  const refetchDashboard = () => {
+    void Promise.all([refetchUsers(), refetchGlobal(), refetchReviews(), refetchTickets(), refetchAuditStats(), refetchAuditLogs()]);
+  };
 
   const metrics = useMemo(() => {
     if (!userStats || !globalStats || !reviewStats) return PLACEHOLDER_METRICS;
@@ -138,7 +151,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-16 pb-32 bg-white selection:bg-accent selection:text-white">
-      <StatusWrapper isLoading={isLoading} isError={userError} onRetry={() => refetchUsers()}>
+      <StatusWrapper isLoading={isLoading} isError={isError} onRetry={refetchDashboard}>
         <AdminPageHeader
           badge="管理总览 / 实时数据"
           title="管理总览"
@@ -183,14 +196,14 @@ const AdminDashboard: React.FC = () => {
           <section className="lg:col-span-8 space-y-12">
             <div className="flex items-center justify-between border-b border-zinc-50 pb-6">
               <h3 className="text-[12px] font-black font-mono uppercase tracking-[0.5em] text-zinc-300 flex items-center gap-4 italic">
-                <div className="w-3 h-3 rounded-full bg-accent animate-pulse shadow-accent/20" />
+                <div className="w-3 h-3 rounded-full bg-accent" />
                 {t('admin.dash.telemetry')}
               </h3>
               <div className="flex items-center gap-6">
                 <span className="text-[9px] font-black text-zinc-200 uppercase tracking-widest italic">7 天事件：{auditStats?.totalEvents ?? 0}</span>
-                <button type="button" className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-all flex items-center gap-3 italic">
+                <Link to="/admin-audit-stats" className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-colors flex items-center gap-3 italic">
                   查看统计 <ChevronRight className="w-4 h-4" />
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -217,13 +230,13 @@ const AdminDashboard: React.FC = () => {
               ))}
             </div>
 
-            <button type="button" className="w-full py-12 border-2 border-zinc-50 border-dashed rounded-[4rem] text-[12px] font-black uppercase tracking-[0.5em] text-zinc-300 hover:text-accent hover:border-accent hover:bg-accent-subtle transition-all group flex items-center justify-center gap-6 italic bg-white shadow-xs">
+            <Link to="/admin-audit" className="w-full py-12 border-2 border-zinc-50 border-dashed rounded-[4rem] text-[12px] font-black uppercase tracking-[0.5em] text-zinc-300 hover:text-accent hover:border-accent hover:bg-accent-subtle transition-colors group flex items-center justify-center gap-6 italic bg-white shadow-xs">
               {t('admin.dash.inspect_logs')} <ChevronRight className="w-5 h-5 group-hover:translate-x-4 transition-transform" />
-            </button>
+            </Link>
           </section>
 
           <aside className="lg:col-span-4 space-y-12">
-            <div className="p-12 border border-zinc-50 rounded-[4rem] bg-zinc-50/20 space-y-12 group hover:border-accent hover:bg-white hover:shadow-2xl hover:shadow-black/5 transition-all duration-1000">
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50/40 p-6 space-y-6">
               <div className="flex items-center justify-between border-b border-zinc-100 pb-6">
                 <h4 className="text-[11px] font-black uppercase tracking-[0.4em] italic text-zinc-400">{t('admin.dash.security_snap')}</h4>
                 <GeometricLantern variant="security" className="w-5 h-5 text-zinc-200 group-hover:text-accent transition-colors" />
@@ -231,32 +244,32 @@ const AdminDashboard: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex justify-between items-center px-4 py-6 bg-white rounded-[2rem] shadow-xs border border-zinc-100/50">
                   <span className="text-[10px] font-black uppercase tracking-widest italic">{t('admin.dash.firewall')}</span>
-                  <span className="text-[10px] font-black font-mono text-green-500 italic">{t('admin.status.enforced')}</span>
+                  <span className="text-[10px] font-bold text-zinc-500">前往面板核验</span>
                 </div>
                 <div className="flex justify-between items-center px-4 py-6 bg-white rounded-[2rem] shadow-xs border border-zinc-100/50">
                   <span className="text-[10px] font-black uppercase tracking-widest italic">{t('admin.dash.encryption')}</span>
-                  <span className="text-[10px] font-black font-mono text-zinc-400 italic">已启用</span>
+                  <span className="text-[10px] font-bold text-zinc-500">以实际配置为准</span>
                 </div>
                 <div className="flex justify-between items-center px-4 py-6 bg-white rounded-[2rem] shadow-xs border border-zinc-100/50">
                   <span className="text-[10px] font-black uppercase tracking-widest italic">{t('admin.dash.threat')}</span>
-                  <span className="text-[10px] font-black font-mono text-blue-500 italic">{globalStats?.onlineServers === globalStats?.totalServers ? t('admin.status.minimal') : '监控中'}</span>
+                  <span className="text-[10px] font-bold text-zinc-500">查看审计与拦截记录</span>
                 </div>
               </div>
-              <button type="button" className="w-full py-8 btn-accent rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl shadow-accent/20 transition-all duration-500 active:scale-95">
-                {t('admin.dash.run_scan')}
-              </button>
+              <Link to="/admin-port5555" className="flex w-full items-center justify-center rounded-xl bg-black px-5 py-4 text-sm font-bold text-white transition-transform active:scale-[0.98]">
+                打开安全面板
+              </Link>
             </div>
 
-            <div className="p-12 border border-zinc-50 rounded-[4rem] bg-accent text-white space-y-12 relative overflow-hidden group">
+            <div className="relative overflow-hidden rounded-2xl bg-accent p-7 text-white space-y-7 group">
               <div className="absolute -right-8 -top-8 opacity-10 group-hover:rotate-45 transition-transform duration-1000"><GeometricLantern variant="spark" className="w-48 h-48" /></div>
               <div className="space-y-4 relative z-10">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.4em] italic text-white/50">{t('admin.dash.maintenance')}</h4>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase italic tracking-tighter leading-none break-words">{t('admin.dash.sync_msg').replace('{time}', `${tickets.length} tickets / ${reviewStats?.totalPending ?? 0} reviews`)}</div>
+                <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/70">运营待办</h4>
+                <div className="text-2xl font-black tracking-tight leading-tight break-words">{tickets.length} 张工单，{reviewStats?.totalPending ?? 0} 项待审核</div>
               </div>
               <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden relative z-10">
                 <motion.div initial={{ width: 0 }} animate={{ width: globalStats?.totalServers ? `${Math.min(100, Math.round(((globalStats.onlineServers || 0) / globalStats.totalServers) * 100))}%` : '0%' }} transition={{ duration: 1.2, delay: 0.2 }} className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.5)]" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest italic text-white/40 leading-relaxed relative z-10 break-words">
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/70 leading-relaxed relative z-10 break-words">
                 在线服务器 {globalStats?.onlineServers ?? 0} / 总服务器 {globalStats?.totalServers ?? 0} / 在线玩家 {globalStats?.totalPlayers ?? 0}
               </p>
             </div>

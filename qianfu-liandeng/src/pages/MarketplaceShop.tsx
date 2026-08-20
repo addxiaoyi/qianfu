@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowUpDown, BadgeCheck, BarChart3, Clock3, Lock, Palette, RotateCcw, Save, ShoppingCart, Sparkles } from 'lucide-react';
+import { ArrowUpDown, BadgeCheck, BarChart3, Clock3, LampDesk, Lock, Palette, RotateCcw, Save, ShoppingCart } from 'lucide-react';
 import { api } from '@/api/request';
 import { sanitizeUrl, isImageUrlSafe } from '@/utils/urlValidator';
-import PageSeo from '@/components/PageSeo';
+import PageSeo from '@/components/ui/PageSeo';
+import { formatCnyFromFen } from '@/utils/money';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-const SITE_URL = 'https://mc-u.top';
+const SITE_URL = (import.meta.env.VITE_APP_URL || 'https://mc-u.top');
 
 type Product = {
   id: string;
@@ -17,6 +19,7 @@ type Product = {
   reviewCount: number;
   author: string;
   coverUrl?: string;
+  creatorId?: number | null;
 };
 
 type BannerCard = { title: string; text: string };
@@ -34,17 +37,46 @@ type ShopConfig = {
 
 type ShopMetrics = { visits: number; announcementClicks: number; featuredClicks: number; updatedAt: string };
 type ShopVersion = { id: string; createdAt: string; config: ShopConfig };
+type VerificationStatus = 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
+type ShopVerification = { status: VerificationStatus; submittedAt: string | null; reviewedAt: string | null; expiresAt: string | null };
+type ShopPayload = {
+  config: ShopConfig;
+  editable: boolean;
+  metrics: ShopMetrics;
+  verification: ShopVerification;
+  versions: ShopVersion[];
+};
 
 
 const defaultConfig: ShopConfig = {
-  bannerUrl: 'https://picsum.photos/seed/shop-banner/1600/500',
-  avatarUrl: 'https://picsum.photos/seed/shop-avatar/400/400',
-  announcementTitle: '公告',
-  announcementText: '每周上新资源，持续更新售后与兼容性说明。',
-  bio: '专注 Minecraft 资源创作与持续更新，提供地图、插件、模组与整合包。',
-  shopName: '创作者店铺',
+  bannerUrl: '',
+  avatarUrl: '',
+  announcementTitle: '',
+  announcementText: '',
+  bio: '',
+  shopName: '',
   theme: 'default',
 };
+
+const defaultMetrics: ShopMetrics = {
+  visits: 0,
+  announcementClicks: 0,
+  featuredClicks: 0,
+  updatedAt: new Date(0).toISOString(),
+};
+
+const defaultVerification: ShopVerification = {
+  status: 'UNVERIFIED',
+  submittedAt: null,
+  reviewedAt: null,
+  expiresAt: null,
+};
+
+const sortOptions: Array<{ value: 'hot' | 'sales' | 'rating'; label: string }> = [
+  { value: 'hot', label: '热度' },
+  { value: 'sales', label: '销量' },
+  { value: 'rating', label: '评分' },
+];
 
 const themeNames: Record<NonNullable<ShopConfig['theme']>, string> = {
   default: '默认',
@@ -54,12 +86,17 @@ const themeNames: Record<NonNullable<ShopConfig['theme']>, string> = {
 };
 
 export default function MarketplaceShop() {
-  const { userId } = useParams();
+  const { id: creatorId } = useParams();
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState('');
+  const [productsReload, setProductsReload] = useState(0);
   const [sortBy, setSortBy] = useState<'hot' | 'sales' | 'rating'>('hot');
   const [config, setConfig] = useState<ShopConfig>(defaultConfig);
   const [editable, setEditable] = useState(false);
-  const [metrics, setMetrics] = useState<ShopMetrics>({ visits: 0, announcementClicks: 0, featuredClicks: 0, updatedAt: new Date().toISOString() });
+  const [metrics, setMetrics] = useState<ShopMetrics>(defaultMetrics);
+  const [verification, setVerification] = useState<ShopVerification>(defaultVerification);
   const [versions, setVersions] = useState<ShopVersion[]>([]);
   const [themes, setThemes] = useState<NonNullable<ShopConfig['theme']>[]>(['default', 'tech', 'minimal', 'creator']);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
@@ -69,9 +106,11 @@ export default function MarketplaceShop() {
   const [savingShopConfig, setSavingShopConfig] = useState(false);
   const [shopConfigMessage, setShopConfigMessage] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<ShopVersion | null>(null);
+  const [loadingShop, setLoadingShop] = useState(Boolean(creatorId));
+  const [shopError, setShopError] = useState('');
 
-  const hydrate = (payload: { config: ShopConfig; editable?: boolean; metrics?: ShopMetrics; versions?: ShopVersion[] }) => {
-    const raw = payload.config || {};
+  const hydrate = useCallback((payload: Partial<ShopPayload> & { config: ShopConfig }) => {
+    const raw = payload.config || defaultConfig;
     const sanitized: ShopConfig = {
       ...raw,
       bannerUrl: sanitizeUrl(raw.bannerUrl, defaultConfig.bannerUrl),
@@ -82,20 +121,67 @@ export default function MarketplaceShop() {
     setForm(next);
     setEditable(!!payload.editable);
     if (payload.metrics) setMetrics(payload.metrics);
+    if (payload.verification) setVerification(payload.verification);
     if (payload.versions) setVersions(payload.versions);
-  };
+  }, []);
 
   useEffect(() => {
-    api.get<{ config: ShopConfig; editable: boolean; metrics: ShopMetrics; versions: ShopVersion[] }>('/qianfu/marketplace/shop/config').then(hydrate).catch(() => undefined);
-    api.get<{ themes: Array<ShopConfig['theme']> }>('/qianfu/marketplace/shop/themes').then((data) => setThemes((data.themes || []).filter((theme): theme is NonNullable<ShopConfig['theme']> => Boolean(theme)))).catch(() => undefined);
-    api.get<{ products: Product[]; total: number }>('/qianfu/marketplace/me/listings')
-      .then((data) => setProducts((data.products || []).filter((item) => String(item.author) === String(userId || item.author))))
-      .catch(() => setProducts([]));
-    api.get<{ metrics: ShopMetrics; versions: ShopVersion[] }>('/qianfu/marketplace/shop/metrics').then((data) => {
-      if (data.metrics) setMetrics(data.metrics);
-      if (data.versions) setVersions(data.versions);
-    }).catch(() => undefined);
-  }, [userId]);
+    let active = true;
+    if (!creatorId) {
+      setConfig(defaultConfig);
+      setForm(defaultConfig);
+      setEditable(false);
+      setMetrics(defaultMetrics);
+      setVerification(defaultVerification);
+      setVersions([]);
+      setShopError('');
+      setLoadingShop(false);
+      return () => { active = false; };
+    }
+    if (!/^[1-9]\d*$/.test(creatorId)) {
+      setShopError('店铺地址无效');
+      setLoadingShop(false);
+      return () => { active = false; };
+    }
+
+    setLoadingShop(true);
+    setShopError('');
+    api.get<ShopPayload>(`/qianfu/marketplace/shops/${creatorId}/config`)
+      .then((payload) => { if (active) hydrate(payload); })
+      .catch((error: unknown) => {
+        if (active) setShopError(error instanceof Error ? error.message : '店铺加载失败');
+      })
+      .finally(() => { if (active) setLoadingShop(false); });
+    return () => { active = false; };
+  }, [creatorId, hydrate]);
+
+  useEffect(() => {
+    api.get<{ themes: Array<ShopConfig['theme']> }>('/qianfu/marketplace/shop/themes')
+      .then((data) => setThemes((data.themes || []).filter((theme): theme is NonNullable<ShopConfig['theme']> => Boolean(theme))))
+      .catch((error: unknown) => console.warn('[MarketplaceShop] Failed to load themes.', error));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (creatorId && !/^[1-9]\d*$/.test(creatorId)) {
+      setProducts([]);
+      setProductsLoading(false);
+      return () => { active = false; };
+    }
+    setProductsLoading(true);
+    setProductsError('');
+    setProducts([]);
+    const productsRequest = creatorId
+      ? api.get<{ products: Product[]; total: number }>(`/qianfu/marketplace/creators/${creatorId}/products?page=1&pageSize=24`)
+      : api.get<{ products: Product[]; total: number }>('/qianfu/marketplace/products?sortBy=featured&page=1&pageSize=24');
+    productsRequest
+      .then((data) => { if (active) setProducts(data.products || []); })
+      .catch((error: unknown) => {
+        if (active) setProductsError(error instanceof Error ? error.message : '商品列表加载失败');
+      })
+      .finally(() => { if (active) setProductsLoading(false); });
+    return () => { active = false; };
+  }, [creatorId, productsReload]);
 
   const summary = useMemo(() => ({
     total: products.length,
@@ -112,26 +198,41 @@ export default function MarketplaceShop() {
   }, [products, sortBy]);
 
   const featured = sortedProducts.slice(0, 3);
-  const banners: BannerCard[] = [
-    { title: config.announcementTitle, text: config.announcementText },
-    { title: '精选', text: '热销 / 高评分 / 新上架三类内容轮播展示。' },
-    { title: '福利', text: '关注店铺可第一时间获取折扣与更新通知。' },
-  ];
+  const banners: BannerCard[] = config.announcementTitle || config.announcementText
+    ? [{ title: config.announcementTitle || '店铺公告', text: config.announcementText || '店主暂未填写公告内容。' }]
+    : [{ title: '暂无公告', text: '店主尚未发布店铺公告。' }];
 
   useEffect(() => {
-    const timer = window.setInterval(() => setActiveBannerIndex((current) => (current + 1) % banners.length), 4000);
-    return () => window.clearInterval(timer);
+    setActiveBannerIndex((current) => Math.min(current, Math.max(banners.length - 1, 0)));
   }, [banners.length]);
 
   useEffect(() => {
-    if (!featured.length) return;
-    const timer = window.setInterval(() => setActiveFeaturedIndex((current) => (current + 1) % featured.length), 4500);
-    return () => window.clearInterval(timer);
+    setActiveFeaturedIndex((current) => Math.min(current, Math.max(featured.length - 1, 0)));
   }, [featured.length]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || banners.length <= 1) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) {
+        setActiveBannerIndex((current) => (current + 1) % banners.length);
+      }
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [banners.length, prefersReducedMotion]);
+
+  useEffect(() => {
+    if (prefersReducedMotion || featured.length <= 1) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) {
+        setActiveFeaturedIndex((current) => (current + 1) % featured.length);
+      }
+    }, 4500);
+    return () => window.clearInterval(timer);
+  }, [featured.length, prefersReducedMotion]);
 
   const activeBanner = banners[activeBannerIndex % banners.length];
   const activeFeatured = featured[activeFeaturedIndex % Math.max(featured.length, 1)];
-  const canonicalPath = userId ? `/shop/${userId}` : '/marketplace/shop';
+  const canonicalPath = creatorId ? `/shop/${creatorId}` : '/marketplace/shop';
   const shopSeoDescription = config.bio || '浏览公开玩家店铺、商品与创作者资源。';
   const shopSeoSchema = useMemo(() => ({
     '@context': 'https://schema.org',
@@ -150,10 +251,11 @@ export default function MarketplaceShop() {
   }), [config.shopName, featured, shopSeoDescription]);
 
   const saveConfig = async () => {
+    if (!creatorId) return;
     setSavingShopConfig(true);
     try {
-      const result = await api.put<{ config: ShopConfig }>('/qianfu/marketplace/shop/config', form);
-      hydrate({ config: result.config, editable, metrics, versions });
+      const result = await api.put<{ config: ShopConfig; versions?: ShopVersion[] }>(`/qianfu/marketplace/shops/${creatorId}/config`, form);
+      hydrate({ config: result.config, editable, metrics, verification, versions: result.versions || versions });
       setShopConfigMessage('店铺配置已保存到后端');
       setTimeout(() => setShopConfigMessage(''), 2500);
       setEditingAnnouncement(false);
@@ -165,10 +267,11 @@ export default function MarketplaceShop() {
   };
 
   const resetConfig = async () => {
+    if (!creatorId) return;
     setSavingShopConfig(true);
     try {
-      const result = await api.post<{ config: ShopConfig }>('/qianfu/marketplace/shop/config/reset', {});
-      hydrate({ config: result.config, editable, metrics, versions });
+      const result = await api.post<{ config: ShopConfig; versions?: ShopVersion[] }>(`/qianfu/marketplace/shops/${creatorId}/config/reset`, {});
+      hydrate({ config: result.config, editable, metrics, verification, versions: result.versions || versions });
       setShopConfigMessage('已重置为默认配置');
       setTimeout(() => setShopConfigMessage(''), 2500);
     } catch (error: any) {
@@ -179,10 +282,11 @@ export default function MarketplaceShop() {
   };
 
   const applyTheme = async (theme: NonNullable<ShopConfig['theme']>) => {
+    if (!creatorId) return;
     setSavingShopConfig(true);
     try {
-      const result = await api.post<{ config: ShopConfig }>(`/qianfu/marketplace/shop/theme/${theme}`, {});
-      hydrate({ config: result.config, editable, metrics, versions });
+      const result = await api.post<{ config: ShopConfig; versions?: ShopVersion[] }>(`/qianfu/marketplace/shops/${creatorId}/theme/${theme}`, {});
+      hydrate({ config: result.config, editable, metrics, verification, versions: result.versions || versions });
       setShopConfigMessage(`已应用 ${themeNames[theme]} 主题`);
       setTimeout(() => setShopConfigMessage(''), 2000);
     } catch (error: any) {
@@ -193,10 +297,11 @@ export default function MarketplaceShop() {
   };
 
   const restoreVersion = async (version: ShopVersion) => {
+    if (!creatorId) return;
     setSavingShopConfig(true);
     try {
-      const result = await api.put<{ config: ShopConfig }>('/qianfu/marketplace/shop/config', version.config);
-      hydrate({ config: result.config, editable, metrics, versions });
+      const result = await api.put<{ config: ShopConfig; versions?: ShopVersion[] }>(`/qianfu/marketplace/shops/${creatorId}/config`, version.config);
+      hydrate({ config: result.config, editable, metrics, verification, versions: result.versions || versions });
       setShopConfigMessage('已回滚到所选版本');
       setTimeout(() => setShopConfigMessage(''), 2000);
     } catch (error: any) {
@@ -207,8 +312,13 @@ export default function MarketplaceShop() {
   };
 
   const bumpMetric = async (kind: 'announcement' | 'featured') => {
-    await api.post('/qianfu/marketplace/shop/metrics/click', { kind }).catch(() => undefined);
-    setMetrics((current) => ({ ...current, [kind === 'announcement' ? 'announcementClicks' : 'featuredClicks']: (current as any)[kind === 'announcement' ? 'announcementClicks' : 'featuredClicks'] + 1, updatedAt: new Date().toISOString() }));
+    if (!creatorId) return;
+    try {
+      const result = await api.post<{ metrics: ShopMetrics }>(`/qianfu/marketplace/shops/${creatorId}/metrics/click`, { kind });
+      setMetrics(result.metrics);
+    } catch (error) {
+      console.warn('[MarketplaceShop] Failed to record shop interaction.', error);
+    }
   };
 
   return (
@@ -221,12 +331,20 @@ export default function MarketplaceShop() {
         schema={shopSeoSchema}
       />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-6 sm:space-y-8">
+      <div className="flex flex-wrap justify-end gap-3">
+        <Link to="/marketplace/favorites" className="rounded-xl border border-border bg-white px-4 py-2 text-sm font-bold hover:border-black">我的收藏</Link>
+        <Link to="/marketplace/manage" className="rounded-xl bg-black px-4 py-2 text-sm font-bold text-white">卖家中心</Link>
+      </div>
+      {loadingShop && creatorId ? <div role="status" className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">正在加载店铺...</div> : null}
+      {shopError ? <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{shopError}</div> : null}
+      {productsError ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"><span>商品列表加载失败：{productsError}</span><button type="button" onClick={() => setProductsReload((value) => value + 1)} className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white">重试</button></div> : null}
+      {productsLoading ? <div role="status" className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">正在加载商品...</div> : null}
       <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-sm">
         <div className="relative h-48 sm:h-56 md:h-72">
           {isImageUrlSafe(config.bannerUrl) ? (
             <img src={config.bannerUrl} alt="店铺 banner" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-accent/20 to-card flex items-center justify-center"><Sparkles className="w-10 h-10 text-accent/40" /></div>
+            <div className="w-full h-full bg-gradient-to-br from-accent/20 to-card flex items-center justify-center"><LampDesk className="w-10 h-10 text-accent/40" /></div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col md:flex-row md:items-end gap-5">
@@ -235,15 +353,24 @@ export default function MarketplaceShop() {
                 <img src={config.avatarUrl} alt="店铺头像" className="w-24 h-24 md:w-28 md:h-28 rounded-3xl border-4 border-white object-cover shadow-xl ring-4 ring-black/10 transition-all duration-500" />
               ) : (
                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-3xl border-4 border-white bg-zinc-100 shadow-xl ring-4 ring-black/10 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-zinc-300" />
+                  <LampDesk className="w-8 h-8 text-zinc-300" />
                 </div>
               )}
-              <div className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white text-xs font-black shadow-lg">✓</div>
+              {verification.status === 'VERIFIED' ? (
+                <div className="absolute -right-2 -bottom-2 w-8 h-8 rounded-full bg-emerald-500 border-4 border-white flex items-center justify-center text-white shadow-lg" aria-label="已认证商家">
+                  <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+                </div>
+              ) : null}
             </div>
             <div className="text-white space-y-3 max-w-4xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-[10px] font-black uppercase tracking-[0.45em]"><BadgeCheck className="w-3.5 h-3.5" /> 已认证商家</div>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight">{config.shopName}</h1>
-              <p className="max-w-3xl leading-7 text-white/85">{config.bio}</p>
+              {verification.status === 'VERIFIED' ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-[10px] font-black uppercase tracking-[0.45em]"><BadgeCheck className="w-3.5 h-3.5" /> 已认证商家</div>
+              ) : null}
+              {editable && verification.status === 'PENDING' ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/80 text-[10px] font-black">认证审核中</div>
+              ) : null}
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight">{config.shopName || '未命名店铺'}</h1>
+              <p className="max-w-3xl leading-7 text-white/85">{config.bio || '店主尚未填写店铺简介。'}</p>
             </div>
           </div>
         </div>
@@ -263,7 +390,7 @@ export default function MarketplaceShop() {
               {!editable && <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs font-bold text-muted-foreground"><Lock className="w-3.5 h-3.5" />仅店主可编辑</span>}
               {editable && <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-bold">可编辑</span>}
               <div className="flex items-center gap-2">
-                {banners.map((_, index) => <button type="button" key={index} onClick={() => { setActiveBannerIndex(index); bumpMetric('announcement'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeBannerIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
+                {banners.map((_, index) => <button type="button" key={index} aria-label={`查看店铺公告 ${index + 1}`} aria-current={index === activeBannerIndex ? 'true' : undefined} onClick={() => { setActiveBannerIndex(index); bumpMetric('announcement'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeBannerIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
               </div>
             </div>
           </div>
@@ -272,21 +399,27 @@ export default function MarketplaceShop() {
               <div className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground font-black">{activeBanner.title}</div>
               <div className="text-xl sm:text-2xl font-black mt-3">{activeBanner.text}</div>
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground mt-5 sm:mt-6">公告会自动轮播，也可以手动点下方圆点切换。</div>
+            <div className="text-xs sm:text-sm text-muted-foreground mt-5 sm:mt-6">
+              {prefersReducedMotion
+                ? '已根据系统设置关闭自动轮播，可以使用圆点手动切换。'
+                : banners.length > 1
+                  ? '公告会自动轮播，也可以使用圆点手动切换。'
+                  : '当前仅有一条公告。'}
+            </div>
           </div>
           {editable ? (
             <>
               <button type="button" onClick={() => setEditingAnnouncement((current) => !current)} className="w-full sm:w-auto px-4 py-2 rounded-xl border border-border text-sm font-bold">{editingAnnouncement ? '收起编辑' : '编辑公告 / 头图'}</button>
               {editingAnnouncement && (
                 <div className="space-y-4 rounded-3xl border border-dashed border-border p-4 sm:p-5 bg-muted/20">
-                  {shopConfigMessage && <div className="rounded-2xl border border-border bg-background p-3 text-sm">{shopConfigMessage}</div>}
+                  {shopConfigMessage && <div role="status" aria-live="polite" className="rounded-2xl border border-border bg-background p-3 text-sm">{shopConfigMessage}</div>}
                   <div className="grid gap-3">
-                    <input className="rounded-xl border border-border px-4 py-3 bg-background" value={form.bannerUrl} onChange={(e) => setForm((s) => ({ ...s, bannerUrl: e.target.value }))} placeholder="Banner 图片 URL" />
-                    <input className="rounded-xl border border-border px-4 py-3 bg-background" value={form.avatarUrl} onChange={(e) => setForm((s) => ({ ...s, avatarUrl: e.target.value }))} placeholder="头像图片 URL" />
-                    <input className="rounded-xl border border-border px-4 py-3 bg-background" value={form.shopName} onChange={(e) => setForm((s) => ({ ...s, shopName: e.target.value }))} placeholder="店铺名称" />
-                    <input className="rounded-xl border border-border px-4 py-3 bg-background" value={form.bio} onChange={(e) => setForm((s) => ({ ...s, bio: e.target.value }))} placeholder="店铺简介" />
-                    <input className="rounded-xl border border-border px-4 py-3 bg-background" value={form.announcementTitle} onChange={(e) => setForm((s) => ({ ...s, announcementTitle: e.target.value }))} placeholder="公告标题" />
-                    <textarea className="rounded-xl border border-border px-4 py-3 bg-background min-h-28" value={form.announcementText} onChange={(e) => setForm((s) => ({ ...s, announcementText: e.target.value }))} placeholder="公告内容" />
+                    <input aria-label="店铺 Banner 图片 URL" className="rounded-xl border border-border px-4 py-3 bg-background" value={form.bannerUrl} onChange={(e) => setForm((s) => ({ ...s, bannerUrl: e.target.value }))} placeholder="Banner 图片 URL" />
+                    <input aria-label="店铺头像图片 URL" className="rounded-xl border border-border px-4 py-3 bg-background" value={form.avatarUrl} onChange={(e) => setForm((s) => ({ ...s, avatarUrl: e.target.value }))} placeholder="头像图片 URL" />
+                    <input aria-label="店铺名称" className="rounded-xl border border-border px-4 py-3 bg-background" value={form.shopName} onChange={(e) => setForm((s) => ({ ...s, shopName: e.target.value }))} placeholder="店铺名称" />
+                    <input aria-label="店铺简介" className="rounded-xl border border-border px-4 py-3 bg-background" value={form.bio} onChange={(e) => setForm((s) => ({ ...s, bio: e.target.value }))} placeholder="店铺简介" />
+                    <input aria-label="店铺公告标题" className="rounded-xl border border-border px-4 py-3 bg-background" value={form.announcementTitle} onChange={(e) => setForm((s) => ({ ...s, announcementTitle: e.target.value }))} placeholder="公告标题" />
+                    <textarea aria-label="店铺公告内容" className="rounded-xl border border-border px-4 py-3 bg-background min-h-28" value={form.announcementText} onChange={(e) => setForm((s) => ({ ...s, announcementText: e.target.value }))} placeholder="公告内容" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <button type="button" disabled={savingShopConfig} onClick={saveConfig} className="px-4 py-2 rounded-xl bg-black text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-60"><Save className="w-4 h-4" /> {savingShopConfig ? '保存中...' : '保存店铺配置'}</button>
@@ -306,7 +439,7 @@ export default function MarketplaceShop() {
             <h2 className="text-xl sm:text-2xl font-black">经营面板</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-border"><BarChart3 className="w-3.5 h-3.5" /> 访问 {metrics.visits}</span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-border"><Sparkles className="w-3.5 h-3.5" /> 公告点击 {metrics.announcementClicks}</span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-border"><LampDesk className="w-3.5 h-3.5" /> 公告点击 {metrics.announcementClicks}</span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-border"><ShoppingCart className="w-3.5 h-3.5" /> 精选点击 {metrics.featuredClicks}</span>
             </div>
           </div>
@@ -322,12 +455,17 @@ export default function MarketplaceShop() {
             <div className="flex items-center justify-between gap-3 mb-4"><h3 className="font-black">配置版本历史</h3><span className="text-xs text-muted-foreground">最近 {versions.length} 条</span></div>
             <div className="space-y-3 max-h-[320px] overflow-auto pr-1">
               {versions.length ? versions.map((version) => (
-                <div key={version.id} className={`rounded-2xl border bg-background p-4 flex items-center justify-between gap-3 flex-wrap ${selectedVersion?.id === version.id ? 'border-black' : 'border-border'}`} onClick={() => setSelectedVersion(version)}>
-                  <div>
-                    <div className="text-xs text-muted-foreground">{version.createdAt}</div>
-                    <div className="font-bold mt-1">{version.config.shopName} · {version.config.theme || 'default'}</div>
-                    <div className="text-sm text-muted-foreground mt-1 line-clamp-1">{version.config.announcementText}</div>
-                  </div>
+                <div key={version.id} className={`rounded-2xl border bg-background p-4 flex items-center justify-between gap-3 flex-wrap ${selectedVersion?.id === version.id ? 'border-black' : 'border-border'}`}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVersion(version)}
+                    aria-pressed={selectedVersion?.id === version.id}
+                    className="min-w-0 flex-1 rounded-xl text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black/10"
+                  >
+                    <span className="block text-xs text-muted-foreground">{version.createdAt}</span>
+                    <span className="block font-bold mt-1">{version.config.shopName} · {version.config.theme || 'default'}</span>
+                    <span className="block text-sm text-muted-foreground mt-1 line-clamp-1">{version.config.announcementText}</span>
+                  </button>
                   {editable && <button type="button" disabled={savingShopConfig} onClick={() => restoreVersion(version)} className="px-4 py-2 rounded-xl border border-border text-sm font-bold">回滚此版本</button>}
                 </div>
               )) : <div className="text-sm text-muted-foreground">暂无版本历史</div>}
@@ -358,7 +496,7 @@ export default function MarketplaceShop() {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <h2 className="text-xl sm:text-2xl font-black">精选轮播</h2>
             <div className="flex items-center gap-2">
-              {featured.map((_, index) => <button type="button" key={index} onClick={() => { setActiveFeaturedIndex(index); bumpMetric('featured'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeFeaturedIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
+              {featured.map((_, index) => <button type="button" key={index} aria-label={`查看精选商品 ${index + 1}`} aria-current={index === activeFeaturedIndex ? 'true' : undefined} onClick={() => { setActiveFeaturedIndex(index); bumpMetric('featured'); }} className={`w-2.5 h-2.5 rounded-full transition-all ${index === activeFeaturedIndex ? 'bg-black scale-110' : 'bg-muted-foreground/35'}`} />)}
             </div>
           </div>
           {activeFeatured ? (
@@ -369,7 +507,7 @@ export default function MarketplaceShop() {
                 <div className="absolute left-4 right-4 sm:left-5 sm:right-5 bottom-4 sm:bottom-5 text-white">
                   <div className="text-[10px] sm:text-xs uppercase tracking-[0.35em] font-black opacity-80">精选</div>
                   <div className="text-xl sm:text-2xl font-black mt-2 line-clamp-2">{activeFeatured.title}</div>
-                  <div className="text-xs sm:text-sm mt-2 opacity-85">¥{activeFeatured.price} · 销量 {activeFeatured.sales} · 评分 {activeFeatured.rating}</div>
+                  <div className="text-xs sm:text-sm mt-2 opacity-85">{formatCnyFromFen(activeFeatured.price)} · 销量 {activeFeatured.sales} · 评分 {activeFeatured.rating}</div>
                 </div>
               </div>
             </Link>
@@ -380,9 +518,29 @@ export default function MarketplaceShop() {
 
         <div className="space-y-4">
           <h2 className="text-xl sm:text-2xl font-black">全部商品</h2>
-          <div className="flex items-center justify-between gap-3 flex-wrap"><span className="text-sm text-muted-foreground">按热度、销量、评分切换排序</span><button type="button" onClick={() => setSortBy((current) => current === 'hot' ? 'sales' : current === 'sales' ? 'rating' : 'hot')} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-bold"><ArrowUpDown className="w-4 h-4" />切换排序</button></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {sortedProducts.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-card p-4 hover:border-black transition-all"><div className="text-xs text-muted-foreground uppercase tracking-widest">{item.category}</div><div className="font-bold mt-2 line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2 flex items-center gap-2 flex-wrap"><span>¥{item.price}</span><span>· 销量 {item.sales}</span><span>· 评分 {item.rating}</span></div></Link>)}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <span className="inline-flex items-center gap-2 text-sm text-muted-foreground"><ArrowUpDown className="w-4 h-4" />选择商品排序方式</span>
+            <div role="group" aria-label="商品排序" className="flex items-center gap-1 rounded-xl border border-border bg-muted/30 p-1">
+              {sortOptions.map((option) => (
+                <button
+                  type="button"
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  aria-pressed={sortBy === option.value}
+                  className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${sortBy === option.value ? 'bg-black text-white' : 'text-muted-foreground hover:bg-white hover:text-black'}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-busy={productsLoading}>
+            {!productsLoading && !productsError && sortedProducts.length === 0 ? (
+              <div role="status" className="sm:col-span-2 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                {creatorId ? '该店铺暂时没有公开商品。' : '市场暂时没有可展示的公开商品。'}
+              </div>
+            ) : null}
+            {sortedProducts.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-card p-4 hover:border-black transition-all"><div className="text-xs text-muted-foreground uppercase tracking-widest">{item.category}</div><div className="font-bold mt-2 line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2 flex items-center gap-2 flex-wrap"><span>{formatCnyFromFen(item.price)}</span><span>· 销量 {item.sales}</span><span>· 评分 {item.rating}</span></div></Link>)}
           </div>
         </div>
       </section>
@@ -393,7 +551,7 @@ export default function MarketplaceShop() {
           <div className="text-xs sm:text-sm text-muted-foreground inline-flex items-center gap-2"><Clock3 className="w-4 h-4" /> 最近更新 {metrics.updatedAt}</div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {featured.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-background p-4 hover:border-black transition-all" onClick={() => bumpMetric('featured')}><div className="font-bold line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2">¥{item.price} · 销量 {item.sales} · 评分 {item.rating}</div></Link>)}
+          {featured.map((item) => <Link key={item.id} to={`/marketplace/${item.id}`} className="rounded-2xl border border-border bg-background p-4 hover:border-black transition-all" onClick={() => bumpMetric('featured')}><div className="font-bold line-clamp-1">{item.title}</div><div className="text-sm text-muted-foreground mt-2">{formatCnyFromFen(item.price)} · 销量 {item.sales} · 评分 {item.rating}</div></Link>)}
         </div>
       </div>
       </div>

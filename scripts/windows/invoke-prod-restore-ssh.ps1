@@ -1,5 +1,5 @@
 param(
-    [string]$HostName = $(if ($env:QF_SSH_HOST) { $env:QF_SSH_HOST } else { "103.236.92.10" }),
+    [string]$HostName = $(if ($env:QF_SSH_HOST) { $env:QF_SSH_HOST } else { "121.196.161.249" }),
     [int]$Port = $(if ($env:QF_SSH_PORT) { [int]$env:QF_SSH_PORT } else { 22 }),
     [string]$User = $(if ($env:QF_SSH_USER) { $env:QF_SSH_USER } else { "root" }),
     [string]$IdentityFile = $env:QF_SSH_IDENTITY,

@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
 import { isImageUrlSafe } from '@/utils/urlValidator';
-import StatusWrapper from '@/components/StatusWrapper';
+import StatusWrapper from '@/components/ui/StatusWrapper';
 import { Link } from 'react-router-dom';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
+import { Trash2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { formatListingPlanLabel, getListingStatus, getServerPlayersMax, getServerPlayersOnline, getServerThumbnail, getServerVersionLabel } from '@/utils/serverView';
 
 import { useT } from '@/store/uiStore';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const getReviewTone = (status?: string) => {
   const normalized = String(status || '').toUpperCase();
@@ -34,16 +37,70 @@ const getReviewTone = (status?: string) => {
 
 const MyServers: React.FC = () => {
   const t = useT();
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
   const { data: servers = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['my-servers'],
     queryFn: async () => {
-      const response = await api.get<{ data?: any[]; meta?: Record<string, unknown> } | any[]>('/servers');
-      return Array.isArray(response) ? response : Array.isArray((response as any)?.data) ? (response as any).data : [];
+      const useRustV2 = isRustV2Enabled();
+      const response = await api.get<{ data?: any[]; meta?: Record<string, unknown> } | any[]>(
+        useRustV2 ? rustV2Path('/servers/mine') : '/servers',
+        undefined,
+        useRustV2 ? rustV2RequestOptions : undefined,
+      );
+      const payload = response as { data?: unknown };
+      return Array.isArray(response) ? response : Array.isArray(payload.data) ? payload.data : [];
     },
   });
 
+  const removeServer = async (serverId: string | number) => {
+    if (!window.confirm('确定删除这台服务器？删除后公开页面和关联域名解析都会移除。')) return;
+    setDeletingId(serverId);
+    try {
+      const useRustV2 = isRustV2Enabled();
+      await api.delete(
+        useRustV2 ? rustV2Path(`/servers/${serverId}`) : `/servers/${serverId}`,
+        useRustV2 ? rustV2RequestOptions : undefined,
+      );
+      await refetch();
+      toast({ title: '服务器已删除', description: '关联的免费域名解析已进入清理队列。' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: '删除失败', description: error instanceof Error ? error.message : '请稍后重试。' });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const emptyAction = (
+    <div className="w-full max-w-3xl space-y-7">
+      <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+        {[
+          ['准备资料', '名称、地址、版本、玩法、简介与展示图片。'],
+          ['提交审核', '平台检查内容真实性、安全性和合规情况。'],
+          ['公开展示', '审核通过后长期进入服务器列表，推广套餐只影响推荐权重。'],
+        ].map(([title, text], index) => (
+          <div key={title} className="rounded-2xl border border-zinc-200 bg-white p-4">
+            <div className="text-xs font-bold tabular-nums text-zinc-400">0{index + 1}</div>
+            <div className="mt-3 text-sm font-bold text-zinc-900">{title}</div>
+            <p className="mt-1 text-xs font-medium leading-5 text-zinc-500">{text}</p>
+          </div>
+        ))}
+      </div>
+      <Link to="/editor" className="inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+        <GeometricLantern variant="spark" className="h-4 w-4" /> 发布第一台服务器
+      </Link>
+    </div>
+  );
+
   return (
-    <StatusWrapper isLoading={isLoading} isError={isError} isEmpty={!isLoading && !isError && servers?.length === 0} onRetry={() => refetch()}>
+    <StatusWrapper
+      isLoading={isLoading}
+      isError={isError}
+      isEmpty={!isLoading && !isError && servers?.length === 0}
+      onRetry={() => refetch()}
+      emptyTitle="还没有发布服务器"
+      emptyDescription="准备真实服务器资料并提交审核，通过后会进入公开列表。"
+      emptyAction={emptyAction}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 bg-white space-y-8 sm:space-y-10">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-5 sm:gap-8">
           <div className="space-y-2">
@@ -75,7 +132,7 @@ const MyServers: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full min-w-0">
                   <div className="w-full sm:w-40 lg:w-44 h-28 sm:h-24 lg:h-28 rounded-[1.5rem] overflow-hidden flex items-center justify-center border border-zinc-100 shrink-0 bg-zinc-50 relative">
                      {thumbnail ? (
-                       <img src={isImageUrlSafe(thumbnail) ? thumbnail : ''} className="w-full h-full object-cover" />
+                       <img src={isImageUrlSafe(thumbnail) ? thumbnail : ''} alt={`${server.name || '服务器'} 展示图`} width={176} height={112} className="w-full h-full object-cover" />
                      ) : (
                        <GeometricLantern variant="network" className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-300" />
                      )}
@@ -95,7 +152,7 @@ const MyServers: React.FC = () => {
                               : t('dash.servers.status.rejected')}
                         </span>
                         <span className="text-zinc-300 font-mono tracking-[0.28em]">NODE_ADDR: {server.id}</span>
-                        {server.ip ? <span className="text-zinc-300 font-mono tracking-[0.2em]">HOST: {server.ip}</span> : null}
+                        {server.ip || server.host ? <span className="text-zinc-300 font-mono tracking-[0.2em]">HOST: {server.ip || server.host}</span> : null}
                         <span className="text-zinc-300 font-mono tracking-[0.2em]">PLAN: {listingPlan}</span>
                       </div>
                       {reviewNotes ? (
@@ -114,7 +171,7 @@ const MyServers: React.FC = () => {
                        <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50 p-4">
                           <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-400" />
                           <div className="flex flex-col min-w-0">
-                             <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">有效期</span>
+                           <span className="text-[10px] font-black text-zinc-400 uppercase leading-none tracking-widest">推广状态</span>
                              <span className={`text-sm font-semibold mt-1 ${listingStatus.expired ? 'text-red-500' : 'text-zinc-900'}`}>{listingStatus.label}</span>
                           </div>
                        </div>
@@ -135,12 +192,18 @@ const MyServers: React.FC = () => {
                     className="flex-1 lg:flex-none px-5 sm:px-6 py-4 rounded-2xl bg-black text-white flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
                   >
                     <span className="text-[11px] font-semibold uppercase tracking-[0.28em]">{t('common.edit')}</span>
-                    <GeometricLantern variant="settings" className="w-5 h-5" />
-                  </Link>
-                  <button type="button" className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border border-zinc-100 bg-zinc-50 flex items-center justify-center transition-all hover:bg-red-500 hover:text-white active:scale-[0.98]">
-                    <GeometricLantern variant="alert" className="w-5 h-5" />
-                  </button>
-                </div>
+                     <GeometricLantern variant="settings" className="w-5 h-5" />
+                   </Link>
+                   <button
+                     type="button"
+                     onClick={() => void removeServer(server.id)}
+                     disabled={deletingId === server.id}
+                     aria-label={`删除服务器 ${server.name || server.id}`}
+                     className="inline-flex min-h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-red-100 text-red-500 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-wait disabled:opacity-50"
+                   >
+                     <Trash2 className="h-5 w-5" aria-hidden="true" />
+                   </button>
+                 </div>
               </div>
                 );
               })()}

@@ -1,0 +1,205 @@
+import type { PrismaClient } from '../../prisma/generated/client/index.js';
+export interface MarketplaceMutationContext {
+    actorUserId: number;
+    method: string;
+    endpoint: string;
+    ipAddress?: string | null;
+    userAgent?: string | null;
+}
+export interface FulfillMarketplaceOrderInput extends MarketplaceMutationContext {
+    orderId: string;
+    sellerId: number;
+}
+export interface OpenMarketplaceDisputeInput extends MarketplaceMutationContext {
+    orderId: string;
+    buyerId: number;
+    reason: string;
+    description: string;
+}
+export interface ResolveMarketplaceDisputeInput extends MarketplaceMutationContext {
+    orderId: string;
+    status: 'RESOLVED' | 'REJECTED';
+    resolution: string;
+}
+export declare const fulfillMarketplaceOrder: (db: PrismaClient, input: FulfillMarketplaceOrderInput) => Promise<{
+    order: {
+        product: {
+            currency: string;
+            rating: number;
+            id: string;
+            created_at: Date;
+            updated_at: Date;
+            description: string;
+            title: string;
+            category: string;
+            price: number;
+            sales: number;
+            review_count: number;
+            is_published: boolean;
+            listing_status: string;
+            moderation_notes: string | null;
+            author_name: string;
+            cover_url: string | null;
+            download_url: string | null;
+            tax_included: boolean;
+            additional_fees: number;
+            validity_text: string;
+            delivery_method: string;
+            delivery_eta: string;
+            compatibility: string;
+            is_platform_operated: boolean;
+            seller_identity: string;
+            after_sales_contact: string;
+            refund_terms: string;
+            ip_source: string;
+            prohibited_use: string;
+            risk_notice: string;
+            product_version: string;
+            file_sha256: string | null;
+            asset_size: number | null;
+            asset_mime: string | null;
+            creator_id: number | null;
+        };
+    } & {
+        status: string;
+        id: string;
+        created_at: Date;
+        updated_at: Date;
+        payment_id: string | null;
+        product_id: string;
+        buyer_id: number | null;
+        buyer_name: string;
+        quantity: number;
+        total_price: number;
+        payment_status: string;
+        fulfillment_status: string;
+        dispute_status: string;
+        dispute_reason: string | null;
+        dispute_description: string | null;
+        dispute_resolution: string | null;
+        dispute_opened_at: Date | null;
+        dispute_resolved_at: Date | null;
+        delivery_url: string | null;
+    };
+    deliveryUrl: string | null;
+    replayed: boolean;
+}>;
+export declare const openMarketplaceDispute: (db: PrismaClient, input: OpenMarketplaceDisputeInput) => Promise<{
+    product: {
+        currency: string;
+        rating: number;
+        id: string;
+        created_at: Date;
+        updated_at: Date;
+        description: string;
+        title: string;
+        category: string;
+        price: number;
+        sales: number;
+        review_count: number;
+        is_published: boolean;
+        listing_status: string;
+        moderation_notes: string | null;
+        author_name: string;
+        cover_url: string | null;
+        download_url: string | null;
+        tax_included: boolean;
+        additional_fees: number;
+        validity_text: string;
+        delivery_method: string;
+        delivery_eta: string;
+        compatibility: string;
+        is_platform_operated: boolean;
+        seller_identity: string;
+        after_sales_contact: string;
+        refund_terms: string;
+        ip_source: string;
+        prohibited_use: string;
+        risk_notice: string;
+        product_version: string;
+        file_sha256: string | null;
+        asset_size: number | null;
+        asset_mime: string | null;
+        creator_id: number | null;
+    };
+} & {
+    status: string;
+    id: string;
+    created_at: Date;
+    updated_at: Date;
+    payment_id: string | null;
+    product_id: string;
+    buyer_id: number | null;
+    buyer_name: string;
+    quantity: number;
+    total_price: number;
+    payment_status: string;
+    fulfillment_status: string;
+    dispute_status: string;
+    dispute_reason: string | null;
+    dispute_description: string | null;
+    dispute_resolution: string | null;
+    dispute_opened_at: Date | null;
+    dispute_resolved_at: Date | null;
+    delivery_url: string | null;
+}>;
+export declare const resolveMarketplaceDispute: (db: PrismaClient, input: ResolveMarketplaceDisputeInput) => Promise<{
+    product: {
+        currency: string;
+        rating: number;
+        id: string;
+        created_at: Date;
+        updated_at: Date;
+        description: string;
+        title: string;
+        category: string;
+        price: number;
+        sales: number;
+        review_count: number;
+        is_published: boolean;
+        listing_status: string;
+        moderation_notes: string | null;
+        author_name: string;
+        cover_url: string | null;
+        download_url: string | null;
+        tax_included: boolean;
+        additional_fees: number;
+        validity_text: string;
+        delivery_method: string;
+        delivery_eta: string;
+        compatibility: string;
+        is_platform_operated: boolean;
+        seller_identity: string;
+        after_sales_contact: string;
+        refund_terms: string;
+        ip_source: string;
+        prohibited_use: string;
+        risk_notice: string;
+        product_version: string;
+        file_sha256: string | null;
+        asset_size: number | null;
+        asset_mime: string | null;
+        creator_id: number | null;
+    };
+} & {
+    status: string;
+    id: string;
+    created_at: Date;
+    updated_at: Date;
+    payment_id: string | null;
+    product_id: string;
+    buyer_id: number | null;
+    buyer_name: string;
+    quantity: number;
+    total_price: number;
+    payment_status: string;
+    fulfillment_status: string;
+    dispute_status: string;
+    dispute_reason: string | null;
+    dispute_description: string | null;
+    dispute_resolution: string | null;
+    dispute_opened_at: Date | null;
+    dispute_resolved_at: Date | null;
+    delivery_url: string | null;
+}>;
+//# sourceMappingURL=marketplaceOrderLifecycleService.d.ts.map

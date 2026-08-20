@@ -1,10 +1,11 @@
+import { safeJsonParse } from '@/utils/json';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, Mail, RefreshCw, Save, Send, Trash2 } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
 import { toast } from '@/hooks/use-toast';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import StatusWrapper from '@/components/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import StatusWrapper from '@/components/ui/StatusWrapper';
 
 type BroadcastMode = 'product' | 'maintenance' | 'custom';
 
@@ -16,18 +17,26 @@ type MailAdminConfig = {
   smtpAllowInvalidCert: boolean;
   smtpUser: string;
   smtpPass: string;
+  fromName: string;
   emailFrom: string;
+  replyTo: string;
+  imapHost: string;
+  imapPort: number;
+  imapSecure: boolean;
+  imapAllowInvalidCert: boolean;
+  imapUser: string;
+  imapPass: string;
+  inboxProtocol: 'IMAP' | 'POP3';
   contactEmail: string;
   contactPhone: string;
   emailBaseUrl: string;
   clearSmtpPass?: boolean;
+  clearImapPass?: boolean;
 };
 
 type MailConfigPayload = {
   config: MailAdminConfig;
-  maskedSecrets: {
-    smtpPass?: string;
-  };
+  maskedSecrets: Partial<Record<'smtpPass' | 'imapPass', string>>;
   effective: {
     source: string;
     configured: boolean;
@@ -43,6 +52,13 @@ type MailConfigPayload = {
       hasSecret: boolean;
     };
   };
+};
+
+type MailAccountSummary = {
+  id: string;
+  name: string;
+  primary: boolean;
+  config: MailAdminConfig;
 };
 
 type MailTemplateRecord = {
@@ -103,6 +119,94 @@ type MailLibraryPayload = {
   schedules: MailScheduleRecord[];
 };
 
+type InboxMessage = {
+  id: string;
+  uid: number;
+  subject: string;
+  from: Array<{ name: string; address: string }>;
+  date: string;
+  unread: boolean;
+  preview: string;
+  text: string;
+  html: string;
+};
+
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function normalizeRecipients(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+// These helpers stay exported for focused response-boundary tests in tests/unit.
+// eslint-disable-next-line react-refresh/only-export-components
+export function normalizeMailLibraryPayload(value: unknown): MailLibraryPayload {
+  const source = isRecord(value) ? value : {};
+  const templates = Array.isArray(source.templates) ? source.templates.filter(isRecord) : [];
+  const recipientGroups = Array.isArray(source.recipientGroups)
+    ? source.recipientGroups.filter(isRecord).map((group) => ({
+      ...group,
+      recipients: normalizeRecipients(group.recipients),
+    }))
+    : [];
+  const history = Array.isArray(source.history)
+    ? source.history.filter((item): item is UnknownRecord => isRecord(item) && typeof item.createdAt === 'string')
+    : [];
+  const schedules = Array.isArray(source.schedules)
+    ? source.schedules.filter(isRecord).map((schedule) => ({
+      ...schedule,
+      recipients: normalizeRecipients(schedule.recipients),
+      recipientGroupKeys: normalizeRecipients(schedule.recipientGroupKeys),
+    }))
+    : [];
+
+  return {
+    templates: templates as MailTemplateRecord[],
+    recipientGroups: recipientGroups as MailRecipientGroupRecord[],
+    history: history as MailHistoryRecord[],
+    schedules: schedules as MailScheduleRecord[],
+  };
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function normalizeInboxMessage(value: unknown): InboxMessage | null {
+  if (!isRecord(value)) return null;
+
+  return {
+    id: typeof value.id === 'string' ? value.id : String(value.id ?? ''),
+    uid: typeof value.uid === 'number' ? value.uid : Number(value.uid ?? 0),
+    subject: typeof value.subject === 'string' ? value.subject : '',
+    from: Array.isArray(value.from)
+      ? value.from.filter(isRecord).map((sender) => ({
+        name: typeof sender.name === 'string' ? sender.name : '',
+        address: typeof sender.address === 'string' ? sender.address : '',
+      }))
+      : [],
+    date: typeof value.date === 'string' ? value.date : '',
+    unread: value.unread === true,
+    preview: typeof value.preview === 'string' ? value.preview : '',
+    text: typeof value.text === 'string' ? value.text : '',
+    html: typeof value.html === 'string' ? value.html : '',
+  };
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function normalizeInboxResponse(value: unknown): { messages: InboxMessage[]; page: number; total: number } {
+  const source = isRecord(value) ? value : {};
+  const messages = Array.isArray(source.messages)
+    ? source.messages.map(normalizeInboxMessage).filter((item): item is InboxMessage => item !== null)
+    : [];
+
+  return {
+    messages,
+    page: typeof source.page === 'number' ? source.page : 1,
+    total: typeof source.total === 'number' ? source.total : messages.length,
+  };
+}
+
 const EMPTY_CONFIG: MailAdminConfig = {
   enabled: false,
   smtpHost: '',
@@ -111,11 +215,21 @@ const EMPTY_CONFIG: MailAdminConfig = {
   smtpAllowInvalidCert: false,
   smtpUser: '',
   smtpPass: '',
+  fromName: '',
   emailFrom: '',
+  replyTo: '',
+  imapHost: '',
+  imapPort: 993,
+  imapSecure: true,
+  imapAllowInvalidCert: false,
+  imapUser: '',
+  imapPass: '',
+  inboxProtocol: 'IMAP',
   contactEmail: '',
   contactPhone: '',
   emailBaseUrl: '',
   clearSmtpPass: false,
+  clearImapPass: false,
 };
 
 const EMPTY_TEMPLATE: MailTemplateRecord = {
@@ -167,6 +281,14 @@ function parseRecipientText(text: string): string[] {
   return Array.from(new Set(text.split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean)));
 }
 
+const mailMutationError = (action: string) => (error: unknown) => {
+  toast({
+    variant: 'destructive',
+    title: `${action}失败`,
+    description: error instanceof Error ? error.message : '请检查配置和网络后重试。',
+  });
+};
+
 function formatTimestamp(value?: string) {
   if (!value) return 'never';
   const date = new Date(value);
@@ -198,7 +320,7 @@ const AdminMailConfig: React.FC = () => {
   const [broadcastSubject, setBroadcastSubject] = useState('新产品发布通知');
   const [broadcastMessage, setBroadcastMessage] = useState('你好，我们刚刚上线了新的产品能力与服务方案，欢迎回访体验。');
   const [broadcastCtaLabel, setBroadcastCtaLabel] = useState('立即查看');
-  const [broadcastCtaLink, setBroadcastCtaLink] = useState('http://mc-u.top');
+  const [broadcastCtaLink, setBroadcastCtaLink] = useState((import.meta.env.VITE_APP_URL || 'https://mc-u.top'));
   const [selectedGroupKey, setSelectedGroupKey] = useState('');
 
   const [templateDraft, setTemplateDraft] = useState<MailTemplateRecord>(EMPTY_TEMPLATE);
@@ -207,6 +329,13 @@ const AdminMailConfig: React.FC = () => {
   const [scheduleDraft, setScheduleDraft] = useState<MailScheduleRecord>(EMPTY_SCHEDULE);
   const [scheduleRecipientsText, setScheduleRecipientsText] = useState('');
   const [libraryImportText, setLibraryImportText] = useState('');
+  const [composeTo, setComposeTo] = useState('');
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeHtml, setComposeHtml] = useState('<p>您好，</p><p>这里填写邮件内容。</p>');
+  const [selectedInboxUid, setSelectedInboxUid] = useState<number | null>(null);
+  const [replyHtml, setReplyHtml] = useState('<p>您好，</p><p>感谢您的来信。</p>');
+  const [accountId, setAccountId] = useState('');
+  const [accountName, setAccountName] = useState('');
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-mail-config'],
@@ -215,7 +344,12 @@ const AdminMailConfig: React.FC = () => {
 
   const libraryQuery = useQuery({
     queryKey: ['admin-mail-library'],
-    queryFn: () => api.get<MailLibraryPayload>('/admin/mail-config/library'),
+    queryFn: async () => normalizeMailLibraryPayload(await api.get<unknown>('/admin/mail-config/library')),
+  });
+
+  const accountsQuery = useQuery({
+    queryKey: ['admin-mail-accounts'],
+    queryFn: () => api.get<MailAccountSummary[]>('/admin/mail-config/accounts'),
   });
 
   useEffect(() => {
@@ -224,6 +358,7 @@ const AdminMailConfig: React.FC = () => {
       ...EMPTY_CONFIG,
       ...data.config,
       clearSmtpPass: false,
+      clearImapPass: false,
     });
   }, [data]);
 
@@ -244,18 +379,66 @@ const AdminMailConfig: React.FC = () => {
       api.put<MailConfigPayload>('/admin/mail-config', {
         ...draft,
         smtpPort: Number(draft.smtpPort || 25),
+        imapPort: Number(draft.imapPort || 993),
         clearSmtpPass: Boolean(draft.clearSmtpPass),
+        clearImapPass: Boolean(draft.clearImapPass),
       }),
     onSuccess: async (payload) => {
       setDraft((current) => ({
         ...current,
         ...payload.config,
         smtpPass: '',
+        imapPass: '',
         clearSmtpPass: false,
+        clearImapPass: false,
       }));
       await refetch();
       toast({ title: '邮件配置已保存', description: '新的 SMTP / 发信配置已写入系统配置。' });
     },
+    onError: mailMutationError('保存邮件配置'),
+  });
+
+  const saveAccountMutation = useMutation({
+    mutationFn: () => api.put('/admin/mail-config/accounts/' + encodeURIComponent(accountId.trim()), { id: accountId.trim(), name: accountName.trim(), config: draft }),
+    onSuccess: async () => { await accountsQuery.refetch(); toast({ title: '邮箱账号已保存', description: '账号配置已加密保存。' }); },
+    onError: mailMutationError('保存邮箱账号'),
+  });
+
+  const primaryAccountMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/admin/mail-config/accounts/${encodeURIComponent(id)}/primary`),
+    onSuccess: async () => { await accountsQuery.refetch(); toast({ title: '主要邮箱已切换', description: '发信运行时将使用新的主要邮箱。' }); },
+    onError: mailMutationError('切换主要邮箱'),
+  });
+
+  const inboxQuery = useQuery({
+    queryKey: ['admin-mail-inbox'],
+    queryFn: async () => normalizeInboxResponse(await api.get<unknown>('/admin/mail-config/inbox')),
+    retry: false,
+  });
+
+  const inboxMessageQuery = useQuery({
+    queryKey: ['admin-mail-inbox-message', selectedInboxUid],
+    queryFn: async () => normalizeInboxMessage(await api.get<unknown>(`/admin/mail-config/inbox/${selectedInboxUid}`)),
+    enabled: selectedInboxUid !== null,
+    retry: false,
+  });
+
+  const composeMutation = useMutation({
+    mutationFn: () => api.post('/admin/mail-config/compose', {
+      to: parseRecipientText(composeTo),
+      subject: composeSubject,
+      html: composeHtml,
+      fromName: draft.fromName || undefined,
+      replyTo: draft.replyTo || undefined,
+    }),
+    onSuccess: () => toast({ title: '邮件已提交', description: '邮件已交给服务器发送。' }),
+    onError: mailMutationError('发送 HTML 邮件'),
+  });
+
+  const replyMutation = useMutation({
+    mutationFn: () => api.post(`/admin/mail-config/inbox/${selectedInboxUid}/reply`, { html: replyHtml, fromName: draft.fromName || undefined }),
+    onSuccess: () => toast({ title: '回复已发送', description: '回复已按原邮件线程发送。' }),
+    onError: mailMutationError('回复邮件'),
   });
 
   const testMutation = useMutation({
@@ -264,6 +447,7 @@ const AdminMailConfig: React.FC = () => {
       libraryQuery.refetch();
       toast({ title: '测试邮件已发送', description: `请检查 ${testTo} 的收件箱或垃圾箱。` });
     },
+    onError: mailMutationError('发送测试邮件'),
   });
 
   const broadcastMutation = useMutation({
@@ -280,6 +464,7 @@ const AdminMailConfig: React.FC = () => {
       libraryQuery.refetch();
       toast({ title: '批量邮件已提交', description: `本次已向 ${broadcastRecipientsList.length} 个收件人发起投递。` });
     },
+    onError: mailMutationError('发送群发邮件'),
   });
 
   const saveTemplateMutation = useMutation({
@@ -288,6 +473,7 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '模板已保存', description: `模板 ${templateDraft.name || templateDraft.key} 已写入模板库。` });
     },
+    onError: mailMutationError('保存邮件模板'),
   });
 
   const deleteTemplateMutation = useMutation({
@@ -297,6 +483,7 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '模板已删除', description: '所选邮件模板已移除。' });
     },
+    onError: mailMutationError('删除邮件模板'),
   });
 
   const saveGroupMutation = useMutation({
@@ -309,6 +496,7 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '收件组已保存', description: `收件组 ${groupDraft.name || groupDraft.key} 已更新。` });
     },
+    onError: mailMutationError('保存收件组'),
   });
 
   const deleteGroupMutation = useMutation({
@@ -319,6 +507,7 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '收件组已删除', description: '所选收件组已移除。' });
     },
+    onError: mailMutationError('删除收件组'),
   });
 
   const saveScheduleMutation = useMutation({
@@ -331,6 +520,7 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '定时任务已保存', description: `定时任务 ${scheduleDraft.name || scheduleDraft.key} 已更新。` });
     },
+    onError: mailMutationError('保存定时任务'),
   });
 
   const deleteScheduleMutation = useMutation({
@@ -341,14 +531,16 @@ const AdminMailConfig: React.FC = () => {
       await libraryQuery.refetch();
       toast({ title: '定时任务已删除', description: '所选邮件定时任务已移除。' });
     },
+    onError: mailMutationError('删除定时任务'),
   });
 
   const importLibraryMutation = useMutation({
-    mutationFn: () => api.post('/admin/mail-config/import', JSON.parse(libraryImportText)),
+    mutationFn: () => api.post('/admin/mail-config/import', safeJsonParse(libraryImportText, {})),
     onSuccess: async () => {
       await libraryQuery.refetch();
       toast({ title: '库内容已导入', description: '模板、收件组与定时任务已写入系统配置。' });
     },
+    onError: mailMutationError('导入邮件模板库'),
   });
 
   const applyBroadcastPreset = (mode: BroadcastMode) => {
@@ -357,14 +549,14 @@ const AdminMailConfig: React.FC = () => {
       setBroadcastSubject('新产品发布通知');
       setBroadcastMessage('你好，我们刚刚上线了新的产品能力与服务方案，欢迎回访体验。');
       setBroadcastCtaLabel('立即查看');
-      setBroadcastCtaLink('http://mc-u.top');
+      setBroadcastCtaLink((import.meta.env.VITE_APP_URL || 'https://mc-u.top'));
       return;
     }
     if (mode === 'maintenance') {
       setBroadcastSubject('[重要] 系统维护通知');
       setBroadcastMessage('系统将在今晚 10 点进行维护，预计持续 2 小时。维护期间部分功能可能不可用，请提前做好安排。');
       setBroadcastCtaLabel('查看公告');
-      setBroadcastCtaLink('http://mc-u.top');
+      setBroadcastCtaLink((import.meta.env.VITE_APP_URL || 'https://mc-u.top'));
       return;
     }
     setBroadcastSubject('系统通知');
@@ -445,35 +637,36 @@ const AdminMailConfig: React.FC = () => {
   }, [libraryQuery.data]);
 
   const renderInput = (field: keyof MailAdminConfig, placeholder?: string, options?: { numeric?: boolean }) => {
-    if (field === 'smtpPass') {
+    if (field === 'smtpPass' || field === 'imapPass') {
       return (
         <div className="space-y-2">
           <div className="relative">
             <input
               type={revealed ? 'text' : 'password'}
-              value={draft.smtpPass || ''}
+              aria-label={placeholder || String(field)}
+              value={draft[field] || ''}
               onChange={(event) => {
-                updateDraft('smtpPass', event.target.value);
-                if (event.target.value) updateDraft('clearSmtpPass', false);
+                updateDraft(field, event.target.value);
+                if (event.target.value) updateDraft(field === 'smtpPass' ? 'clearSmtpPass' : 'clearImapPass', false);
               }}
               placeholder={placeholder}
               className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 pr-14 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white"
             />
-            <button type="button" onClick={() => setRevealed((value) => !value)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-accent">
+            <button type="button" onClick={() => setRevealed((value) => !value)} aria-label={revealed ? '隐藏邮箱密码' : '显示邮箱密码'} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-accent">
               {revealed ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {data?.maskedSecrets?.smtpPass && !draft.smtpPass ? (
+          {data?.maskedSecrets?.[field] && !draft[field] ? (
             <div className="flex items-center justify-between gap-3 rounded-[1.4rem] border border-zinc-100 bg-zinc-50 px-4 py-3">
               <div className="text-xs font-bold text-zinc-500">
-                当前已存密码：<span className="font-mono text-zinc-700">{data.maskedSecrets.smtpPass}</span>
+                当前已存密码：<span className="font-mono text-zinc-700">{data.maskedSecrets[field]}</span>
               </div>
               <button
                 type="button"
-                onClick={() => updateDraft('clearSmtpPass', !draft.clearSmtpPass)}
-                className={`rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-[0.24em] transition-all ${draft.clearSmtpPass ? 'bg-red-500 text-white' : 'bg-white text-zinc-500 border border-zinc-200'}`}
+                onClick={() => updateDraft(field === 'smtpPass' ? 'clearSmtpPass' : 'clearImapPass', !(field === 'smtpPass' ? draft.clearSmtpPass : draft.clearImapPass))}
+                className={`rounded-full px-3 py-2 text-[10px] font-black uppercase tracking-[0.24em] transition-all ${(field === 'smtpPass' ? draft.clearSmtpPass : draft.clearImapPass) ? 'bg-red-500 text-white' : 'bg-white text-zinc-500 border border-zinc-200'}`}
               >
-                {draft.clearSmtpPass ? 'Will Clear' : 'Clear Stored'}
+                {(field === 'smtpPass' ? draft.clearSmtpPass : draft.clearImapPass) ? 'Will Clear' : 'Clear Stored'}
               </button>
             </div>
           ) : null}
@@ -484,6 +677,7 @@ const AdminMailConfig: React.FC = () => {
     return (
       <input
         type={options?.numeric ? 'number' : 'text'}
+        aria-label={placeholder || String(field)}
         value={(draft[field] as string | number | undefined) ?? ''}
         onChange={(event) =>
           updateDraft(field, (options?.numeric ? Number(event.target.value || 0) : event.target.value) as MailAdminConfig[keyof MailAdminConfig])
@@ -496,7 +690,7 @@ const AdminMailConfig: React.FC = () => {
 
   return (
     <div className="space-y-16 pb-24 bg-white">
-      <StatusWrapper isLoading={isLoading} isError={isError} onRetry={() => { refetch(); libraryQuery.refetch(); }}>
+      <StatusWrapper isLoading={isLoading} isError={isError || libraryQuery.isError} onRetry={() => { refetch(); libraryQuery.refetch(); }}>
         <AdminPageHeader
           badge="邮件配置 / 验证码与通知"
           title="邮件配置"
@@ -514,6 +708,14 @@ const AdminMailConfig: React.FC = () => {
             </div>
           )}
         />
+
+        <section className={cardClassName}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div><div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic">邮箱账号</div><h2 className="mt-2 text-2xl font-black">多邮箱与主要邮箱</h2><p className="mt-2 text-sm text-zinc-400">保留原配置，也可以新增 GMX 或其他服务商。密码只在服务器加密保存。</p></div>
+            <div className="flex gap-3"><input value={accountId} onChange={(event) => setAccountId(event.target.value)} placeholder="账号 ID，例如 gmx" className="rounded-2xl border border-zinc-200 px-4 py-3 text-sm" /><input value={accountName} onChange={(event) => setAccountName(event.target.value)} placeholder="显示名称" className="rounded-2xl border border-zinc-200 px-4 py-3 text-sm" /><button type="button" onClick={() => saveAccountMutation.mutate()} disabled={saveAccountMutation.isPending || !accountId.trim() || !accountName.trim()} className="rounded-2xl bg-black px-5 py-3 text-xs font-black text-white disabled:opacity-50">保存账号</button></div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">{accountsQuery.data?.map((account) => <div key={account.id} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-zinc-50/70 px-5 py-4"><div><div className="font-black text-zinc-900">{account.name}</div><div className="mt-1 text-xs text-zinc-400">{account.id} · {account.config.emailFrom || account.config.smtpUser || '未填写发件地址'}</div></div><button type="button" onClick={() => primaryAccountMutation.mutate(account.id)} disabled={account.primary || primaryAccountMutation.isPending} className={`rounded-xl px-4 py-2 text-xs font-black ${account.primary ? 'bg-emerald-100 text-emerald-700' : 'border border-zinc-200 text-zinc-600'}`}>{account.primary ? '主要邮箱' : '设为主要'}</button></div>)}</div>
+        </section>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
           {[
@@ -611,14 +813,23 @@ const AdminMailConfig: React.FC = () => {
                 </button>
               </FieldRow>
 
-              <FieldRow label="smtp host" description="当前正式链路使用 mail.0st.top。">{renderInput('smtpHost', 'mail.0st.top')}</FieldRow>
+              <FieldRow label="smtp host" description="SMTP 服务器地址。">{renderInput('smtpHost', 'smtp.example.com')}</FieldRow>
               <FieldRow label="smtp port" description="推荐 587 STARTTLS 或 465 SSL。">{renderInput('smtpPort', '587', { numeric: true })}</FieldRow>
-              <FieldRow label="smtp user" description="外部 SMTP 登录账号。">{renderInput('smtpUser', 'testuser@0st.top')}</FieldRow>
-              <FieldRow label="smtp password" description="留空将保留已存密码。">{renderInput('smtpPass', 'smtp password / app password')}</FieldRow>
-              <FieldRow label="email from" description="系统验证码、通知邮件的发件人。">{renderInput('emailFrom', 'testuser@0st.top')}</FieldRow>
-              <FieldRow label="contact email" description="邮件模板页脚中的联系邮箱。">{renderInput('contactEmail', 'support@0st.top')}</FieldRow>
-              <FieldRow label="contact phone" description="可选，展示在邮件页脚。">{renderInput('contactPhone', '+86 400-100-8888')}</FieldRow>
-              <FieldRow label="email base url" description="验证码/重置密码邮件里的跳转基地址。">{renderInput('emailBaseUrl', 'http://mc-u.top')}</FieldRow>
+              <FieldRow label="smtp user" description="外部 SMTP 登录账号。">{renderInput('smtpUser', 'user@example.com')}</FieldRow>
+              <FieldRow label="smtp password" description="留空将保留已存密码。">{renderInput('smtpPass', 'smtp password')}</FieldRow>
+              <FieldRow label="from name" description="邮件中显示的发件人名称，可自由更改。">{renderInput('fromName', '千服客服')}</FieldRow>
+              <FieldRow label="email from" description="系统验证码、通知邮件的发件人。">{renderInput('emailFrom', 'noreply@example.com')}</FieldRow>
+              <FieldRow label="reply to" description="收件人点击回复时使用的地址。">{renderInput('replyTo', 'support@example.com')}</FieldRow>
+              <FieldRow label="contact email" description="邮件模板页脚中的联系邮箱。">{renderInput('contactEmail', 'support@example.com')}</FieldRow>
+              <FieldRow label="contact phone" description="可选，展示在邮件页脚。">{renderInput('contactPhone', '+86 400-000-0000')}</FieldRow>
+              <FieldRow label="email base url" description="验证码/重置密码邮件里的跳转基地址。">{renderInput('emailBaseUrl', 'https://example.com')}</FieldRow>
+              <FieldRow label="imap host" description="收件箱服务器，通常与 SMTP 主机相同。">{renderInput('imapHost', 'mail.example.com')}</FieldRow>
+              <FieldRow label="inbox protocol" description="可选择 IMAP 或 POP3；GMX POP3 通常使用 pop.gmx.com:995 + SSL。">
+                <div className="flex gap-3"><button type="button" onClick={() => updateDraft('inboxProtocol', 'IMAP')} className={`flex-1 rounded-2xl border px-4 py-3 text-left text-sm font-bold ${draft.inboxProtocol === 'IMAP' ? 'border-black bg-black text-white' : 'border-zinc-100 bg-zinc-50/70 text-zinc-500'}`}>IMAP</button><button type="button" onClick={() => updateDraft('inboxProtocol', 'POP3')} className={`flex-1 rounded-2xl border px-4 py-3 text-left text-sm font-bold ${draft.inboxProtocol === 'POP3' ? 'border-black bg-black text-white' : 'border-zinc-100 bg-zinc-50/70 text-zinc-500'}`}>POP3</button></div>
+              </FieldRow>
+              <FieldRow label="imap port" description="推荐 993 + TLS。">{renderInput('imapPort', '993', { numeric: true })}</FieldRow>
+              <FieldRow label="imap user" description="留空时复用 SMTP 用户。">{renderInput('imapUser', 'support@example.com')}</FieldRow>
+              <FieldRow label="imap password" description="留空将保留已存密码。">{renderInput('imapPass', 'imap password')}</FieldRow>
             </div>
           </section>
 
@@ -673,7 +884,7 @@ const AdminMailConfig: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FieldRow label="recipient email">
-              <input value={testTo} onChange={(event) => setTestTo(event.target.value)} placeholder="you@example.com" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
+              <input value={testTo} onChange={(event) => setTestTo(event.target.value)} placeholder="请输入邮箱" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
             </FieldRow>
             <FieldRow label="subject">
               <input value={testSubject} onChange={(event) => setTestSubject(event.target.value)} placeholder="QianFu Mail Test" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
@@ -687,6 +898,65 @@ const AdminMailConfig: React.FC = () => {
             <button type="button" onClick={() => testMutation.mutate()} disabled={testMutation.isPending || !testTo.trim()} className="rounded-[2rem] btn-accent px-8 py-4 text-[11px] font-black uppercase tracking-[0.35em] text-white shadow-2xl shadow-accent/20 disabled:opacity-50">
               <span className="inline-flex items-center gap-3"><Send className="h-4 w-4" /> {testMutation.isPending ? '发送中…' : '发送测试邮件'}</span>
             </button>
+          </div>
+        </section>
+
+        <section className={cardClassName}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic">自由写信</div>
+              <h2 className="mt-2 text-3xl font-black tracking-tighter uppercase italic">HTML 邮件编辑器</h2>
+            </div>
+            <div className="text-xs font-bold text-zinc-400">服务端会移除脚本、事件属性和跟踪图片</div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <FieldRow label="recipients" description="每行或逗号分隔，单次最多 50 个。">
+              <textarea value={composeTo} onChange={(event) => setComposeTo(event.target.value)} rows={5} placeholder="visitor@example.com" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden focus:border-accent focus:bg-white" />
+            </FieldRow>
+            <FieldRow label="subject">
+              <input value={composeSubject} onChange={(event) => setComposeSubject(event.target.value)} placeholder="邮件主题" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden focus:border-accent focus:bg-white" />
+            </FieldRow>
+          </div>
+          <FieldRow label="html body" description="可以直接编辑 HTML；发送前会进行白名单清洗。">
+            <textarea value={composeHtml} onChange={(event) => setComposeHtml(event.target.value)} rows={12} spellCheck={false} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-950 px-5 py-4 text-sm font-mono text-white outline-hidden focus:border-accent" />
+          </FieldRow>
+          <div className="flex justify-end">
+            <button type="button" onClick={() => composeMutation.mutate()} disabled={composeMutation.isPending || !parseRecipientText(composeTo).length || !composeSubject.trim() || !composeHtml.trim()} className="rounded-[2rem] btn-accent px-8 py-4 text-[11px] font-black uppercase tracking-[0.35em] text-white disabled:opacity-50">
+              {composeMutation.isPending ? '发送中…' : '发送 HTML 邮件'}
+            </button>
+          </div>
+        </section>
+
+        <section className={cardClassName}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic">IMAP 收件箱</div>
+              <h2 className="mt-2 text-3xl font-black tracking-tighter uppercase italic">联系邮箱来信</h2>
+            </div>
+            <button type="button" onClick={() => inboxQuery.refetch()} className="rounded-full border border-zinc-200 px-4 py-3 text-[10px] font-black uppercase tracking-[0.24em] text-zinc-500">刷新收件箱</button>
+          </div>
+          {inboxQuery.isError ? <div className="rounded-[1.6rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-700">收件箱暂不可用，请检查 IMAP 主机、账号、密码和 993 端口。</div> : null}
+          <div className="grid grid-cols-1 xl:grid-cols-[0.8fr_1.2fr] gap-8">
+            <div className="space-y-3">
+              {(inboxQuery.data?.messages || []).map((item) => (
+                <button key={item.id} type="button" onClick={() => setSelectedInboxUid(item.uid)} className={`w-full rounded-[1.6rem] border px-4 py-4 text-left ${selectedInboxUid === item.uid ? 'border-black bg-black text-white' : 'border-zinc-100 bg-zinc-50/70 text-zinc-700'}`}>
+                  <div className="flex items-center justify-between gap-3"><span className="truncate text-sm font-black">{item.from[0]?.name || item.from[0]?.address || '未知发件人'}</span><span className="text-[10px] font-bold opacity-60">{new Date(item.date).toLocaleDateString()}</span></div>
+                  <div className="mt-2 truncate text-xs font-bold">{item.subject}</div>
+                  <div className="mt-2 line-clamp-2 text-xs opacity-60">{item.preview}</div>
+                </button>
+              ))}
+              {!inboxQuery.isLoading && !inboxQuery.data?.messages?.length && !inboxQuery.isError ? <div className="rounded-[1.6rem] border border-dashed border-zinc-200 px-5 py-8 text-center text-sm font-bold text-zinc-400">暂无来信</div> : null}
+            </div>
+            <div className="space-y-6 rounded-[1.8rem] border border-zinc-100 bg-zinc-50/60 p-6">
+              {inboxMessageQuery.isError ? (
+                <div className="py-20 text-center text-sm font-bold text-amber-700">邮件详情加载失败。<button type="button" onClick={() => inboxMessageQuery.refetch()} className="ml-2 underline">重试</button></div>
+              ) : inboxMessageQuery.data ? <>
+                <div><div className="text-xs font-bold text-zinc-400">{inboxMessageQuery.data.from[0]?.address}</div><h3 className="mt-2 text-2xl font-black">{inboxMessageQuery.data.subject}</h3></div>
+                <pre className="whitespace-pre-wrap break-words text-sm leading-7 text-zinc-700">{inboxMessageQuery.data.text}</pre>
+                <FieldRow label="reply html"><textarea value={replyHtml} onChange={(event) => setReplyHtml(event.target.value)} rows={8} className="w-full rounded-[1.4rem] border border-zinc-100 bg-white px-4 py-4 text-sm font-mono outline-hidden focus:border-accent" /></FieldRow>
+                <div className="flex justify-end"><button type="button" onClick={() => replyMutation.mutate()} disabled={replyMutation.isPending || !replyHtml.trim()} className="rounded-[2rem] btn-accent px-6 py-4 text-[11px] font-black uppercase tracking-[0.24em] text-white disabled:opacity-50">{replyMutation.isPending ? '回复中…' : '回复此邮件'}</button></div>
+              </> : <div className="py-20 text-center text-sm font-bold text-zinc-400">选择左侧邮件查看详情并回复</div>}
+            </div>
           </div>
         </section>
 
@@ -726,7 +996,7 @@ const AdminMailConfig: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FieldRow label="recipients" description="支持换行、逗号、分号分隔。单次最多 200 个，系统会自动去重并分批 BCC 发送。">
-              <textarea value={broadcastRecipients} onChange={(event) => setBroadcastRecipients(event.target.value)} rows={7} placeholder={'customer1@example.com\ncustomer2@example.com'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
+              <textarea value={broadcastRecipients} onChange={(event) => setBroadcastRecipients(event.target.value)} rows={7} placeholder={'请输入收件人邮箱，每行一个'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
             </FieldRow>
 
             <div className="space-y-8">
@@ -737,7 +1007,7 @@ const AdminMailConfig: React.FC = () => {
                 <input value={broadcastCtaLabel} onChange={(event) => setBroadcastCtaLabel(event.target.value)} placeholder="立即查看" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
               </FieldRow>
               <FieldRow label="cta link">
-                <input value={broadcastCtaLink} onChange={(event) => setBroadcastCtaLink(event.target.value)} placeholder="http://mc-u.top" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
+                <input value={broadcastCtaLink} onChange={(event) => setBroadcastCtaLink(event.target.value)} placeholder="https://mc-u.top" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
               </FieldRow>
             </div>
           </div>
@@ -811,7 +1081,7 @@ const AdminMailConfig: React.FC = () => {
                 <FieldRow label="cta">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input value={templateDraft.ctaLabel || ''} onChange={(event) => setTemplateDraft((current) => ({ ...current, ctaLabel: event.target.value }))} placeholder="立即查看" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
-                    <input value={templateDraft.ctaLink || ''} onChange={(event) => setTemplateDraft((current) => ({ ...current, ctaLink: event.target.value }))} placeholder="http://mc-u.top" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
+                    <input value={templateDraft.ctaLink || ''} onChange={(event) => setTemplateDraft((current) => ({ ...current, ctaLink: event.target.value }))} placeholder="https://mc-u.top" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
                   </div>
                 </FieldRow>
                 <div className="flex flex-wrap justify-end gap-3">
@@ -865,7 +1135,7 @@ const AdminMailConfig: React.FC = () => {
                   <input value={groupDraft.description || ''} onChange={(event) => setGroupDraft((current) => ({ ...current, description: event.target.value }))} placeholder="高价值客户批量推送组" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
                 </FieldRow>
                 <FieldRow label="recipients">
-                  <textarea value={groupRecipientsText} onChange={(event) => setGroupRecipientsText(event.target.value)} rows={8} placeholder={'customer1@example.com\ncustomer2@example.com'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
+                  <textarea value={groupRecipientsText} onChange={(event) => setGroupRecipientsText(event.target.value)} rows={8} placeholder={'请输入收件人邮箱，每行一个'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
                 </FieldRow>
                 <div className="flex flex-wrap justify-end gap-3">
                   <button
@@ -976,7 +1246,7 @@ const AdminMailConfig: React.FC = () => {
                   </FieldRow>
                 )}
                 <FieldRow label="recipients" description="直接收件人；也可以只绑定收件组。">
-                  <textarea value={scheduleRecipientsText} onChange={(event) => setScheduleRecipientsText(event.target.value)} rows={5} placeholder={'customer1@example.com\ncustomer2@example.com'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
+                  <textarea value={scheduleRecipientsText} onChange={(event) => setScheduleRecipientsText(event.target.value)} rows={5} placeholder={'请输入收件人邮箱，每行一个'} className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm font-mono outline-hidden transition-all focus:border-accent focus:bg-white" />
                 </FieldRow>
                 <FieldRow label="recipient groups" description="输入收件组 key，换行或逗号分隔。">
                   <input value={(scheduleDraft.recipientGroupKeys || []).join(', ')} onChange={(event) => setScheduleDraft((current) => ({ ...current, recipientGroupKeys: event.target.value.split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean) }))} placeholder="vip_customers, ops_team" className="w-full rounded-[1.6rem] border border-zinc-100 bg-zinc-50/70 px-5 py-4 text-sm outline-hidden transition-all focus:border-accent focus:bg-white" />
@@ -1018,8 +1288,12 @@ const AdminMailConfig: React.FC = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  await navigator.clipboard.writeText(exportLibraryJson);
-                  toast({ title: '导出 JSON 已复制', description: '当前模板、收件组与定时任务 JSON 已复制到剪贴板。' });
+                  try {
+                    await navigator.clipboard.writeText(exportLibraryJson);
+                    toast({ title: '导出 JSON 已复制', description: '当前模板、收件组与定时任务 JSON 已复制到剪贴板。' });
+                  } catch {
+                    toast({ variant: 'destructive', title: '复制失败', description: '请检查浏览器剪贴板权限。' });
+                  }
                 }}
                 className="rounded-[2rem] border border-zinc-200 px-6 py-4 text-[11px] font-black uppercase tracking-[0.24em] text-zinc-600 hover:border-zinc-300 hover:text-zinc-900"
               >
@@ -1082,4 +1356,3 @@ const AdminMailConfig: React.FC = () => {
 };
 
 export default AdminMailConfig;
-

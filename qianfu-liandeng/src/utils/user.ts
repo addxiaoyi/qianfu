@@ -2,6 +2,7 @@ import type { User } from '@/types/api';
 
 type NormalizableUser = Partial<User> & {
   id?: string | number | null;
+  display_name?: string | null;
 };
 
 export function normalizeUser(user: NormalizableUser | null | undefined): User | null {
@@ -10,14 +11,16 @@ export function normalizeUser(user: NormalizableUser | null | undefined): User |
   }
 
   const rawRole = typeof user.role === 'string' ? user.role.toLowerCase() : 'user';
-  const normalizedRole =
-    rawRole === 'admin' || rawRole === 'operator' || rawRole === 'moderator' || rawRole === 'normal'
+  const normalizedRole = rawRole === 'owner'
+    ? 'super_admin'
+    : rawRole === 'admin' || rawRole === 'super_admin' || rawRole === 'operator' || rawRole === 'moderator' || rawRole === 'normal'
       ? rawRole
       : 'user';
 
   return {
     ...user,
     id: user.id == null ? '' : String(user.id),
+    username: user.username || user.display_name || user.email || '用户',
     role: normalizedRole,
   } as User;
 }

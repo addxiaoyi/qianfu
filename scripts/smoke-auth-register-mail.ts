@@ -160,9 +160,25 @@ async function main() {
     oauthStatus.status,
   );
 
+  let csrfToken = '';
+  const csrf = await requestJson('/api/v1/csrf-token', {}, session);
+  if (csrf.ok) {
+    csrfToken = csrf.data?.data?.csrfToken || csrf.data?.csrfToken || '';
+  }
+  add(
+    checks,
+    'csrf-token',
+    csrf.ok && csrfToken ? 'PASS' : 'FAIL',
+    csrf.ok ? 'CSRF token acquired' : safeMsg(csrf),
+    csrf.status,
+  );
+
   const login = await requestJson('/api/v1/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+    },
     body: JSON.stringify({
       identifier: LOGIN_IDENTIFIER,
       password: LOGIN_PASSWORD,
@@ -176,19 +192,6 @@ async function main() {
     loginOk ? 'PASS' : 'FAIL',
     loginOk ? 'Login successful' : safeMsg(login),
     login.status,
-  );
-
-  let csrfToken = '';
-  const csrf = await requestJson('/api/v1/csrf-token', {}, session);
-  if (csrf.ok) {
-    csrfToken = csrf.data?.data?.csrfToken || csrf.data?.csrfToken || '';
-  }
-  add(
-    checks,
-    'csrf-token',
-    csrf.ok && csrfToken ? 'PASS' : 'FAIL',
-    csrf.ok ? 'CSRF token acquired' : safeMsg(csrf),
-    csrf.status,
   );
 
   const authHeaders: Record<string, string> = token
@@ -248,7 +251,10 @@ async function main() {
 
   const loginNew = await requestJson('/api/v1/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+    },
     body: JSON.stringify({
       identifier: email,
       password,

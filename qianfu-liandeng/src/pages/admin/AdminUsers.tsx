@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
 import { toast } from '@/hooks/use-toast';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { formatDateTime } from '@/utils/serverView';
 
 interface UserData {
@@ -45,7 +45,7 @@ const AdminUsers: React.FC = () => {
     queryFn: () => api.get<UserData[]>('/admin/users', { limit: 100 }),
   });
 
-  const { data: userStats } = useQuery({
+  const { data: userStats, isError: statsError, refetch: refetchStats } = useQuery({
     queryKey: ['admin-user-stats'],
     queryFn: () => api.get<UserStats>('/admin/stats'),
   });
@@ -96,12 +96,14 @@ const AdminUsers: React.FC = () => {
           title="用户目录"
           description="用户管理页已切到真实 `/admin/users` 与 `/admin/stats` 数据，不再展示伪造人口与能力数值。"
           statusLabel={`当前用户数：${userStats?.totalUsers ?? userList.length}`}
-          rightSlot={(
-            <button type="button" className="group px-12 py-8 btn-accent rounded-[3rem] text-[12px] font-black uppercase tracking-[0.5em] transition-all flex items-center gap-6 shadow-2xl shadow-accent/20 italic active:scale-[0.98]">
-              <GeometricLantern variant="spark" className="w-6 h-6 group-hover:rotate-12 transition-transform duration-500" /> 邀请用户
-            </button>
-          )}
         />
+
+        {statsError ? (
+          <div className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-5 text-sm font-bold text-amber-800">
+            用户列表可用，但汇总统计暂时加载失败。
+            <button type="button" onClick={() => refetchStats()} className="ml-4 underline underline-offset-4">重新加载统计</button>
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-10">
           {summaryStats.map((item, idx) => (
@@ -131,6 +133,7 @@ const AdminUsers: React.FC = () => {
           <div className="relative w-full xl:w-[48rem] group">
             <Search className="absolute left-10 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-100 group-focus-within:text-accent transition-all duration-500" />
             <input
+              aria-label="搜索用户"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               className="w-full pl-24 pr-10 py-8 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-accent rounded-[3rem] transition-all duration-500 outline-hidden text-lg font-black italic tracking-tight shadow-xs"
@@ -240,8 +243,8 @@ const AdminUsers: React.FC = () => {
           {isRoleDialogOpen && selectedUser && (
             <div className="fixed inset-0 z-[1000] flex items-center justify-center p-8">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setIsRoleDialogOpen(false)} />
-              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.4 }} className="relative w-full max-w-2xl bg-white rounded-[5rem] shadow-[0_64px_128px_rgba(0,0,0,0.5)] p-20 space-y-16">
-                <button type="button" onClick={() => setIsRoleDialogOpen(false)} className="absolute top-12 right-12 p-4 text-zinc-200 hover:text-accent transition-colors">
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ duration: 0.4 }} className="relative w-full max-w-2xl bg-white rounded-[5rem] shadow-[0_64px_128px_rgba(0,0,0,0.5)] p-20 space-y-16" role="dialog" aria-modal="true" aria-label="修改用户角色">
+                <button type="button" onClick={() => setIsRoleDialogOpen(false)} aria-label="关闭角色设置" className="absolute top-12 right-12 p-4 text-zinc-200 hover:text-accent transition-colors">
                   <GeometricLantern variant="alert" className="w-8 h-8" />
                 </button>
 

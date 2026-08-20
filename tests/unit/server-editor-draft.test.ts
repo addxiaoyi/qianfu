@@ -23,6 +23,8 @@ const draft: ServerEditorDraft = {
   name: '测试服务器',
   version: '1.21.8',
   ip: '127.0.0.1:25565',
+  platform: 'java',
+  groupNumber: '',
   tags: '生存 社区',
   description: '<p>这是一个用于测试的服务器介绍。</p>',
   image: '/uploads/cover.png',

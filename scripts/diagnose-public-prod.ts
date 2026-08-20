@@ -68,6 +68,7 @@ type DiagnosisSummary = {
     htmlStatus: string;
     looksLikeMainSite: string;
     rootMarkerMatch: string;
+    personalFilingDisabled: string;
     canonicalUrl: string;
     ogUrl: string;
     diagnosis: string;
@@ -307,6 +308,14 @@ async function runFrontendProbe(baseUrl: string) {
 }
 
 async function runPayDomainProbe(payHost: string, mainSiteHost: string) {
+  if (!payHost) {
+    return {
+      ok: true,
+      error: '',
+      values: { pay_probe_skipped: 'true' },
+    };
+  }
+
   try {
     const { stdout } = await execFile(
       process.execPath,
@@ -420,6 +429,12 @@ function diagnoseFrontend(frontend: DiagnosisSummary['frontend']) {
 }
 
 function diagnosePay(pay: DiagnosisSummary['pay']) {
+  if (!pay.root.url) {
+    return 'not_configured';
+  }
+  if (pay.personalFilingDisabled === 'true') {
+    return 'personal_filing_closed';
+  }
   if (!pay.probeOk) {
     return 'pay_probe_failed';
   }
@@ -473,16 +488,18 @@ function collectFindings(summary: DiagnosisSummary) {
     findings.push(`主站前端 dist manifest 未部署或与本地不一致：${summary.frontend.manifestError || 'manifest mismatch'}。`);
   }
 
-  if (summary.pay.diagnosis === 'main_site_tls_vhost_fallback') {
+  if (summary.pay.diagnosis === 'personal_filing_closed') {
+    // The retained hostname is intentionally closed under the personal filing product boundary.
+  } else if (summary.pay.diagnosis === 'main_site_tls_vhost_fallback') {
     findings.push(`支付域 ${summary.pay.apiHealth.url.replace(/\/api\/health$/, '')} 很可能落到了主站 TLS/vhost，而不是独立支付站点。`);
   } else if (summary.pay.diagnosis === 'wrong_certificate_principal') {
     findings.push(`支付域证书主体不匹配：CN=${summary.pay.certCn || 'unknown'} SAN=${summary.pay.certSan || 'unknown'}。`);
   } else if (summary.pay.diagnosis === 'main_site_html_fallback') {
     findings.push('支付域根路径返回的 HTML 很像主站，而不是支付站点。');
   } else if (summary.pay.diagnosis === 'pay_root_marker_missing') {
-    findings.push('支付域根路径没有返回 qianfu-pay-gateway 标记。');
+    findings.push('支付域根路径没有返回 PERSONAL_FILING_DISABLED 关闭标记。');
   } else if (summary.pay.diagnosis === 'pay_upstream_broken') {
-    findings.push('支付域健康检查仍然是 502，更像是支付站点 upstream 还没恢复。');
+    findings.push('支付域没有按个人备案模式返回关闭响应，仍可能残留旧 upstream 配置。');
   } else if (summary.pay.diagnosis === 'pay_probe_failed') {
     findings.push(`支付域探针执行失败：${summary.pay.probeError}`);
   }
@@ -518,16 +535,18 @@ function collectRecommendedActions(summary: DiagnosisSummary) {
     actions.push('前端整包验收下一步：使用 scripts/linux/deploy-frontend-dist.sh 原子发布完整 dist，确认 /qianfu-dist-manifest.json 返回 JSON 且 dist_hash 与本地一致。');
   }
 
-  if (summary.pay.diagnosis === 'main_site_tls_vhost_fallback') {
-    actions.push('支付域下一步：修复 pay.star-web.top 的 Nginx server_name 与证书绑定，确保证书来自 /etc/letsencrypt/live/pay.star-web.top/，根路径返回 qianfu-pay-gateway 而不是 mc-u.top HTML。');
+  if (summary.pay.diagnosis === 'personal_filing_closed') {
+    actions.push('支付域已按个人备案模式关闭：保留旧域名并返回 PERSONAL_FILING_DISABLED，不启动支付服务。');
+  } else if (summary.pay.diagnosis === 'main_site_tls_vhost_fallback') {
+    actions.push('支付域下一步：修复 pay.star-web.top 的 Nginx server_name 与证书绑定，确保旧域名返回 410 PERSONAL_FILING_DISABLED，而不是 mc-u.top HTML。');
   } else if (summary.pay.diagnosis === 'wrong_certificate_principal') {
-    actions.push('支付域下一步：重新签发或绑定 pay.star-web.top 证书，并用 openssl s_client -servername pay.star-web.top 验证 SAN。');
+    actions.push('支付域下一步：确认 pay.star-web.top 仍使用正确证书，并验证旧域名返回 410 PERSONAL_FILING_DISABLED。');
   } else if (summary.pay.diagnosis === 'main_site_html_fallback' || summary.pay.diagnosis === 'pay_root_marker_missing') {
-    actions.push('支付域下一步：检查 pay.star-web.top 的 443 vhost 是否命中支付站点块，确认 / 返回 qianfu-pay-gateway 标记。');
+    actions.push('支付域下一步：检查 pay.star-web.top 的 443 vhost 是否命中关闭配置，确认 / 返回 410 PERSONAL_FILING_DISABLED。');
   } else if (summary.pay.diagnosis === 'pay_upstream_broken') {
-    actions.push('支付域下一步：检查支付域 /health 与 /api/health 的 upstream，确认 127.0.0.1:3000 和 XPay 端口按模板可达。');
+    actions.push('支付域下一步：移除旧支付 proxy/API/XPay 配置，确认 pay.star-web.top 直接返回 410 PERSONAL_FILING_DISABLED。');
   } else if (summary.pay.diagnosis === 'pay_probe_failed') {
-    actions.push('支付域下一步：先修复 domain-cert-probe 运行环境或 DNS/TLS 访问，再判断 vhost 是否恢复。');
+    actions.push('支付域下一步：检查 pay.star-web.top 的 DNS/TLS 可达性与关闭 vhost，目标是 410 PERSONAL_FILING_DISABLED。');
   }
 
   if (actions.length === 0) {
@@ -572,6 +591,7 @@ function printText(summary: DiagnosisSummary) {
   console.log(`cert cn: ${summary.pay.certCn || 'unknown'}`);
   console.log(`looks like main site: ${summary.pay.looksLikeMainSite || 'unknown'}`);
   console.log(`root marker match: ${summary.pay.rootMarkerMatch || 'unknown'}`);
+  console.log(`personal filing disabled: ${summary.pay.personalFilingDisabled || 'unknown'}`);
   console.log(`diagnosis: ${summary.pay.diagnosis}`);
   console.log('');
   console.log('== Findings ==');
@@ -634,6 +654,7 @@ function printKv(summary: DiagnosisSummary) {
     ['pay_og_url', summary.pay.ogUrl || ''],
     ['pay_looks_like_main_site', summary.pay.looksLikeMainSite || ''],
     ['pay_root_marker_match', summary.pay.rootMarkerMatch || ''],
+    ['pay_personal_filing_disabled', summary.pay.personalFilingDisabled || ''],
     ['pay_diagnosis', summary.pay.diagnosis],
     ['finding_count', String(summary.findings.length)],
     ['findings', summary.findings.length > 0 ? summary.findings.join(' | ') : 'none'],
@@ -664,16 +685,26 @@ function resolveOutFile(outFile: string) {
 async function main() {
   const { baseUrl, payHost, mainSiteHost, reportOnly, outputMode, outFile } = parseArgs();
 
-  const [mainApiHealth, mainApiReady, payRoot, payHealth, payApiHealth, frontendProbe, frontendManifestProbe, payProbe] = await Promise.all([
+  const [mainApiHealth, mainApiReady, frontendProbe, frontendManifestProbe] = await Promise.all([
     requestText(`${baseUrl}/api/health`),
     requestText(`${baseUrl}/api/ready`),
-    requestText(`https://${payHost}/`, { allowInvalidTls: true }),
-    requestText(`https://${payHost}/health`, { allowInvalidTls: true }),
-    requestText(`https://${payHost}/api/health`, { allowInvalidTls: true }),
     runFrontendProbe(baseUrl),
     runFrontendManifestProbe(baseUrl),
-    runPayDomainProbe(payHost, mainSiteHost),
   ]);
+
+  const [payRoot, payHealth, payApiHealth, payProbe] = payHost
+    ? await Promise.all([
+        requestText(`https://${payHost}/`, { allowInvalidTls: true }),
+        requestText(`https://${payHost}/health`, { allowInvalidTls: true }),
+        requestText(`https://${payHost}/api/health`, { allowInvalidTls: true }),
+        runPayDomainProbe(payHost, mainSiteHost),
+      ])
+    : [
+        { url: '', status: null, ok: true, contentType: '', bodyPreview: '', error: '' },
+        { url: '', status: null, ok: true, contentType: '', bodyPreview: '', error: '' },
+        { url: '', status: null, ok: true, contentType: '', bodyPreview: '', error: '' },
+        { ok: true, error: '', values: { pay_probe_skipped: 'true' } },
+      ] as const;
 
   const summary: DiagnosisSummary = {
     timestamp: new Date().toISOString(),
@@ -715,6 +746,7 @@ async function main() {
       htmlStatus: payProbe.values.html_status || '',
       looksLikeMainSite: payProbe.values.looks_like_main_site || '',
       rootMarkerMatch: payProbe.values.root_marker_match || '',
+      personalFilingDisabled: payProbe.values.personal_filing_disabled || '',
       canonicalUrl: payProbe.values.canonical_url || '',
       ogUrl: payProbe.values.og_url || '',
       diagnosis: 'ok',

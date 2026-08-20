@@ -1,0 +1,97 @@
+- generic [ref=f6e2]:
+  - button "打开 Gemini 3.5 驱动助手" [ref=f6e4]
+  - generic [ref=f6e7]:
+    - link "跳到主要内容" [ref=f6e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f6e10]:
+      - generic [ref=f6e11]:
+        - generic [ref=f6e12]:
+          - link "千服联灯 QianFu" [ref=f6e13] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f6e36]:
+              - generic [ref=f6e37]: 千服联灯
+              - generic [ref=f6e38]: QianFu
+          - generic [ref=f6e39]:
+            - link [ref=f6e40] [cursor=pointer]:
+              - /url: /
+            - link [ref=f6e47] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=f6e54] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=f6e60] [cursor=pointer]:
+              - /url: /team
+            - link [ref=f6e65] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=f6e71] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=f6e75]:
+          - link "登录" [ref=f6e76] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=f6e77] [cursor=pointer]:
+            - /url: /register
+    - main [ref=f6e78]:
+      - paragraph [ref=f6e82]: INITIALIZING_SESSION...
+    - contentinfo [ref=f6e84]:
+      - generic [ref=f6e85]:
+        - generic [ref=f6e86]:
+          - generic [ref=f6e87]:
+            - link "千服联灯" [ref=f6e88] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f6e110]: 面向中文 Minecraft 玩家和服主的服务器发现、发布与支持平台。公开信息经过审核，异常问题可通过工单追踪处理。
+            - generic [ref=f6e111]:
+              - link "前往推广中心" [ref=f6e112] [cursor=pointer]:
+                - /url: /promotion
+              - link "前往工单支持" [ref=f6e115] [cursor=pointer]:
+                - /url: /tickets
+              - link "发送邮件联系平台" [ref=f6e118] [cursor=pointer]:
+                - /url: mailto:support@0st.top
+          - generic [ref=f6e122]:
+            - heading "平台" [level=4] [ref=f6e123]
+            - list [ref=f6e124]:
+              - listitem [ref=f6e125]:
+                - link "浏览服务器" [ref=f6e126] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=f6e127]:
+                - link "高级搜索" [ref=f6e128] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=f6e129]:
+                - link "推广方案" [ref=f6e130] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=f6e131]:
+                - link "资源中心" [ref=f6e132] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=f6e133]:
+            - heading "站点信息" [level=4] [ref=f6e134]
+            - list [ref=f6e135]:
+              - listitem [ref=f6e136]:
+                - link "开发团队" [ref=f6e137] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=f6e138]:
+                - link "等级规则" [ref=f6e139] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=f6e140]:
+                - link "服务条款" [ref=f6e141] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=f6e142]:
+                - link "隐私政策" [ref=f6e143] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=f6e144]:
+            - heading "服务入口" [level=4] [ref=f6e145]
+            - list [ref=f6e146]:
+              - listitem [ref=f6e147] [cursor=pointer]:
+                - link "钱包与账单" [ref=f6e148]:
+                  - /url: /dashboard/billing
+              - listitem [ref=f6e149] [cursor=pointer]:
+                - link "推广中心" [ref=f6e150]:
+                  - /url: /promotion
+              - listitem [ref=f6e151] [cursor=pointer]:
+                - link "工单支持" [ref=f6e152]:
+                  - /url: /tickets
+        - generic [ref=f6e153]:
+          - generic [ref=f6e154]:
+            - generic [ref=f6e155]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=f6e156] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=f6e157]:
+            - generic [ref=f6e158]: 公开 API 检测中
+            - button "返回顶部 ↑" [ref=f6e161]

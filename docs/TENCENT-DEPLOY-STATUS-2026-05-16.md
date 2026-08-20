@@ -101,9 +101,9 @@ XPay 租户回调是签名 JSON，不是旧版 legacy xpay notify 表单
 ## 已完成的烟雾验证
 
 1. 主站本地管理员登录成功：
-   - `dev_local / dev123456`
+   - 测试账号凭据已从文档移除。
 2. XPay 本地管理员登录成功：
-   - `xpayadmin / Lsc513148`
+   - 测试账号凭据已从文档移除。
 3. 后台测试单创建成功：
    - `projectKey=qianfu`
    - `provider=xpay`

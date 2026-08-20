@@ -17,7 +17,7 @@ const navItems: NavItem[] = [
   { name: '发现', path: '/servers', Icon: Compass, activePaths: ['/servers', '/search'], requiresAuth: false },
   { name: '发布', path: '/editor', Icon: PlusCircle, requiresAuth: true },
   { name: '消息', path: '/messages', Icon: MessageCircle, activePaths: ['/messages', '/tickets'], requiresAuth: true },
-  { name: '我的', path: '/me', Icon: UserRound, activePaths: ['/me', '/dashboard'], requiresAuth: true },
+  { name: '我的', path: '/me', Icon: UserRound, activePaths: ['/me', '/dashboard'], requiresAuth: false },
 ];
 
 interface MobileBottomNavProps {

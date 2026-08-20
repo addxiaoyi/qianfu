@@ -1,0 +1,568 @@
+# ============================================
+# Prometheus 告警规则 - 增强版（支持告警升级）
+# ============================================
+
+groups:
+  # ==========================================
+  # 服务可用性告警
+  # ==========================================
+  - name: service_availability
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "服务 {{ $labels.job }} 已离线"
+          description: "{{ $labels.job }} ({{ $labels.instance }}) 已离线超过 1 分钟"
+          runbook_url: "https://docs.example.com/runbooks/service-down"
+          dashboard_url: "https://grafana.example.com/d/service-{{ $labels.job }}"
+          action: "立即检查服务状态，可能需要重启"
+
+      - alert: ServiceResponseTimeout
+        expr: probe_success == 0
+        for: 3m
+        labels:
+          severity: critical
+          category: availability
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "服务 {{ $labels.instance }} 探测失败"
+          description: "服务探测失败超过 3 分钟，可能已离线"
+          action: "检查网络和服务状态"
+
+  # ==========================================
+  # CPU 告警
+  # ==========================================
+  - name: cpu_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUWarning
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > ${CPU_WARNING_THRESHOLD:-80}
+        for: 5m
+        labels:
+          severity: warning
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "CPU 使用率较高 [Warning]"
+          description: "实例 {{ $labels.instance }} 的 CPU 使用率已超过 {{ $value | printf \"%.1f\" }}%，持续超过 5 分钟"
+          runbook_url: "https://docs.example.com/runbooks/high-cpu"
+          action: "检查高负载进程，考虑扩容"
+
+      - alert: HighCPUCritical
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > ${CPU_CRITICAL_THRESHOLD:-95}
+        for: 2m
+        labels:
+          severity: critical
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "CPU 使用率严重过高 [Critical]"
+          description: "实例 {{ $labels.instance }} 的 CPU 使用率已超过 {{ $value | printf \"%.1f\" }}%，可能影响服务性能"
+          runbook_url: "https://docs.example.com/runbooks/high-cpu"
+          action: "立即处理，可能需要重启或扩容"
+
+  # ==========================================
+  # 内存告警
+  # ==========================================
+  - name: memory_alerts
+    interval: 30s
+    rules:
+      - alert: HighMemoryUsageWarning
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > ${MEMORY_WARNING_THRESHOLD:-85}
+        for: 5m
+        labels:
+          severity: warning
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "内存使用率较高"
+          description: "实例 {{ $labels.instance }} 的内存使用率已超过 {{ $value | printf \"%.1f\" }}%"
+          action: "检查内存泄漏，增加内存"
+
+      - alert: HighMemoryUsageCritical
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > ${MEMORY_CRITICAL_THRESHOLD:-95}
+        for: 2m
+        labels:
+          severity: critical
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "内存使用率严重过高 [Critical]"
+          description: "实例 {{ $labels.instance }} 的内存使用率已超过 {{ $value | printf \"%.1f\" }}%，可能触发 OOM"
+          runbook_url: "https://docs.example.com/runbooks/high-memory"
+          action: "立即处理，避免 OOM"
+
+      - alert: MemoryExhausted
+        expr: node_memory_MemAvailable_bytes < 100000000
+        for: 1m
+        labels:
+          severity: critical
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "可用内存即将耗尽"
+          description: "实例 {{ $labels.instance }} 的可用内存低于 100MB"
+          action: "立即处理，释放内存或重启服务"
+
+  # ==========================================
+  # 磁盘告警
+  # ==========================================
+  - name: disk_alerts
+    interval: 1m
+    rules:
+      - alert: HighDiskUsageWarning
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|nfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|nfs"})) * 100 > ${DISK_WARNING_THRESHOLD:-85}
+        for: 5m
+        labels:
+          severity: warning
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "磁盘使用率较高"
+          description: "挂载点 {{ $labels.mountpoint }} 的磁盘使用率已超过 {{ $value | printf \"%.1f\" }}%"
+          action: "清理磁盘空间"
+
+      - alert: HighDiskUsageCritical
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs|nfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs|nfs"})) * 100 > ${DISK_CRITICAL_THRESHOLD:-95}
+        for: 2m
+        labels:
+          severity: critical
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "磁盘使用率严重过高"
+          description: "挂载点 {{ $labels.mountpoint }} 的磁盘使用率已超过 {{ $value | printf \"%.1f\" }}%"
+          action: "立即清理或扩展存储"
+
+      - alert: DiskSpaceRunningOut
+        expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|fuse.lxcfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"}) < 0.05
+        for: 1m
+        labels:
+          severity: critical
+          category: resource
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "磁盘空间即将耗尽"
+          description: "挂载点 {{ $labels.mountpoint }} 的可用空间低于 5%"
+          action: "立即清理磁盘"
+
+  # ==========================================
+  # HTTP 服务告警
+  # ==========================================
+  - name: http_alerts
+    interval: 30s
+    rules:
+      - alert: HighHTTP5xxErrorRateWarning
+        expr: sum(rate(nginx_http_requests_total{status=~"5.."}[5m])) / sum(rate(nginx_http_requests_total[5m])) > ${HTTP_5XX_WARNING_RATE:-0.05}
+        for: 5m
+        labels:
+          severity: warning
+          category: http
+          team: backend
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "HTTP 5xx 错误率较高"
+          description: "服务 {{ $labels.instance }} 的 5xx 错误率已超过 {{ $value | printf \"%.2f\" }}%"
+          action: "检查后端服务日志"
+
+      - alert: HighHTTP5xxErrorRateCritical
+        expr: sum(rate(nginx_http_requests_total{status=~"5.."}[5m])) / sum(rate(nginx_http_requests_total[5m])) > ${HTTP_5XX_CRITICAL_RATE:-0.20}
+        for: 2m
+        labels:
+          severity: critical
+          category: http
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "HTTP 5xx 错误率严重"
+          description: "服务 {{ $labels.instance }} 的 5xx 错误率已超过 {{ $value | printf \"%.2f" }}%，服务可能不可用"
+          action: "立即检查服务状态"
+
+      - alert: ZeroHTTPRequestRate
+        expr: sum(rate(nginx_http_requests_total[5m])) == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: http
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "HTTP 请求量归零"
+          description: "服务 {{ $labels.instance }} 的请求量归零超过 5 分钟"
+          action: "检查服务是否正常"
+
+  # ==========================================
+  # 延迟告警
+  # ==========================================
+  - name: latency_alerts
+    interval: 30s
+    rules:
+      - alert: HighLatencyWarning
+        expr: histogram_quantile(0.95, sum(rate(nginx_http_request_duration_seconds_bucket[5m])) by (le, instance)) > ${LATENCY_P95_WARNING:-1}
+        for: 5m
+        labels:
+          severity: warning
+          category: latency
+          team: backend
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "API 响应延迟较高 [P95]"
+          description: "服务 {{ $labels.instance }} 的 P95 延迟已超过 {{ $value | printf \"%.2f\" }} 秒"
+          action: "检查性能瓶颈"
+
+      - alert: HighLatencyCritical
+        expr: histogram_quantile(0.95, sum(rate(nginx_http_request_duration_seconds_bucket[5m])) by (le, instance)) > ${LATENCY_P95_CRITICAL:-5}
+        for: 2m
+        labels:
+          severity: critical
+          category: latency
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "API 响应延迟严重 [P95]"
+          description: "服务 {{ $labels.instance }} 的 P95 延迟已超过 {{ $value | printf \"%.2f\" }} 秒"
+          action: "立即检查，可能需要回滚"
+
+  # ==========================================
+  # PostgreSQL 告警
+  # ==========================================
+  - name: postgres_alerts
+    interval: 30s
+    rules:
+      - alert: PostgresTooManyConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+          team: dba
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "PostgreSQL 连接数接近上限"
+          description: "数据库 {{ $labels.datname }} 的连接数已超过最大连接的 {{ $value | printf \"%.1f\" }}%"
+          action: "检查连接泄漏，增加 max_connections"
+
+      - alert: PostgresConnectionExhaustion
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+          team: dba
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "PostgreSQL 连接即将耗尽"
+          description: "数据库 {{ $labels.datname }} 的连接数已超过最大连接的 95%"
+          action: "立即处理，增加 max_connections 或杀掉空闲连接"
+
+      - alert: PostgresDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          category: database
+          team: dba
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "PostgreSQL 发生死锁"
+          description: "数据库 {{ $labels.datname }} 检测到死锁"
+          action: "检查并解决死锁"
+
+  # ==========================================
+  # Redis 告警
+  # ==========================================
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      - alert: RedisHighMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+          team: backend
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "Redis 内存使用率高"
+          description: "Redis 内存使用率超过 80%"
+          action: "检查内存使用，调整淘汰策略"
+
+      - alert: RedisMemoryExhaustion
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          category: cache
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "Redis 内存即将耗尽"
+          description: "Redis 内存使用率超过 95%"
+          action: "立即处理，增加内存或调整淘汰策略"
+
+      - alert: RedisOOMCount
+        expr: increase(redis_mem_overflow_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: cache
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "Redis OOM"
+          description: "Redis 发生内存溢出"
+          action: "立即处理，增加内存或调整淘汰策略"
+
+  # ==========================================
+  # Backend API 告警
+  # ==========================================
+  - name: backend_alerts
+    interval: 30s
+    rules:
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: backend
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "Backend 服务离线"
+          description: "Backend API 服务已离线超过 1 分钟"
+          action: "立即检查并重启服务"
+
+      - alert: BackendHighErrorRate
+        expr: sum(rate(backend_errors_total[5m])) / sum(rate(backend_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: backend
+          team: backend
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "Backend 错误率较高"
+          description: "Backend 错误率超过 5%"
+          action: "检查错误日志"
+
+  # ==========================================
+  # 容器告警
+  # ==========================================
+  - name: container_alerts
+    interval: 30s
+    rules:
+      - alert: ContainerOOM
+        expr: increase(container_memory_events_total{event="oom"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: container
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "容器发生 OOM"
+          description: "容器 {{ $labels.container_label_com_docker_compose_service }} 发生内存溢出"
+          action: "立即处理，增加内存限制或优化内存使用"
+
+      - alert: ContainerRestartingFrequently
+        expr: rate(container_restart_count[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: container
+          team: ops
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "容器重启频繁"
+          description: "容器 {{ $labels.container_label_com_docker_compose_service }} 重启频率超过每分钟 6 次"
+          action: "检查容器日志，解决重启问题"
+
+  # ==========================================
+  # 安全告警
+  # ==========================================
+  - name: security_alerts
+    interval: 1m
+    rules:
+      - alert: HighAuthFailureRate
+        expr: sum(rate(auth_failures_total[5m])) / sum(rate(auth_attempts_total[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+          team: security
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "认证失败率过高"
+          description: "认证失败率超过 20%，可能存在暴力破解"
+          action: "检查认证日志，封禁异常IP"
+
+      - alert: SSLCertExpired
+        expr: probe_ssl_cert_info{type="days_til_expiry"} <= 0
+        for: 0m
+        labels:
+          severity: critical
+          category: security
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "SSL 证书已过期"
+          description: "证书已过期，请立即更新"
+          action: "立即更新 SSL 证书"
+
+  # ==========================================
+  # 应用错误日志告警
+  # ==========================================
+  - name: application_log_alerts
+    interval: 30s
+    rules:
+      - alert: HighAppErrorRateWarning
+        expr: rate(app_error_log_total[5m]) > ${APP_ERROR_WARNING_RATE:-0.1}
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+          team: backend
+          escalation: auto
+          escalation_level: '2'
+        annotations:
+          summary: "应用错误日志率较高"
+          description: "服务 {{ $labels.instance }} 的错误日志率超过 {{ $value | printf \"%.2f" }}/s"
+          action: "检查应用日志"
+
+      - alert: HighAppErrorRateCritical
+        expr: rate(app_error_log_total[5m]) > ${APP_ERROR_CRITICAL_RATE:-0.5}
+        for: 2m
+        labels:
+          severity: critical
+          category: application
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "应用错误日志率严重"
+          description: "服务 {{ $labels.instance }} 的错误日志率超过 {{ $value | printf \"%.2f" }}/s，可能存在严重问题"
+          action: "立即处理，检查应用日志"
+
+      - alert: HighPaymentErrorRate
+        expr: rate(app_error_log_total{category="payment"}[5m]) > ${PAYMENT_ERROR_RATE:-0.01}
+        for: 2m
+        labels:
+          severity: critical
+          category: payment
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "支付错误率较高"
+          description: "支付模块错误日志率超过 {{ $value | printf \"%.2f" }}/s，可能影响交易"
+          action: "立即检查支付服务"
+
+      - alert: HighSecurityErrorRate
+        expr: rate(app_error_log_total{category="security"}[5m]) > ${SECURITY_ERROR_RATE:-0.02}
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+          team: backend
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "安全错误率较高"
+          description: "安全模块检测到异常错误率 {{ $value | printf \"%.2f" }}/s"
+          action: "立即处理，安全事件"
+
+  # ==========================================
+  # SQL 慢查询告警
+  # ==========================================
+  - name: sql_slow_query_alerts
+    interval: 30s
+    rules:
+      - alert: CriticalSlowQueryImpact
+        expr: rate(slow_queries_total[1m]) > 50
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+          team: dba
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "慢查询严重影响性能"
+          description: "过去 1 分钟慢查询数超过 50 个"
+          action: "立即检查，可能需要回滚近期更改"
+
+      - alert: HighSQLErrorRate
+        expr: rate(sql_query_errors_total[5m]) / rate(sql_queries_total[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+          team: dba
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "SQL 错误率过高"
+          description: "SQL 错误率超过 1%"
+          action: "立即检查错误日志"
+
+  # ==========================================
+  # 监控告警
+  # ==========================================
+  - name: alerting_rules_health
+    interval: 1m
+    rules:
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: monitoring
+          team: ops
+          escalation: auto
+          escalation_level: '1'
+        annotations:
+          summary: "Alertmanager 不可用"
+          description: "Alertmanager 服务已离线，告警可能无法发送"
+          action: "立即处理，确保告警系统正常"

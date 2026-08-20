@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 APP_NAME="${APP_NAME:-qianfu-api}"
 NODE_ENV="${NODE_ENV:-production}"
-PORT="${PORT:-3000}"
+PORT="${PORT:-3001}"
 RUN_PREFLIGHT="1"
 RUN_PM2="1"
 SKIP_MIGRATE="0"
@@ -32,7 +32,7 @@ Options:
   --skip-pay-domain-probe  Skip dedicated pay-domain validation
   --strict-public-smoke  Fail the deployment when public smoke cannot run or reports issues
   --app-name <name>    PM2 process name (default: qianfu-api)
-  --port <port>        Health check port (default: 3000)
+  --port <port>        Health check port (default: 3001)
   -h, --help           Show this help
 
 Recommended (Baota):
@@ -291,13 +291,18 @@ fi
 
 log_step "Health check"
 HEALTH_OK="0"
-for path in "/api/health" "/health"; do
-  if curl -fsS "http://127.0.0.1:${PORT}${path}" >/dev/null 2>&1; then
-    log_ok "Health endpoint reachable: http://127.0.0.1:${PORT}${path}"
-    HEALTH_OK="1"
-    break
-  fi
-done
+LOCAL_HEALTH_HOST="${LOCAL_HEALTH_HOST:-$(derive_main_site_host || true)}"
+if [[ -z "$LOCAL_HEALTH_HOST" ]]; then
+  log_warn "Skipped loopback health check because no trusted public host could be derived."
+else
+  for path in "/api/health" "/health"; do
+    if curl -fsS -H "Host: ${LOCAL_HEALTH_HOST}" "http://127.0.0.1:${PORT}${path}" >/dev/null 2>&1; then
+      log_ok "Health endpoint reachable: http://127.0.0.1:${PORT}${path} (Host: ${LOCAL_HEALTH_HOST})"
+      HEALTH_OK="1"
+      break
+    fi
+  done
+fi
 
 if [[ "$HEALTH_OK" != "1" ]]; then
   log_warn "Health endpoint not reachable on port ${PORT}. Check reverse proxy / process logs."
@@ -362,16 +367,15 @@ if [[ "$RUN_PAY_DOMAIN_PROBE" == "1" ]]; then
 
       pay_tls_status="$(extract_probe_value tls_status "$pay_probe_output")"
       pay_html_status="$(extract_probe_value html_status "$pay_probe_output")"
-      pay_main_site_fallback="$(extract_probe_value looks_like_main_site "$pay_probe_output")"
-      pay_root_marker="$(extract_probe_value root_marker_match "$pay_probe_output")"
+      pay_closed="$(extract_probe_value personal_filing_disabled "$pay_probe_output")"
 
       pay_probe_error=""
-      if [[ "$pay_tls_status" == "wrong_principal" ]]; then
+      if [[ "$pay_closed" == "true" ]]; then
+        log_ok "Pay-domain personal_filing_closed: ${PAY_HOST} returns PERSONAL_FILING_DISABLED"
+      elif [[ "$pay_tls_status" == "wrong_principal" ]]; then
         pay_probe_error="${PAY_HOST} is presenting a certificate for another host."
-      elif [[ "$pay_main_site_fallback" == "true" ]]; then
-        pay_probe_error="${PAY_HOST} is serving HTML that looks like the main site."
-      elif [[ "$pay_root_marker" != "true" ]]; then
-        pay_probe_error="${PAY_HOST} root marker is missing; expected qianfu-pay-gateway but got html_status=${pay_html_status:-unknown}."
+      else
+        pay_probe_error="${PAY_HOST} did not return PERSONAL_FILING_DISABLED; got html_status=${pay_html_status:-unknown}."
       fi
 
       if [[ -n "$pay_probe_error" ]]; then
@@ -381,7 +385,7 @@ if [[ "$RUN_PAY_DOMAIN_PROBE" == "1" ]]; then
           exit 1
         fi
         log_warn "Pay-domain validation reported issues: $pay_probe_error"
-      else
+      elif [[ "$pay_closed" != "true" ]]; then
         log_ok "Pay-domain probe passed for ${PAY_HOST}"
       fi
     else
@@ -404,6 +408,6 @@ Next steps:
   1) Configure Nginx using templates in deploy/nginx/
   2) Verify domain routing for /api and /auth
   3) If public smoke was skipped, run: SMOKE_API_BASE_URL=https://your-domain.example npm run smoke:deploy
-  4) If you use a dedicated pay host, set PAY_DOMAIN_HOST or XPAY_PUBLIC_URL so deploy-time probes can catch wrong certificates and main-site fallback.
+  4) If you retain the legacy pay host, set PAY_DOMAIN_HOST so deploy-time probes can verify PERSONAL_FILING_DISABLED.
   5) To block completion on deployed-domain failures, rerun with: PUBLIC_SMOKE_BASE_URL=https://your-domain.example bash scripts/linux/deploy-bt-oneclick.sh --strict-public-smoke
 EOF

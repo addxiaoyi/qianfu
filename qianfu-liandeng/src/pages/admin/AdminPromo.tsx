@@ -1,13 +1,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import AdminStatCard from '@/components/AdminStatCard';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import AdminStatCard from '@/components/ui/AdminStatCard';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { useT, type TranslationKey } from '@/store/uiStore';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const AdminPromo: React.FC = () => {
   const t = useT();
@@ -74,9 +75,9 @@ const AdminPromo: React.FC = () => {
                 <div className="w-3 h-3 rounded-full bg-accent animate-pulse shadow-accent/20" />
                 推广任务操作建议
               </h3>
-              <button type="button" className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-all flex items-center gap-3 italic">
-                查看接口 <ChevronRight className="w-4 h-4" />
-              </button>
+              <Link to="/admin-promo/tasks" className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] hover:text-accent transition-all flex items-center gap-3 italic">
+                查看任务 <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
 
             <div className="border border-zinc-50 rounded-[4rem] overflow-hidden bg-white divide-y divide-zinc-50 shadow-xs">
@@ -109,7 +110,7 @@ const AdminPromo: React.FC = () => {
                 <div key={item.title} className="px-12 py-10 flex items-center justify-between gap-10 hover:bg-zinc-50/60 transition-all duration-500">
                   <div className="flex items-center gap-8">
                     <div className="w-16 h-16 rounded-[1.5rem] bg-zinc-50 flex items-center justify-center shadow-sm border border-zinc-100">
-                      <GeometricLantern variant={item.variant as any} className="w-7 h-7 text-zinc-300" />
+                      <GeometricLantern variant={item.variant as unknown} className="w-7 h-7 text-zinc-300" />
                     </div>
                     <div className="space-y-2">
                       <div className="text-[15px] font-black text-zinc-500 uppercase italic tracking-tight leading-tight">{item.title}</div>
@@ -145,9 +146,9 @@ const AdminPromo: React.FC = () => {
                   <span className="text-[10px] font-black font-mono text-blue-500 italic">{data?.tasks ?? 0}</span>
                 </div>
               </div>
-              <button type="button" className="w-full py-8 btn-accent rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl shadow-accent/20 transition-all duration-500 active:scale-95">
+              <Link to="/admin-promo/create" className="block w-full py-8 text-center btn-accent rounded-[3rem] text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl shadow-accent/20 transition-all duration-500 active:scale-95">
                 新建推广任务
-              </button>
+              </Link>
             </div>
 
             <div className="p-12 border border-zinc-50 rounded-[4rem] bg-accent text-white space-y-12 relative overflow-hidden group">

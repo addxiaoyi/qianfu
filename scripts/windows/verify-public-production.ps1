@@ -147,16 +147,19 @@ if (-not $SkipBrowserAudit) {
     }
 }
 
-if (-not $SkipPayDomain) {
+if (-not $SkipPayDomain -and $PayHost) {
     $results += Invoke-Step "pay domain probe" {
         node scripts/utils/domain-cert-probe.mjs --host $PayHost --expect-host $PayHost --main-site-host ([Uri]$BaseUrl).Host
     } {
         param($output)
         $text = ($output -join "`n")
         return $text -match "(?m)^tls_status=ok$" `
-            -and $text -match "(?m)^root_marker_match=true$" `
-            -and $text -match "(?m)^looks_like_main_site=false$"
+            -and $text -match "(?m)^personal_filing_disabled=true$"
     }
+} elseif (-not $PayHost) {
+    Write-Host ""
+    Write-Host "[verify] pay domain probe"
+    Write-Host "[skip] PAY_DOMAIN_HOST is not configured"
 }
 
 $failed = @($results | Where-Object { -not $_.Ok })
@@ -172,7 +175,7 @@ foreach ($item in $results) {
     Write-Host "$status $($item.Name) exit=$($item.ExitCode)"
 }
 
-if ($failed.Count -gt 0 -and -not $ReportOnly) {
+if ($failed.Count -gt 0) {
     exit 1
 }
 

@@ -119,8 +119,11 @@ test -L "$CONF_LINK"
 
 echo "[STEP] Verify local health endpoints"
 curl -fsS "http://127.0.0.1:3000/api/health" >/dev/null
-curl -fsS "http://127.0.0.1:8889/" >/dev/null || true
-curl -kfsS "https://$DOMAIN/" | grep -q 'qianfu-pay-gateway'
+closure_status="$(curl --silent --show-error --max-time 15 -o /tmp/qianfu-pay-domain-closure.body -w '%{http_code}' "https://$DOMAIN/" || true)"
+if [[ "$closure_status" != "410" ]] || ! grep -q 'PERSONAL_FILING_DISABLED' /tmp/qianfu-pay-domain-closure.body; then
+  echo "[FAIL] pay domain did not return HTTP 410 PERSONAL_FILING_DISABLED"
+  exit 1
+fi
 
 if [[ -f "$APP_ROOT/scripts/utils/domain-cert-probe.mjs" ]] && command -v node >/dev/null 2>&1; then
   echo "[STEP] Verify public certificate and site binding"
@@ -141,4 +144,4 @@ if [[ -f "$APP_ROOT/scripts/utils/domain-cert-probe.mjs" ]] && command -v node >
   fi
 fi
 
-echo "[OK] pay domain is configured: https://$DOMAIN"
+echo "[OK] pay domain closure is configured: https://$DOMAIN"

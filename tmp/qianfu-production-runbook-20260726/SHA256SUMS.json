@@ -1,0 +1,38 @@
+{
+  "created_for": "starx.0st.top",
+  "files": [
+    {
+      "bytes": 2202,
+      "name": "01-cleanup-qianfu-releases.sh",
+      "sha256": "421aba26aea08f3d07d84b178e4ea375c6113a6493f6526458c5b522af42e47c"
+    },
+    {
+      "bytes": 1166,
+      "name": "02-harden-sshd.sh",
+      "sha256": "9816f67cb33c70dcc1c77b4755f3edb5e79293b9b597eb99988bd0084c883b5f"
+    },
+    {
+      "bytes": 1720,
+      "name": "03-deploy-paypro-disabled.sh",
+      "sha256": "9dfff0e38f94cb2377923819983c13d4a4033211d9d819558276f4c2def6a5e5"
+    },
+    {
+      "bytes": 51520213,
+      "name": "paypro-production-20260726-disabled.tar.gz",
+      "sha256": "c756ae95724852bc8be1ae96bd7dc974c47de2f0165fbc0ad567552d59dcd529"
+    },
+    {
+      "bytes": 110,
+      "name": "paypro-production-20260726-disabled.tar.gz.sha256",
+      "sha256": "81f572cb9c3617d13c3f22e8e7a3d4b6a9b4236550449f1cae46a009a8fb6f44"
+    },
+    {
+      "bytes": 504,
+      "name": "paypro-production-20260726-disabled.manifest.json",
+      "sha256": "be30942b1c9e2f09563c34bd5ced9a3bed8e521bb09ed98c4d2210f66434d0f3"
+    }
+  ],
+  "payments_enabled": false,
+  "paypro_bind": "127.0.0.1:8889",
+  "qianfu_current_expected": "20260724-2305-promo-tier-settlement"
+}

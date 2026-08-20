@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 8080;
+const PORT = Number(process.env.XPAY_MOCK_PORT || process.env.PORT || 8080);
 
 // Configuration
 // 生产环境提示：此文件仅用于本地开发模拟。

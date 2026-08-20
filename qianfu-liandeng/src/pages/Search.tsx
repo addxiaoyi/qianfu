@@ -1,19 +1,44 @@
 import React, { useState } from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import GeometricLantern from '@/components/ui/GeometricLantern';
+import { useQuery } from '@tanstack/react-query';
+import { request } from '@/api/request';
+import {
+  getServerName,
+  getServerPlayersOnline,
+  getServerSummary,
+  getServerThumbnail,
+} from '@/utils/serverView';
+import type { ServerListItem } from '@/types/server';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const CATEGORIES = ['生存', '创造', 'PVP', '模组', '小游戏', 'RPG', '纯净', '空岛', '科技', '魔法'];
 const VERSIONS = ['1.20.x', '1.19.x', '1.18.x', '1.16.x', '1.12.2', '1.8.x', '基岩版'];
 
-const resultCardBase = 'group block space-y-8';
-
 const SearchPage: React.FC = () => {
-  const [query, setQuery] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get('q') || searchParams.get('search') || '');
+  const [selectedTags, setSelectedTags] = useState<string[]>(() =>
+    (searchParams.get('category') || '').split(',').filter((tag) => CATEGORIES.includes(tag)),
+  );
+  const [selectedVersion, setSelectedVersion] = useState<string | null>(() => searchParams.get('version'));
   const navigate = useNavigate();
+
+  const { data: servers = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['advanced-search', query, selectedTags, selectedVersion],
+    queryFn: () => request<ServerListItem[]>(isRustV2Enabled() ? rustV2Path('/servers') : '/public/servers', {
+      params: {
+        search: query.trim() || undefined,
+        category: selectedTags.join(',') || undefined,
+        version: selectedVersion || undefined,
+        limit: 12,
+      },
+      useAuth: false,
+      ...(isRustV2Enabled() ? rustV2RequestOptions : {}),
+    }),
+  });
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
@@ -34,11 +59,11 @@ const SearchPage: React.FC = () => {
              animate={{ opacity: 1, x: 0 }}
              className="text-6xl sm:text-7xl lg:text-[9rem] font-black tracking-tighter uppercase leading-[0.85] text-black italic break-words"
            >
-              探索 <br />
-              <span className="text-zinc-200">网络世界。</span>
+              搜索 <br />
+              <span className="text-zinc-200">Minecraft 服务器</span>
            </motion.h1>
            <p className="text-zinc-400 font-bold max-w-2xl text-lg sm:text-xl lg:text-2xl leading-relaxed italic">
-              通过高级多维筛选发现下一个值得入驻的世界。我们实时索引超过 12,000+ 服务器节点。
+              通过名称、玩法和版本筛选已通过审核的公开服务器。当前结果直接来自站内公开目录。
            </p>
         </header>
 
@@ -47,7 +72,10 @@ const SearchPage: React.FC = () => {
            <div className="relative group">
               <GeometricLantern variant="spark" className="absolute left-8 top-1/2 -translate-y-1/2 w-8 h-8 text-zinc-300 group-focus-within:text-black transition-all" />
               <input 
-                type="text" 
+                type="search"
+                name="global-server-search"
+                aria-label="搜索服务器"
+                autoComplete="off"
                 placeholder="搜索服务器名称、描述、IP 地址或标签..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -116,19 +144,18 @@ const SearchPage: React.FC = () => {
 
            {/* Execution Bar */}
            <div className="pt-12 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="flex gap-8">
-                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest italic">
-                    <GeometricLantern variant="user" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 热度高
-                 </button>
-                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
-                    <GeometricLantern variant="network" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 最近动态
-                 </button>
-                 <button type="button" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-black transition-colors italic">
-                    <GeometricLantern variant="spark" className="w-4 h-4 text-zinc-300 group-hover:text-black transition-colors" /> 算法推荐
-                 </button>
+              <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground italic">
+                 <GeometricLantern variant="security" className="w-4 h-4" /> 仅显示已审核公开数据
               </div>
               <button type="button" 
-                onClick={() => navigate('/servers')}
+                 onClick={() => {
+                   const params = new URLSearchParams();
+                   const trimmedQuery = query.trim();
+                   if (trimmedQuery) params.set('search', trimmedQuery);
+                   if (selectedTags.length > 0) params.set('category', selectedTags.join(','));
+                   if (selectedVersion) params.set('version', selectedVersion);
+                   navigate(`/servers${params.toString() ? `?${params.toString()}` : ''}`);
+                 }}
                 className="w-full md:w-auto px-16 py-6 bg-black text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-black/10 italic active:scale-95"
               >
                  执行查询系统 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -136,47 +163,43 @@ const SearchPage: React.FC = () => {
            </div>
         </div>
 
-        {/* Dynamic Recommendations */}
+        {/* Public directory results */}
         <section className="mt-64 space-y-16">
            <header className="flex items-end justify-between border-b border-zinc-100 pb-8">
               <div className="space-y-1">
-                 <h2 className="text-4xl font-black tracking-tighter uppercase italic">精选发现。</h2>
-                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">基于您最近的浏览行为 / NOC_RECOMMEND</p>
+                 <h2 className="text-4xl font-black tracking-tighter uppercase italic">公开结果。</h2>
+                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest italic">{isLoading ? '正在读取公开目录' : isError ? '目录读取失败' : `本次返回 ${servers.length} 条真实记录`}</p>
               </div>
-              <button type="button" className="px-6 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-black hover:text-white transition-all italic">
+              <button type="button" onClick={() => void refetch()} className="px-6 py-2 bg-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:bg-black hover:text-white transition-all italic">
                  刷新结果
               </button>
            </header>
 
            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {[1,2,3].map(i => (
-                <Link key={i} to="/servers" className={resultCardBase}>
-                   <div className="w-full aspect-video bg-zinc-50 rounded-[2.5rem] overflow-hidden relative border border-transparent group-hover:border-black transition-all duration-700 ease-out shadow-xs group-hover:shadow-2xl">
-                      <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
-                      <div className="absolute top-8 left-8 px-3 py-1 bg-white text-black text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm italic">
-                         分类：RPG
-                      </div>
-                   </div>
-                   <div className="space-y-4 px-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black font-mono text-zinc-400 uppercase tracking-widest italic">
-                         <GeometricLantern variant="network" className="w-3 h-3" /> 12ms 延迟 / 亚洲北部
-                      </div>
-                      <h3 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase group-hover:text-black transition-colors italic group-hover:translate-x-2 transition-transform duration-500 break-words">服务器节点 #{i}</h3>
-                      <p className="text-muted-foreground font-medium leading-relaxed line-clamp-2 italic">
-                         一个高精度的生存与角色扮演服务器，内置完整的经济系统与社区自治法案。
-                      </p>
-                      <div className="flex items-center justify-between pt-4">
-                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                            <span className="text-[10px] font-black font-mono uppercase tracking-widest italic">4.2k 日活跃</span>
-                         </div>
-                         <div className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-500">
-                            <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                         </div>
-                      </div>
-                   </div>
-                </Link>
-              ))}
+              {isLoading ? <div className="col-span-full py-20 text-center text-zinc-400 font-bold">正在加载真实服务器数据…</div> : null}
+              {isError ? <div className="col-span-full py-20 text-center text-red-500 font-bold">公开目录暂时不可用，请稍后重试。</div> : null}
+              {!isLoading && !isError && servers.length === 0 ? <div className="col-span-full py-20 text-center text-zinc-400 font-bold">没有符合条件的已审核服务器。</div> : null}
+               {servers.map((server) => {
+                 const name = getServerName(server);
+                 const thumbnail = getServerThumbnail(server);
+                 const players = getServerPlayersOnline(server);
+                 const summary = getServerSummary(server);
+                 const isOnline = Boolean(server.status?.online);
+
+                 return (
+                   <Link key={server.id} to={`/server/${server.id}`} className="group block space-y-6 rounded-[2.5rem] border border-zinc-100 p-7 transition hover:border-zinc-300 hover:shadow-xl">
+                     <div className="aspect-video overflow-hidden rounded-[1.75rem] bg-zinc-100">
+                       {thumbnail ? <img src={thumbnail} alt={name} className="h-full w-full object-cover" loading="lazy" /> : null}
+                     </div>
+                     <div className="flex items-center gap-2 text-[10px] font-black text-zinc-400">
+                       <GeometricLantern variant="network" className="h-3.5 w-3.5" />
+                       {isOnline ? `${players} 人在线` : '当前离线或尚未探测'}
+                     </div>
+                     <h3 className="text-2xl font-black tracking-tight">{name}</h3>
+                     <p className="line-clamp-2 text-sm font-medium leading-6 text-zinc-500">{summary}</p>
+                   </Link>
+                 );
+               })}
            </div>
         </section>
       </div>

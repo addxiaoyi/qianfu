@@ -63,7 +63,7 @@ const TouchButton = forwardRef<HTMLButtonElement, TouchButtonProps>(
         onClick={onPress}
         onTouchStart={() => onPressIn?.()}
         onTouchEnd={() => onPressOut?.()}
-        {...(rest as any)}
+        {...(rest as unknown)}
       >
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center">

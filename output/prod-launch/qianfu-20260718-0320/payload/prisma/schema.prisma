@@ -1,0 +1,863 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "./generated/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-1.1.x"]
+}
+
+generator localClient {
+  provider      = "prisma-client-js"
+  output        = "./generated/local-client"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "rhel-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  password_hash       String?
+  /// SuperTokens 主用户 ID（与 Session.getUserId() 一致），用于会话与业务用户绑定
+  supertokens_user_id String?   @unique
+  supabase_id         String?   @unique
+  username            String?
+  display_name        String?
+  avatar_url          String?
+  role                String    @default("NORMAL")
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  password_changed_at DateTime?
+  email_verified      Boolean   @default(false)
+  verification_token  String?
+  token_expiry        DateTime?
+  last_login_at       DateTime?
+  login_count         Int       @default(0)
+  email_cipher        String?
+  preferences         String?   @default("{}")
+  bio_html            String?
+  permissions         String    @default("[]")
+  reset_token         String?
+  reset_token_expiry  DateTime?
+  /// 累计经验值（点赞、签到、评论等），用于 1–100 级
+  experience_points   Int       @default(0)
+  /// 上次签到时间（UTC），每日限一次
+  last_checkin_at     DateTime?
+  /// 用于登录验证码发送频率控制
+  last_code_send_at   DateTime?
+  /// 验证码连续验证失败后的锁定截止时间（UTC）
+  login_lockout_at    DateTime?
+  /// 手机号，独立于 email，避免未来邮箱登录冲突
+  phone               String?   @unique
+  marketplace_seller_status String @default("ACTIVE") // ACTIVE, SUSPENDED
+  marketplace_seller_notes  String?
+
+  servers                      Server[]
+  edited_versions              ServerVersion[]             @relation("UserEditedVersions")
+  user_versions                UserBioVersion[]            @relation("UserBioVersions")
+  reviewed_servers             Server[]                    @relation("ServerReviewer")
+  review_history               ReviewHistory[]
+  assigned_permissions         PermissionHistory[]         @relation("PermissionAssigner")
+  permission_history           PermissionHistory[]
+  audit_logs                   AuditLog[]
+  moderation_logs              ModerationLog[]
+  tickets                      Ticket[]
+  ticket_messages              TicketMessage[]
+  payments                     Payment[]
+  wallet                       Wallet?
+  notifications                Notification[]
+  sessions                     Session[]
+  reports_made                 Report[]                    @relation("ReportReporter")
+  reports_handled              Report[]                    @relation("ReportHandler")
+  server_comments              ServerComment[]
+  server_likes                 ServerLike[]
+  server_favorites             ServerFavorite[]
+  marketplace_products         MarketplaceProduct[]
+  marketplace_orders           MarketplaceOrder[]
+  marketplace_reviews          MarketplaceReview[]
+  marketplace_favorites        MarketplaceFavorite[]
+  marketplace_fulfillment_logs MarketplaceFulfillmentLog[]  @relation("MarketplaceFulfillmentLog")
+  PromoPlatformBinding         PromoPlatformBinding[]
+  PromoClaimRecord             PromoClaimRecord[]
+  PromoWalletTransaction       PromoWalletTransaction[]
+  api_keys                     ApiKey[]
+
+  @@index([role])
+  @@index([created_at])
+  @@index([last_login_at])
+  @@index([email_verified])
+  @@index([username])
+  @@index([permissions])
+  @@index([preferences])
+  @@index([marketplace_seller_status])
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  token      String   @unique
+  expires_at DateTime
+  user_agent String?
+  ip_address String?
+  is_revoked Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([token])
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  title      String
+  content    String
+  type       String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+  @@index([is_read])
+  @@index([created_at])
+}
+
+model Wallet {
+  id           Int           @id @default(autoincrement())
+  user_id      Int           @unique
+  user         User          @relation(fields: [user_id], references: [id])
+  balance      Int           @default(0) // Stored as Int (fen) for precision, 1 yuan = 100 fen
+  currency     String        @default("CNY")
+  is_active    Boolean       @default(true)
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+  transactions Transaction[]
+
+  @@index([user_id])
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  wallet_id   Int
+  wallet      Wallet   @relation(fields: [wallet_id], references: [id])
+  amount      Int // Stored as Int (fen), positive for deposit, negative for deduction
+  type        String // DEPOSIT, PAYMENT, REFUND, ADJUSTMENT
+  status      String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  description String?
+  metadata    String? // JSON string for extra details
+  signature   String? // HMAC signature for integrity check
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([wallet_id])
+  @@index([created_at])
+  @@index([type])
+  @@index([metadata])
+}
+
+model UserBioVersion {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  user         User     @relation("UserBioVersions", fields: [user_id], references: [id])
+  version      Int
+  content_html String?
+  editor_id    Int?
+  created_at   DateTime @default(now())
+
+  @@unique([user_id, version])
+}
+
+model Server {
+  id                 Int       @id @default(autoincrement())
+  owner_id           Int
+  owner              User      @relation(fields: [owner_id], references: [id])
+  name               String
+  name_en            String?
+  thumbnail          String?
+  summary            String?
+  summary_en         String?
+  content_html       String?
+  ip                 String?   @default("Hidden")
+  group_number       String?
+  tags               String?   @default("[]")
+  link               String?
+  activity           Int       @default(0)
+  synced_at          DateTime?
+  review_status      String    @default("PENDING")
+  review_notes       String?
+  reviewed_by        Int?
+  reviewer           User?     @relation("ServerReviewer", fields: [reviewed_by], references: [id])
+  reviewed_at        DateTime?
+  listing_plan       String?
+  listing_started_at DateTime?
+  listing_expires_at DateTime?
+  listing_price_paid Int?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  /// java | bedrock — listing filter + publish form
+  platform           String?
+  /// 生存 / 小游戏 / RPG / 空岛 / 模组 / 领域 等
+  category           String?
+  /// 正版验证是否开启；null 表示未填写（老数据）
+  online_mode        Boolean?
+  /// JSON 数组字符串，如 ["1.20.4","1.21"]
+  supported_versions String?
+  /// JSON 数组字符串，网络环境多选
+  network_env        String?
+  like_count         Int       @default(0)
+  comment_count      Int       @default(0)
+
+  versions       ServerVersion[]
+  status         ServerStatus?
+  status_history ServerStatusHistory[]
+  comments       ServerComment[]
+  likes          ServerLike[]
+  favorites      ServerFavorite[]
+
+  @@index([owner_id])
+  @@index([review_status])
+  @@index([activity])
+  @@index([tags])
+  @@index([supported_versions])
+  @@index([network_env])
+  @@index([created_at])
+  @@index([updated_at])
+  @@index([listing_expires_at])
+  @@index([name])
+  @@index([name_en])
+  @@index([ip])
+  @@index([platform])
+  @@index([category])
+  // Optimize searching for active servers
+  @@index([review_status, activity(sort: Desc)])
+}
+
+/// 探针采样时间序列，用于人数曲线复盘
+model ServerStatusHistory {
+  id             Int      @id @default(autoincrement())
+  server_id      Int
+  server         Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  sampled_at     DateTime @default(now())
+  online         Boolean
+  players_online Int?
+  players_max    Int?
+  latency_ms     Int?
+  version_raw    String?
+
+  @@index([server_id, sampled_at])
+  @@index([sampled_at])
+}
+
+model ServerComment {
+  id         Int      @id @default(autoincrement())
+  server_id  Int
+  server     Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  body       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([server_id, created_at])
+}
+
+model ServerLike {
+  id         Int      @id @default(autoincrement())
+  server_id  Int
+  server     Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+
+  @@unique([server_id, user_id])
+  @@index([server_id])
+}
+
+model ServerFavorite {
+  id         Int      @id @default(autoincrement())
+  server_id  Int
+  server     Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  created_at DateTime @default(now())
+
+  @@unique([server_id, user_id])
+  @@index([server_id])
+  @@index([user_id])
+}
+
+model ServerStatus {
+  id              Int      @id @default(autoincrement())
+  serverId        Int      @unique
+  server          Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  online          Boolean  @default(false)
+  host            String
+  port            Int
+  versionNameRaw  String?
+  versionProtocol Int?
+  playersOnline   Int?
+  playersMax      Int?
+  playersList     String?
+  motdRaw         String?
+  motdClean       String?
+  motdHtml        String?
+  favicon         String?
+  srvRecord       String?
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  // Optimize queries for online status and player counts
+  @@index([online])
+  @@index([playersOnline(sort: Desc)])
+  @@index([lastUpdated])
+  @@index([serverId])
+}
+
+model SystemConfig {
+  key         String   @id
+  value       String
+  is_secret   Boolean  @default(false)
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model TeamMember {
+  id             Int      @id @default(autoincrement())
+  qq             String   @unique
+  name           String
+  name_en        String?
+  role           String
+  role_en        String?
+  description    String?
+  description_en String?
+  avatar_url     String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model AllianceGroup {
+  id             String   @id
+  name           String
+  name_en        String?
+  link           String?
+  description    String?
+  description_en String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model ResourceLink {
+  id             Int      @id @default(autoincrement())
+  title          String   @unique
+  title_en       String?
+  url            String
+  description    String?
+  description_en String?
+  category       String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([category])
+}
+
+model ServerVersion {
+  id           Int      @id @default(autoincrement())
+  server_id    Int
+  server       Server   @relation(fields: [server_id], references: [id], onDelete: Cascade)
+  version      Int
+  name         String?
+  summary      String?
+  content_html String?
+  tags         String?
+  ip           String?
+  editor_id    Int?
+  editor       User?    @relation("UserEditedVersions", fields: [editor_id], references: [id])
+  created_at   DateTime @default(now())
+
+  @@unique([server_id, version])
+  @@index([server_id])
+  @@index([created_at])
+}
+
+model ReviewHistory {
+  id          Int      @id @default(autoincrement())
+  reviewer_id Int
+  reviewer    User     @relation(fields: [reviewer_id], references: [id])
+  server_id   Int
+  action      String // APPROVED, REJECTED, NEEDS_CHANGES
+  notes       String?
+  created_at  DateTime @default(now())
+
+  @@index([server_id])
+  @@index([reviewer_id])
+  @@index([created_at])
+}
+
+model PermissionHistory {
+  id         Int      @id @default(autoincrement())
+  admin_id   Int
+  admin      User     @relation("PermissionAssigner", fields: [admin_id], references: [id])
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  action     String // GRANTED, REVOKED
+  permission String
+  created_at DateTime @default(now())
+
+  @@index([user_id])
+  @@index([admin_id])
+  @@index([created_at])
+  @@index([user_id, created_at])
+}
+
+model AuditLog {
+  id             Int       @id @default(autoincrement())
+  user_id        Int?
+  user           User?     @relation(fields: [user_id], references: [id])
+  action         String
+  target         String?
+  details        String?
+  ip_address     String?
+  method         String?   // HTTP method: GET, POST, PUT, DELETE
+  endpoint       String?   // Target endpoint path
+  user_agent     String?   // Client user agent
+  session_id     String?   // Session ID from SuperTokens
+  rechecked_at   DateTime?
+  recheck_status String?
+  rechecked_by   Int?
+  hash           String? // HMAC signature for integrity check
+  previous_hash  String? // Hash of the previous log entry
+  created_at     DateTime  @default(now())
+
+  @@index([user_id])
+  @@index([action])
+  @@index([created_at])
+  @@index([created_at, action])
+  @@index([user_id, created_at])
+  @@index([rechecked_at])
+  @@index([recheck_status])
+  @@index([ip_address])
+}
+
+model ApiKey {
+  id          Int       @id @default(autoincrement())
+  name        String
+  key_hash    String    @unique // SHA-256 hash of the API key
+  user_id     Int?
+  user        User?     @relation(fields: [user_id], references: [id])
+  permissions String?   @default("[]") // JSON array of permission strings
+  expires_at  DateTime?
+  last_used_at DateTime?
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@index([key_hash])
+  @@index([user_id])
+}
+
+model ModerationLog {
+  id           Int      @id @default(autoincrement())
+  user_id      Int?
+  user         User?    @relation(fields: [user_id], references: [id])
+  action       String // e.g. "keyword_block", "spam_detection"
+  content_type String // "comment", "server_desc", etc.
+  content      String? // The content that triggered the moderation
+  reason       String?
+  created_at   DateTime @default(now())
+
+  @@index([action])
+  @@index([created_at])
+}
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+  title       String
+  description String
+  category    String   @default("SUPPORT") // SUPPORT, FEEDBACK, BUG
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, CLOSED
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  payment_id  String?
+  payment     Payment? @relation(fields: [payment_id], references: [id])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  messages TicketMessage[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([user_id])
+  @@index([updated_at])
+  @@index([created_at])
+  @@index([user_id, status, updated_at])
+  @@index([payment_id])
+}
+
+model TicketMessage {
+  id         Int      @id @default(autoincrement())
+  ticket_id  Int
+  ticket     Ticket   @relation(fields: [ticket_id], references: [id])
+  sender_id  Int? // Null if system/AI
+  sender     User?    @relation(fields: [sender_id], references: [id])
+  content    String
+  is_ai      Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@index([ticket_id])
+  @@index([created_at])
+}
+
+model Payment {
+  id               String             @id @default(uuid())
+  user_id          Int
+  user             User               @relation(fields: [user_id], references: [id])
+  amount           Int // Stored as Int (fen)
+  currency         String             @default("CNY")
+  status           String // PENDING, COMPLETED, FAILED
+  plan_id          String
+  payment_method   String
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  tickets          Ticket[]
+  MarketplaceOrder MarketplaceOrder[]
+
+  @@index([user_id])
+  @@index([status])
+  @@index([plan_id])
+  @@index([created_at])
+  @@index([updated_at])
+  @@index([user_id, created_at])
+  @@index([status, created_at])
+}
+
+model IntroPage {
+  id                Int       @id @default(autoincrement())
+  slug              String    @unique
+  title             String
+  content_md        String
+  content_html      String
+  status            String    @default("DRAFT") // DRAFT, PENDING, REJECTED, PUBLISHED
+  version           Int       @default(1)
+  hash              String?
+  seo_title         String?
+  seo_description   String?
+  editor_lock_user  Int?
+  lock_expires_at   DateTime?
+  last_published_at DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  versions IntroPageVersion[]
+}
+
+model IntroPageVersion {
+  id           Int       @id @default(autoincrement())
+  page_id      Int
+  page         IntroPage @relation(fields: [page_id], references: [id], onDelete: Cascade)
+  version      Int
+  title        String
+  content_md   String
+  content_html String
+  author_id    Int?
+  hash         String?
+  created_at   DateTime  @default(now())
+
+  @@index([page_id])
+  @@index([version])
+}
+
+model Report {
+  id               Int      @id @default(autoincrement())
+  reporter_id      Int
+  reporter         User     @relation("ReportReporter", fields: [reporter_id], references: [id])
+  target_type      String // SERVER, USER, REVIEW, COMMENT
+  target_id        Int
+  target_ref       String?
+  reason           String
+  description      String?
+  status           String   @default("PENDING") // PENDING, REVIEWING, RESOLVED, REJECTED
+  resolution_notes String?
+  handler_id       Int?
+  handler          User?    @relation("ReportHandler", fields: [handler_id], references: [id])
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@index([reporter_id])
+  @@index([status])
+  @@index([created_at])
+  @@index([target_type, target_ref])
+}
+
+model MarketplaceProduct {
+  id                  String                         @id
+  title               String
+  category            String
+  description         String
+  price               Int // 单位: 分 (1 CNY = 100 fen), 避免 Float 精度问题
+  sales               Int                            @default(0)
+  rating              Float                          @default(0)
+  review_count        Int                            @default(0)
+  is_published        Boolean                        @default(true)
+  listing_status      String                         @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED, SUSPENDED
+  moderation_notes    String?
+  author_name         String
+  cover_url           String?
+  download_url        String?
+  created_at          DateTime                       @default(now())
+  updated_at          DateTime                       @updatedAt
+  creator_id          Int?
+  creator             User?                          @relation(fields: [creator_id], references: [id], onDelete: SetNull)
+  orders              MarketplaceOrder[]
+  reviews             MarketplaceReview[]
+  config_versions     MarketplaceShopConfigVersion[]
+  MarketplaceFavorite MarketplaceFavorite[]
+
+  @@index([category])
+  @@index([price])
+  @@index([sales])
+  @@index([is_published])
+  @@index([listing_status])
+  @@index([created_at])
+}
+
+model MarketplaceOrder {
+  id                        String                      @id
+  product_id                String
+  product                   MarketplaceProduct          @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  buyer_id                  Int?
+  buyer                     User?                       @relation(fields: [buyer_id], references: [id], onDelete: SetNull)
+  buyer_name                String
+  quantity                  Int                         @default(1)
+  total_price               Int // 单位: 分 (1 CNY = 100 fen), 避免 Float 精度问题
+  status                    String                      @default("PAID")
+  payment_status            String                      @default("PENDING")
+  fulfillment_status        String                      @default("PENDING")
+  dispute_status            String                      @default("NONE") // NONE, OPEN, RESOLVED, REJECTED
+  dispute_reason            String?
+  dispute_description       String?
+  dispute_resolution        String?
+  dispute_opened_at         DateTime?
+  dispute_resolved_at       DateTime?
+  delivery_url              String?
+  payment_id                String?
+  payment                   Payment?                    @relation(fields: [payment_id], references: [id], onDelete: SetNull)
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @updatedAt
+  MarketplaceFulfillmentLog MarketplaceFulfillmentLog[]
+
+  @@index([product_id])
+  @@index([buyer_id])
+  @@index([created_at])
+  @@index([payment_status])
+  @@index([fulfillment_status])
+  @@index([dispute_status])
+}
+
+model MarketplaceReview {
+  id         String             @id
+  product_id String
+  product    MarketplaceProduct @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user_id    Int?
+  user       User?              @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  rating     Int
+  content    String?
+  created_at DateTime           @default(now())
+  updated_at DateTime           @updatedAt
+
+  @@index([product_id])
+  @@index([user_id])
+  @@index([created_at])
+  @@unique([product_id, user_id])
+}
+
+model MarketplaceFavorite {
+  id         String             @id
+  product_id String
+  product    MarketplaceProduct @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  user       User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  created_at DateTime           @default(now())
+
+  @@unique([product_id, user_id])
+  @@index([user_id])
+  @@index([product_id])
+}
+
+model MarketplaceFulfillmentLog {
+  id         String           @id
+  order_id   String
+  order      MarketplaceOrder @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  status     String
+  note       String?
+  created_at DateTime         @default(now())
+  userId     Int?
+  user       User?            @relation("MarketplaceFulfillmentLog", fields: [userId], references: [id])
+
+  @@index([order_id])
+  @@index([status])
+  @@index([created_at])
+}
+
+model MarketplaceShopConfigVersion {
+  id                 String              @id
+  owner_id           Int?
+  product_id         String?
+  product            MarketplaceProduct? @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  banner_url         String
+  avatar_url         String
+  announcement_title String
+  announcement_text  String
+  bio                String
+  shop_name          String
+  theme              String              @default("default")
+  visit_count        Int                 @default(0)
+  click_count        Int                 @default(0)
+  is_active          Boolean             @default(false)
+  created_at         DateTime            @default(now())
+
+  @@index([owner_id])
+  @@index([product_id])
+  @@index([created_at])
+  @@index([is_active])
+}
+
+model PromoPlatformBinding {
+  id                Int       @id @default(autoincrement())
+  user_id           Int
+  user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  platform          String
+  platform_user_id  String
+  platform_username String?
+  binding_status    String    @default("PENDING")
+  bind_source       String    @default("MANUAL")
+  verified_at       DateTime?
+  last_verify_at    DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  @@unique([platform, platform_user_id])
+  @@unique([user_id, platform])
+  @@index([user_id])
+  @@index([platform])
+  @@index([binding_status])
+}
+
+model PromoTask {
+  id                   Int       @id @default(autoincrement())
+  title                String
+  description          String?
+  platform             String
+  target_type          String    @default("video")
+  target_id            String
+  target_url           String
+  cover_url            String?
+  reward_amount        Int
+  reward_type          String    @default("BALANCE")
+  rule_config          String
+  claim_limit_per_user Int       @default(1)
+  total_limit          Int?
+  daily_limit          Int?
+  need_audit           Boolean   @default(false)
+  auto_verify          Boolean   @default(true)
+  status               String    @default("DRAFT")
+  start_at             DateTime?
+  end_at               DateTime?
+  rule_version         Int       @default(1)
+  created_by           Int?
+  published_by         Int?
+  published_at         DateTime?
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  claims PromoClaimRecord[]
+
+  @@unique([platform, target_id])
+  @@index([status])
+  @@index([platform])
+  @@index([created_at])
+  @@index([start_at, end_at])
+}
+
+model PromoClaimRecord {
+  id               Int              @id @default(autoincrement())
+  task_id          Int
+  task             PromoTask        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  user_id          Int
+  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  platform_user_id String
+  claim_status     String           @default("PENDING")
+  reward_status    String           @default("PENDING")
+  verify_result    String?
+  verify_detail    String?
+  proof_data       String?
+  claim_request_no String           @unique
+  claim_no         Int
+  idempotency_key  String
+  claim_at         DateTime         @default(now())
+  verified_at      DateTime?
+  rewarding_at     DateTime?
+  rewarded_at      DateTime?
+  failed_reason    String?
+  audit_by         Int?
+  audit_note       String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  PromoVerifyLog   PromoVerifyLog[]
+
+  @@unique([user_id, task_id, claim_no])
+  @@unique([user_id, task_id, idempotency_key])
+  @@index([task_id])
+  @@index([user_id])
+  @@index([claim_status])
+  @@index([reward_status])
+  @@index([platform_user_id])
+}
+
+model PromoVerifyLog {
+  id               Int              @id @default(autoincrement())
+  claim_id         Int
+  claim            PromoClaimRecord @relation(fields: [claim_id], references: [id], onDelete: Cascade)
+  task_id          Int
+  user_id          Int
+  platform_user_id String
+  verify_status    String
+  request_data     String?
+  response_data    String?
+  error_message    String?
+  source           String?
+  created_at       DateTime         @default(now())
+
+  @@index([claim_id])
+  @@index([task_id])
+  @@index([user_id])
+  @@index([verify_status])
+  @@index([created_at])
+}
+
+model PromoWalletTransaction {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  change_amount  Int
+  direction      String
+  change_type    String
+  ref_type       String
+  ref_id         Int
+  before_balance Int
+  after_balance  Int
+  remark         String?
+  created_by     Int?
+  created_at     DateTime @default(now())
+
+  @@index([user_id])
+  @@index([change_type])
+  @@unique([ref_type, ref_id])
+  @@index([created_at])
+}

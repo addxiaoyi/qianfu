@@ -400,11 +400,16 @@ run_validation() {
   log_ok "Local API health checked on ${API_PORT}"
 
   if should_repair_pay; then
-    log_step "Validate pay-domain root marker"
-    curl -kfsS "https://${PAY_DOMAIN}/" | grep -q 'qianfu-pay-gateway'
-    log_ok "Pay-domain root marker matched"
+    log_step "Validate pay-domain closure"
+    closure_status="$(curl --silent --show-error --max-time 15 -o /tmp/qianfu-pay-closure.body -w '%{http_code}' "https://${PAY_DOMAIN}/" || true)"
+    closure_body="$(cat /tmp/qianfu-pay-closure.body 2>/dev/null || true)"
+    if [[ "$closure_status" == "410" && "$closure_body" == *"PERSONAL_FILING_DISABLED"* ]]; then
+      log_ok "Pay-domain personal filing closure matched"
+    else
+      log_fail "Pay-domain did not return HTTP 410 PERSONAL_FILING_DISABLED (status=${closure_status:-unknown})"
+    fi
   else
-    log_warn "Skipping pay-domain root marker validation because REPAIR_SCOPE=${REPAIR_SCOPE}"
+    log_warn "Skipping pay-domain closure validation because REPAIR_SCOPE=${REPAIR_SCOPE}"
   fi
 
   local can_run_frontend_probe="0"

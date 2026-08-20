@@ -1,44 +1,110 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import LegalDocument, { LegalSection } from '@/components/layout/LegalDocument';
 
-const Privacy: React.FC = () => {
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-24">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="prose prose-invert max-w-none bg-card border border-border p-12 rounded-[2.5rem] shadow-xl"
-      >
-        <div className="mb-10 text-[10px] font-black uppercase tracking-[0.45em] italic text-accent">DATA_GOVERNANCE</div>
-        <h1 className="text-4xl font-black mb-8 tracking-tight">隐私政策 (Privacy Policy)</h1>
-        
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">1. 数据收集</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            我们收集您的基本个人信息（如邮箱、用户名）用于账户创建与验证。同时收集您的支付记录与服务器宣传数据以维持业务运行。
-          </p>
-        </section>
+const Privacy: React.FC = () => (
+  <LegalDocument
+    eyebrow="LEGAL / PRIVACY"
+    title="千服联灯隐私声明"
+    summary="本声明说明千服联灯平台运营方在提供账户、服务器展示、公开状态、内容审核与支持服务时如何收集、使用、保存、共享和保护个人信息，以及您可以如何行使相关权利。"
+  >
+    <LegalSection id="scope" title="1. 适用范围与处理者">
+      <p>本声明适用于千服联灯网站、移动界面、应用接口及相关服务。个人信息处理者为千服联灯平台运营方；具体运营主体信息如在站点公示页面更新，以该公示为准。</p>
+      <p>第三方服务器、外部链接或用户自行运营的网站有其独立隐私规则。本声明不替代其规则，但平台会对受托处理和必要共享承担适用法律规定的管理责任。</p>
+    </LegalSection>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">2. Cookie 使用</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            我们使用 HttpOnly Cookie 来管理您的会话，这有助于提高安全性。我们不会使用这些数据进行跨站追踪。
-          </p>
-        </section>
+    <LegalSection id="collection" title="2. 我们处理的信息">
+      <p>根据您使用的功能，我们可能处理以下信息：</p>
+      <ul className="list-disc space-y-2 pl-6">
+        <li><strong className="text-foreground">账户与验证信息：</strong>用户名、邮箱、验证状态、账户 ID、登录方式和账户安全设置；</li>
+        <li><strong className="text-foreground">公开资料与用户内容：</strong>头像、简介、标签、服务器资料、新闻投稿、评价、评论和您主动公开的其他内容；</li>
+        <li><strong className="text-foreground">设备与日志信息：</strong>IP 地址、浏览器和设备类型、操作系统、访问时间、页面和接口记录、错误日志、会话标识及安全事件记录；</li>
+        <li><strong className="text-foreground">支持与治理信息：</strong>工单、举报、申诉、审核材料、沟通内容和处理结果；</li>
+        <li><strong className="text-foreground">您授权或主动提交的信息：</strong>身份或权属核验、问卷和其他信息服务功能所需资料。</li>
+      </ul>
+    </LegalSection>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">3. 信息共享</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            除法律要求或保护平台利益外，我们不会将您的个人隐私信息分享或出售给任何第三方。
-          </p>
-        </section>
+    <LegalSection id="purposes" title="3. 处理目的与必要性">
+      <p>我们仅在具有明确、合理目的并与服务直接相关的范围内处理个人信息，主要用于：</p>
+      <ul className="list-disc space-y-2 pl-6">
+        <li>创建、验证和维护账户，完成登录、找回密码和安全通知；</li>
+        <li>展示服务器、个人主页、新闻和评价，并提供搜索、推荐和互动功能；</li>
+        <li>审核内容、预防欺诈和滥用、保护账户及平台安全、保存审计证据；</li>
+        <li>处理工单、举报、申诉、知识产权通知和争议；</li>
+        <li>履行法律义务、响应有权机关依法提出的要求；</li>
+        <li>在取得授权或法律允许的情况下改进产品、统计使用情况和发送服务通知。</li>
+      </ul>
+      <p>对于订立或履行您作为一方当事人的合同所必需的信息，拒绝提供可能导致对应功能无法使用。对于可选信息，页面会尽可能说明是否可以跳过。</p>
+    </LegalSection>
 
-        <div className="pt-10 border-t border-border mt-20 text-xs text-muted-foreground">
-           最后更新日期: 2026年4月29日
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+    <LegalSection id="public" title="4. 公开展示与用户内容">
+      <p>您选择公开的用户名、头像、简介、服务器信息、新闻标题、描述、封面、作者名称、评价和评论可能被任何访问者看到，并可能被搜索引擎收录。发布前请勿填写不希望公开的联系方式、身份信息或其他敏感内容。</p>
+      <p>私密工单和未公开审核材料仅向有权用户及必要的平台工作人员开放，法律法规另有规定的除外。</p>
+    </LegalSection>
+
+    <LegalSection id="sensitive" title="5. 敏感个人信息">
+      <p>精确身份资料、未成年人信息及其他一旦泄露或非法使用可能导致较高风险的信息，可能构成敏感个人信息。平台仅在具有特定目的、充分必要并采取严格保护措施时处理，并会在法律要求时单独告知处理目的、方式和影响并取得单独同意。</p>
+      <p>请勿在服务器介绍、新闻投稿、公开资料或普通工单中提交密码、短信验证码、身份证完整照片等与问题无关的信息。</p>
+    </LegalSection>
+
+    <LegalSection id="cookies" title="6. Cookie、会话与本地存储">
+      <p>平台使用必要 Cookie、HttpOnly 会话 Cookie、本地存储或类似技术维持登录状态、保存界面设置、防止跨站请求伪造、限制滥用和保障安全。禁用必要技术可能导致登录、账户或工单功能无法正常使用。</p>
+      <p>如未来使用非必要分析或个性化技术，平台会按照适用法律提供说明和选择机制。平台不以出售个人信息为目的进行跨站追踪。</p>
+    </LegalSection>
+
+    <LegalSection id="sharing" title="7. 委托处理、共享与披露">
+      <p>平台不会出售个人信息。为提供服务，可能在最小必要范围内向下列接收方提供信息：</p>
+      <ul className="list-disc space-y-2 pl-6">
+        <li>云计算、邮件、短信、内容分发、安全防护、日志和客户支持服务商；</li>
+        <li>内容安全、日志、对象存储和风险控制服务商，仅处理提供服务所必需的信息；</li>
+        <li>为完成企业重组、合并、转让或破产程序所必需的继受主体，且其应继续受相应保护义务约束；</li>
+        <li>司法、行政、监管或执法机关在依法提出要求时。</li>
+      </ul>
+      <p>对受托处理者，平台会通过合同、安全评估和权限控制等方式要求其仅按指示处理并采取保护措施。需要取得单独同意或另行告知的共享，平台会依法办理。</p>
+    </LegalSection>
+
+    <LegalSection id="cross-border" title="8. 跨境处理">
+      <p>平台及其服务商可能在不同地区部署基础设施。若个人信息需要从中华人民共和国境内向境外提供，平台会依据适用法律评估必要性，履行安全评估、标准合同、认证或其他要求，并在需要时向您告知境外接收方、处理目的、方式、信息种类和行使权利方式，取得相应同意。</p>
+    </LegalSection>
+
+    <LegalSection id="retention" title="9. 保存期限">
+      <p>平台仅在实现处理目的所必需的最短期限内保存个人信息，并综合考虑账户存续、争议解决、安全审计、备份周期和法定留存义务。</p>
+      <p>账户注销或信息不再必要后，平台会在合理期限内删除或匿名化处理；法律要求继续保存、存在未解决安全争议或技术备份尚在轮换周期内的除外。受限保存期间，信息仅用于相应法定义务或争议处理。</p>
+    </LegalSection>
+
+    <LegalSection id="security" title="10. 安全保护">
+      <p>平台采取与风险相适应的访问控制、最小权限、传输加密、密码哈希、日志审计、备份、漏洞修复、风控和员工保密管理等措施。互联网环境无法实现绝对安全，但平台会持续改进保护能力。</p>
+      <p>发生可能对个人权益造成危害的安全事件时，平台会启动应急处置、控制影响、保存证据，并按照法律要求向有关部门报告和向受影响个人告知事件情况、可能影响、已采取措施和建议。</p>
+    </LegalSection>
+
+    <LegalSection id="rights" title="11. 您的个人信息权利">
+      <p>在法律规定范围内，您可以请求查阅、复制、更正、补充、删除、限制或拒绝处理个人信息，撤回基于同意作出的授权，或要求解释处理规则。您也可以通过账户设置管理公开资料和通知偏好。</p>
+      <p>为保护账户和他人权益，处理请求前可能需要验证身份。平台通常会在法律规定期限内答复；对于重复、明显超出合理范围、影响他人合法权益或法律不允许响应的请求，平台会说明理由。</p>
+      <p>撤回同意不影响撤回前基于同意已经进行的处理，也不影响平台基于合同必要、法定义务或其他合法事由继续处理必要信息。</p>
+    </LegalSection>
+
+    <LegalSection id="deletion" title="12. 账户注销">
+      <p>您可通过账户设置、工单或 support@0st.top 申请注销账户，并按要求完成身份核验。</p>
+      <p>注销完成后，平台将停止提供账户服务并删除或匿名化非必要信息。已公开内容是否同步删除，会结合您的请求、他人合法权益、交易记录和法律义务处理。</p>
+    </LegalSection>
+
+    <LegalSection id="minors" title="13. 未成年人保护">
+      <p>未成年人应在监护人指导下使用平台。平台不会主动以未成年人为对象收集超出服务必要范围的信息。处理未满十四周岁未成年人的个人信息时，将依法取得监护人同意并采取专门保护措施。</p>
+      <p>监护人认为未成年人未经适当同意提供了个人信息，可通过工单或邮件联系我们并提交必要的关系和身份核验信息。</p>
+    </LegalSection>
+
+    <LegalSection id="automated" title="14. 自动化决策与推荐">
+      <p>平台可能使用规则或模型进行滥用防护、内容审核、搜索排序和推荐。我们会尽量保证透明、公平。自动化结果对您权益产生重大影响时，您可通过申诉渠道请求说明或人工复核。</p>
+    </LegalSection>
+
+    <LegalSection id="updates" title="15. 声明更新">
+      <p>因服务、处理活动或法律要求发生变化，本声明可能更新。重大变化会通过站内通知、弹窗、邮件或其他显著方式告知，并在需要时重新取得同意。页面顶部显示的生效日期代表当前版本。</p>
+    </LegalSection>
+
+    <LegalSection id="contact" title="16. 联系与投诉">
+      <p>如需行使个人信息权利，或对本声明、信息安全和个人信息处理有疑问，可通过平台工单或发送邮件至 <a className="font-bold text-foreground underline underline-offset-4" href="mailto:support@0st.top">support@0st.top</a>。请说明账户标识、具体请求和便于核验的必要信息。</p>
+      <p>如您对处理结果不满意，可以继续申诉，也可依法向有权监管部门投诉或通过司法途径维护权益。</p>
+    </LegalSection>
+  </LegalDocument>
+);
 
 export default Privacy;

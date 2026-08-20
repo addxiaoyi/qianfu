@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import AdminStatCard from '@/components/AdminStatCard';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import AdminStatCard from '@/components/ui/AdminStatCard';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const AdminPromoDetail: React.FC = () => {
@@ -15,8 +15,8 @@ const AdminPromoDetail: React.FC = () => {
   const [expandedClaimId, setExpandedClaimId] = useState<number | null>(null);
   const [claimCursor, setClaimCursor] = useState<number>(0);
   const limit = 10;
-  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['admin-promo-task-detail', taskId, page], queryFn: () => api.get<any>(`/promo/tasks/${taskId}?page=${page}&limit=${limit}`), enabled: Number.isInteger(taskId) });
-  const task = data?.data ?? data ?? {}; const claims = task.claims ?? []; const pagination = task.claimPagination ?? { page: 1, totalPages: 1 };
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['admin-promo-task-detail', taskId, page], queryFn: () => api.get<any>(`/promo/admin/tasks/${taskId}?page=${page}&limit=${limit}`), enabled: Number.isInteger(taskId) });
+  const task = data?.data ?? data ?? {}; const claims = task.claims ?? []; const pagination = task.pagination ?? { page: 1, totalPages: 1 };
   const stats = [{ label: '任务状态', value: task.status ?? '--', variant: 'network' as const, color: 'text-green-500', trend: '当前状态', tag: 'PD_01' }, { label: '奖励金额', value: `¥ ${task.reward_amount ?? 0}`, variant: 'spark' as const, color: 'text-blue-500', trend: '单次奖励', tag: 'PD_02' }, { label: '领取上限', value: String(task.claim_limit_per_user ?? 1), variant: 'security' as const, color: 'text-orange-500', trend: '每人次数', tag: 'PD_03' }, { label: '规则版本', value: String(task.rule_version ?? 1), variant: 'activity' as const, color: 'text-zinc-400', trend: '当前版本', tag: 'PD_04' }];
   const claimCountText = useMemo(() => `${claims.length} 条记录`, [claims.length]);
 

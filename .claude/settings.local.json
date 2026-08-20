@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(scan-incomplete-features)",
+      "Bash(ls -la \"C:/Users/l/.claude/projects/\" 2>/dev/null | head -10)"
+    ]
+  }
+}

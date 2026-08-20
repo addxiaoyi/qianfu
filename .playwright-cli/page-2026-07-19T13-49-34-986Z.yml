@@ -1,0 +1,54 @@
+- generic [ref=f10e2]:
+  - generic [ref=f10e3]:
+    - link "Skip to content" [ref=f10e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=f10e6]
+  - main [ref=f10e9]:
+    - generic [ref=f10e10]:
+      - generic [ref=f10e12]:
+        - img "STAR-X logo" [ref=f10e14]
+        - paragraph [ref=f10e15]:
+          - text: Sign in to
+          - strong [ref=f10e16]: GitHub
+          - text: to continue to
+          - strong [ref=f10e17]: STAR-X
+      - generic [ref=f10e18]:
+        - generic [ref=f10e19]:
+          - generic [ref=f10e20]:
+            - generic [ref=f10e21]: Username or email address
+            - textbox "Username or email address" [active] [ref=f10e22]
+          - generic [ref=f10e23]:
+            - generic [ref=f10e24]: Password
+            - textbox "Password" [ref=f10e25]
+            - link "Forgot password?" [ref=f10e26] [cursor=pointer]:
+              - /url: /password_reset
+          - button "Sign in" [ref=f10e28] [cursor=pointer]
+        - generic [ref=f10e29]:
+          - generic [ref=f10e30]: or
+          - button "Continue with Google" [ref=f10e33] [cursor=pointer]
+          - button "Continue with Apple" [ref=f10e37] [cursor=pointer]
+      - generic [ref=f10e40]:
+        - paragraph [ref=f10e42]:
+          - text: New to GitHub?
+          - link "Create an account" [ref=f10e43] [cursor=pointer]:
+            - /url: /join?return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23lihLl7XpD8R8IDhd%26redirect_uri%3Dhttps%253A%252F%252Fmc-u.top%252Fapi%252Fv1%252Fauth%252Fgithub%252Fcallback%26scope%3Dread%253Auser%2Buser%253Aemail%26state%3D6e73aad4-70db-4e11-981f-14493e01951a&source=oauth
+        - paragraph [ref=f10e45]:
+          - button "Sign in with a passkey" [ref=f10e46] [cursor=pointer]
+  - contentinfo [ref=f10e49]:
+    - list [ref=f10e50]:
+      - listitem [ref=f10e51]:
+        - link "Terms" [ref=f10e52] [cursor=pointer]:
+          - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+      - listitem [ref=f10e53]:
+        - link "Privacy" [ref=f10e54] [cursor=pointer]:
+          - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+      - listitem [ref=f10e55]:
+        - link "Docs" [ref=f10e56] [cursor=pointer]:
+          - /url: https://docs.github.com
+      - listitem [ref=f10e57]:
+        - link "Contact GitHub Support" [ref=f10e58] [cursor=pointer]:
+          - /url: https://support.github.com
+      - listitem [ref=f10e59]:
+        - button "Manage cookies" [ref=f10e61] [cursor=pointer]
+      - listitem [ref=f10e62]:
+        - button "Do not share my personal information" [ref=f10e64] [cursor=pointer]

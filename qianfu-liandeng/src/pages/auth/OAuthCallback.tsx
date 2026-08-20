@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { api, ApiError, setLocalAuthToken } from '@/api/request';
+import { api, ApiError } from '@/api/request';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from '@/hooks/use-toast';
 import type { User } from '@/types/api';
 import { normalizeUser } from '@/utils/user';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 
 const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -22,10 +23,8 @@ const OAuthCallback: React.FC = () => {
         const hash = window.location.hash || '';
         const searchParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?')) : '');
-        const params = new URLSearchParams(window.location.search || hash.split('?')[1] || '');
-        const token = searchParams.get('token') || hashParams.get('token') || params.get('token');
-        const error = searchParams.get('error') || hashParams.get('error') || params.get('error');
-        const message = searchParams.get('message') || hashParams.get('message') || params.get('message');
+        const error = searchParams.get('error') || hashParams.get('error');
+        const message = searchParams.get('message') || hashParams.get('message');
 
         if (error) {
           toast({
@@ -37,12 +36,11 @@ const OAuthCallback: React.FC = () => {
           return;
         }
 
-        if (!token) {
-          throw new Error('OAuth callback token missing');
-        }
-
-        setLocalAuthToken(token);
-        const profile = normalizeUser(await api.get<User>('/profile'));
+        const profile = normalizeUser(await api.get<User>(
+          isRustV2Enabled() ? rustV2Path('/auth/me') : '/profile',
+          undefined,
+          isRustV2Enabled() ? rustV2RequestOptions : undefined,
+        ));
         if (!profile) {
           throw new Error('OAuth profile missing');
         }

@@ -37,9 +37,13 @@
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
     overscroll-behavior-x: none;
+    scrollbar-width: none;
   }
+  html { scrollbar-width: none; }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar { display: none; width: 0; height: 0; }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-black tracking-tighter text-foreground uppercase italic break-words;
+    @apply font-semibold tracking-tight text-foreground break-words;
     text-wrap: balance;
     overflow-wrap: anywhere;
   }
@@ -54,6 +58,119 @@
     min-height: 100vh;
     overscroll-behavior-y: none;
   }
+}
+
+/* 后台信息页使用更高密度的工作台尺度，避免展示型页面规则撑开操作流。 */
+.admin-density {
+  --admin-density-radius: 1.5rem;
+}
+
+.admin-density .space-y-16 > :not(:first-child),
+.admin-density [class*="space-y-16"] > :not(:first-child) {
+  margin-top: 2rem !important;
+}
+
+.admin-density .space-y-12 > :not(:first-child),
+.admin-density [class*="space-y-12"] > :not(:first-child) {
+  margin-top: 1.5rem !important;
+}
+
+.admin-density .gap-16,
+.admin-density [class*="gap-16"] {
+  gap: 2rem !important;
+}
+
+.admin-density .gap-12,
+.admin-density [class*="gap-12"] {
+  gap: 1.5rem !important;
+}
+
+.admin-density .gap-10,
+.admin-density [class*="gap-10"] { gap: 1.25rem !important; }
+
+.admin-density .p-16,
+.admin-density [class*="p-16"] {
+  padding: 2rem !important;
+}
+
+.admin-density .p-12,
+.admin-density [class*="p-12"] {
+  padding: 1.5rem !important;
+}
+
+.admin-density .p-20,
+.admin-density [class*="p-20"] { padding: 2rem !important; }
+
+.admin-density .p-10,
+.admin-density [class*="p-10"] { padding: 2rem !important; }
+
+.admin-density .px-16,
+.admin-density [class*="px-16"] {
+  padding-inline: 2rem !important;
+}
+
+.admin-density .py-16,
+.admin-density [class*="py-16"] {
+  padding-block: 2rem !important;
+}
+
+.admin-density .py-12,
+.admin-density [class*="py-12"] { padding-block: 1.5rem !important; }
+
+.admin-density .space-y-20 > :not(:first-child),
+.admin-density [class*="space-y-20"] > :not(:first-child) { margin-top: 2.5rem !important; }
+
+.admin-density .space-y-10 > :not(:first-child),
+.admin-density [class*="space-y-10"] > :not(:first-child) { margin-top: 1.5rem !important; }
+
+.admin-density [class*="rounded-[5rem]"] { border-radius: 2rem !important; }
+.admin-density [class*="rounded-[4rem]"] { border-radius: 1.75rem !important; }
+.admin-density [class*="rounded-[3rem]"] { border-radius: var(--admin-density-radius) !important; }
+.admin-density [class*="rounded-[2.5rem]"] { border-radius: 1.25rem !important; }
+
+.admin-density .text-8xl,
+.admin-density [class*="text-8xl"] {
+  font-size: clamp(2.25rem, 5vw, 4rem) !important;
+}
+
+.admin-density .text-6xl,
+.admin-density [class*="text-6xl"] { font-size: 3rem !important; }
+.admin-density .text-5xl,
+.admin-density [class*="text-5xl"] { font-size: 2.25rem !important; }
+.admin-density .text-4xl,
+.admin-density [class*="text-4xl"] { font-size: 1.75rem !important; }
+.admin-density .text-3xl,
+.admin-density [class*="text-3xl"] { font-size: 1.5rem !important; }
+
+.admin-density [class*="py-8"] { min-height: 2.75rem; padding-block: 0.875rem !important; }
+.admin-density [class*="py-6"] { padding-block: 0.75rem !important; }
+.admin-density [class*="px-12"] { padding-inline: 1.5rem !important; }
+.admin-density [class*="px-10"] { padding-inline: 1.25rem !important; }
+.admin-density [class*="px-8"] { padding-inline: 1rem !important; }
+.admin-density [class*="h-16"],
+.admin-density [class*="w-16"] {
+  height: 2.75rem !important;
+  min-height: 2.75rem;
+  width: 2.75rem !important;
+  min-width: 2.75rem;
+}
+
+.admin-density [class*="h-20"],
+.admin-density [class*="w-20"] {
+  height: 4rem !important;
+  width: 4rem !important;
+}
+
+.admin-density [class*="h-24"],
+.admin-density [class*="w-24"] {
+  height: 4.5rem !important;
+  width: 4.5rem !important;
+}
+
+.admin-density [class*="h-48"],
+.admin-density [class*="w-48"] {
+  height: 8rem !important;
+  width: 8rem !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -316,10 +433,10 @@ select:focus {
   @apply text-black font-black italic;
 }
 .prose h1 {
-  @apply text-3xl sm:text-4xl font-black italic tracking-tighter uppercase mb-6 mt-10 break-words;
+  @apply text-2xl sm:text-3xl font-semibold tracking-tight mb-6 mt-10 break-words;
 }
 .prose h2 {
-  @apply text-xl sm:text-2xl font-black italic tracking-tighter uppercase mb-4 mt-8 break-words;
+  @apply text-xl sm:text-2xl font-semibold tracking-tight mb-4 mt-8 break-words;
 }
 .prose p {
   @apply mb-4 leading-relaxed;

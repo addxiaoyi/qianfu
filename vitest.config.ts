@@ -34,8 +34,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./setupTests.ts'],
-    /** 测试文件只从 tests/ 下收集；改路径时请同步调整清理配置 */
-    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    /** 业务测试与智能探针测试都纳入统一 Vitest 配置。 */
+    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx', 'server/intelligent-probe/tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'html'],
@@ -53,7 +53,7 @@ export default defineConfig({
   },
   resolve: {
     alias: [
-      { find: '@', replacement: resolve(__dirname, './src') },
+      { find: '@', replacement: resolve(__dirname, './qianfu-liandeng/src') },
       { find: '@qianfu/shared', replacement: resolve(__dirname, './packages/shared/src/index.ts') },
       // The frontend has its own React version; tests must use the same dispatcher.
       { find: /^react$/, replacement: frontendReact },

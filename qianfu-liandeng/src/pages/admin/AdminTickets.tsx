@@ -3,9 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Send } from 'lucide-react';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { formatDateTime } from '@/utils/serverView';
 import { cn } from '@/utils/cn';
 import { toast } from '@/hooks/use-toast';
@@ -60,7 +60,7 @@ const AdminTickets: React.FC = () => {
     queryFn: () => api.get<TicketRecord[]>('/tickets', { limit: 100 }),
   });
 
-  const { data: selectedTicket, isFetching: detailLoading } = useQuery({
+  const { data: selectedTicket, isFetching: detailLoading, isError: detailError, refetch: refetchDetail } = useQuery({
     queryKey: ['admin-ticket-detail', selectedTicketId],
     queryFn: () => api.get<TicketDetailRecord>(`/tickets/${selectedTicketId}`),
     enabled: !!selectedTicketId,
@@ -76,6 +76,7 @@ const AdminTickets: React.FC = () => {
       ]);
       toast({ title: '工单状态已更新' });
     },
+    onError: () => toast({ variant: 'destructive', title: '更新失败', description: '工单状态未能更新，请稍后重试。' }),
   });
 
   const replyMutation = useMutation({
@@ -89,6 +90,7 @@ const AdminTickets: React.FC = () => {
       ]);
       toast({ title: '工单回复已发送' });
     },
+    onError: () => toast({ variant: 'destructive', title: '回复失败', description: '回复未能发送，内容已为您保留。' }),
   });
 
   const filtered = useMemo(() => {
@@ -163,6 +165,7 @@ const AdminTickets: React.FC = () => {
           <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-accent transition-colors duration-500" />
           <input
             type="text"
+            aria-label="搜索工单"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="搜索工单标题、描述、用户或 ID"
@@ -243,7 +246,12 @@ const AdminTickets: React.FC = () => {
               </div>
             ) : (
               <div className="h-full flex flex-col">
-                {detailLoading || !selectedTicket ? (
+                {detailError ? (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center text-sm font-bold text-amber-700">
+                    <p>工单详情加载失败，列表数据未受影响。</p>
+                    <button type="button" onClick={() => refetchDetail()} className="rounded-xl bg-black px-4 py-2 text-xs text-white">重新加载详情</button>
+                  </div>
+                ) : detailLoading || !selectedTicket ? (
                   <div className="flex-1 flex items-center justify-center text-sm font-bold text-zinc-400">加载工单详情中…</div>
                 ) : (
                   <>
@@ -305,6 +313,7 @@ const AdminTickets: React.FC = () => {
                     <div className="border-t border-zinc-100 pt-5">
                       <div className="relative">
                         <textarea
+                          aria-label="管理员工单回复"
                           value={reply}
                           onChange={(event) => setReply(event.target.value)}
                           className="w-full min-h-[120px] rounded-[2rem] border border-zinc-100 bg-zinc-50 px-5 py-4 pr-16 outline-none transition-all focus:bg-white focus:border-accent resize-none"

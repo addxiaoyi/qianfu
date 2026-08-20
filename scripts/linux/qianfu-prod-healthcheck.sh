@@ -6,7 +6,8 @@ cd "$ROOT_DIR"
 
 BASE_URL="${QIANFU_BASE_URL:-https://mc-u.top}"
 API_PROCESS="${QIANFU_PM2_API_NAME:-qianfu-api}"
-MYSQL_SERVICE="${QIANFU_MYSQL_SERVICE:-mysqld}"
+POSTGRES_HOST="${QIANFU_POSTGRES_HOST:-127.0.0.1}"
+POSTGRES_PORT="${QIANFU_POSTGRES_PORT:-5432}"
 MAX_PM2_DAEMONS="${QIANFU_MAX_PM2_DAEMONS:-1}"
 MIN_AVAILABLE_MB="${QIANFU_MIN_AVAILABLE_MB:-512}"
 MIN_SWAP_FREE_MB="${QIANFU_MIN_SWAP_FREE_MB:-256}"
@@ -20,7 +21,7 @@ usage() {
 Usage: bash scripts/linux/qianfu-prod-healthcheck.sh [options]
 
 Options:
-  --public-only  Skip server-local checks (PM2/MySQL/memory) and only verify deployed HTTP/pay-domain state
+  --public-only  Skip server-local checks (PM2/PostgreSQL/memory) and only verify deployed HTTP/pay-domain state
   -h, --help     Show help
 EOF
 }
@@ -255,11 +256,16 @@ check_frontend_manifest() {
 check_http_contains_url() {
   local url="$1"
   local expect="$2"
+  local expected_code="${3:-200}"
   local tmp
   tmp="$(mktemp)"
   local code
-  code="$(curl -k -sS -m 15 -o "$tmp" -w '%{http_code}' "$url" 2>/tmp/qianfu-health-curl.err || true)"
-  if [ "$code" != "200" ]; then
+  if [ "$expected_code" = "200" ]; then
+    code="$(curl --fail --silent --show-error -m 15 -o "$tmp" -w '%{http_code}' "$url" 2>/tmp/qianfu-health-curl.err || true)"
+  else
+    code="$(curl --silent --show-error -m 15 -o "$tmp" -w '%{http_code}' "$url" 2>/tmp/qianfu-health-curl.err || true)"
+  fi
+  if [ "$code" != "$expected_code" ]; then
     fail "$url returned HTTP ${code:-curl-error}: $(cat /tmp/qianfu-health-curl.err 2>/dev/null)"
     rm -f "$tmp"
     return
@@ -294,9 +300,9 @@ if [[ "$RUN_PAY_DOMAIN_PROBE" == "1" ]]; then
   elif [[ -n "$MAIN_SITE_HOST" && "$PAY_HOST" == "$MAIN_SITE_HOST" ]]; then
     info "Pay host ${PAY_HOST} matches main site host; skipped dedicated pay-domain probe."
   else
-    check_http_contains_url "https://${PAY_HOST}/" "qianfu-pay-gateway"
-    check_http_contains_url "https://${PAY_HOST}/health" "\"healthy\""
-    check_http_contains_url "https://${PAY_HOST}/api/health" "\"healthy\""
+    check_http_contains_url "https://${PAY_HOST}/" "PERSONAL_FILING_DISABLED" 410
+    check_http_contains_url "https://${PAY_HOST}/health" "PERSONAL_FILING_DISABLED" 410
+    check_http_contains_url "https://${PAY_HOST}/api/health" "PERSONAL_FILING_DISABLED" 410
 
     if [[ ! -f "scripts/utils/domain-cert-probe.mjs" ]]; then
       fail "Missing scripts/utils/domain-cert-probe.mjs for pay-domain certificate probe"
@@ -310,25 +316,14 @@ if [[ "$RUN_PAY_DOMAIN_PROBE" == "1" ]]; then
 
       if pay_probe_output="$(node scripts/utils/domain-cert-probe.mjs "${pay_probe_args[@]}" 2>/tmp/qianfu-pay-domain.err)"; then
         pay_tls_status="$(extract_probe_value tls_status "$pay_probe_output")"
-        pay_main_site_fallback="$(extract_probe_value looks_like_main_site "$pay_probe_output")"
-        pay_root_marker="$(extract_probe_value root_marker_match "$pay_probe_output")"
+        pay_closed="$(extract_probe_value personal_filing_disabled "$pay_probe_output")"
 
-        if [[ "$pay_tls_status" == "wrong_principal" ]]; then
+        if [[ "$pay_closed" == "true" ]]; then
+          pass "${PAY_HOST} presents valid TLS and returns the personal filing closure status"
+        elif [[ "$pay_tls_status" == "wrong_principal" ]]; then
           fail "${PAY_HOST} is presenting a certificate for another host"
         else
-          pass "${PAY_HOST} certificate matches the requested host"
-        fi
-
-        if [[ "$pay_main_site_fallback" == "true" ]]; then
-          fail "${PAY_HOST} is serving HTML that looks like the main site"
-        else
-          pass "${PAY_HOST} is not falling back to the main site HTML"
-        fi
-
-        if [[ "$pay_root_marker" == "true" ]]; then
-          pass "${PAY_HOST} root marker matches qianfu-pay-gateway"
-        else
-          fail "${PAY_HOST} root marker does not match qianfu-pay-gateway"
+          fail "${PAY_HOST} did not return the personal filing closure status"
         fi
       else
         fail "pay-domain probe failed: $(cat /tmp/qianfu-pay-domain.err 2>/dev/null)"
@@ -339,19 +334,13 @@ fi
 
 if [[ "$PUBLIC_ONLY" == "1" ]]; then
   section "Host checks"
-  info "Skipped MySQL / PM2 / memory checks because --public-only is enabled."
+  info "Skipped PostgreSQL / PM2 / memory checks because --public-only is enabled."
 else
-  section "MySQL"
-  if systemctl is-active --quiet "$MYSQL_SERVICE"; then
-    pass "$MYSQL_SERVICE is active"
+  section "PostgreSQL"
+  if command -v pg_isready >/dev/null 2>&1 && pg_isready -q -h "$POSTGRES_HOST" -p "$POSTGRES_PORT"; then
+    pass "PostgreSQL is accepting connections on ${POSTGRES_HOST}:${POSTGRES_PORT}"
   else
-    fail "$MYSQL_SERVICE is not active"
-  fi
-
-  if ss -lntp 2>/dev/null | grep -q ':3306'; then
-    pass "3306 is listening"
-  else
-    fail "3306 is not listening"
+    fail "PostgreSQL is not accepting connections on ${POSTGRES_HOST}:${POSTGRES_PORT}"
   fi
 
   section "PM2"

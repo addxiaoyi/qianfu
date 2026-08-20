@@ -1,0 +1,43 @@
+=== package versions/scripts ===
+{
+  typescript: '^5.4.5',
+  express: '^5.2.1',
+  typesExpress: '^4.17.21',
+  lint: 'cross-env ESLINT_USE_FLAT_CONFIG=false eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 500 -c .eslintrc.cjs',
+  coverage: 'npm run test:coverage:full',
+  coverageFull: 'cross-env COVERAGE_SCOPE=full vitest run --coverage'
+}
+=== directories ===
+api
+assets
+auth
+components
+forms
+hooks
+lib
+pages
+store
+types
+utils
+=== monitoring ===
+=== editors ===
+package.json:206:        "tinymce": "^8.6.0",
+package.json:208:        "vditor": "^3.11.2",
+server\bootstrap\security.ts:25:          scriptSrc: ["'self'", 'https://*.tinymce.com', 'https://*.tiny.cloud'],
+server\bootstrap\proxyAndStatic.ts:146:  const tinyDir = path.resolve(projectRoot, 'node_modules/tinymce');
+server\bootstrap\proxyAndStatic.ts:148:    '/tinymce',
+qianfu-liandeng/src\main.tsx:11:  const bypassPrefixes = ['/api', '/auth', '/xpay', '/open', '/assets', '/uploads', '/tinymce']
+server\routes\assets.ts:12:async function fetchTinyMCE(): Promise<string> {
+server\routes\assets.ts:13:  const tinymcePath = path.resolve(process.cwd(), 'node_modules/tinymce/tinymce.min.js');
+server\routes\assets.ts:14:  const txt = await fs.readFile(tinymcePath, 'utf8');
+server\routes\assets.ts:15:  if (txt && txt.includes('tinymce')) {
+server\routes\assets.ts:18:  throw new Error('Local TinyMCE bundle unavailable');
+server\routes\assets.ts:21:router.get('/tinymce', staticDataLimiter, async (req, res) => {
+server\routes\assets.ts:23:    const js = await fetchTinyMCE();
+server\routes\assets.ts:29:    logger.error('[Assets] Failed to fetch TinyMCE:', err);
+server\routes\assets.ts:30:    res.status(502).send('// tinymce unavailable');
+=== CI ===
+ci.yml
+=== node pins ===
+24.11.1
+24.11.1

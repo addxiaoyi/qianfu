@@ -123,6 +123,7 @@ build_to_stage() {
     (
       cd "$APP_ROOT"
       npm --prefix qianfu-liandeng run build -- --outDir "$STAGE_DIST"
+      node scripts/generate-frontend-compression.mjs "$STAGE_DIST" --quiet
       node scripts/frontend-dist-manifest.mjs --dist "$STAGE_DIST" --kv
     )
   fi
@@ -143,6 +144,7 @@ copy_source_to_stage() {
   if [[ "$DRY_RUN" != "1" ]]; then
     (
       cd "$APP_ROOT"
+      node scripts/generate-frontend-compression.mjs "$STAGE_DIST" --quiet
       node scripts/frontend-dist-manifest.mjs --dist "$STAGE_DIST" --kv
     )
   fi

@@ -1,0 +1,17 @@
+{
+  "archive": "paypro-production-20260726-upstream-rebased-disabled.tar.gz",
+  "archive_bytes": 51542000,
+  "archive_sha256": "1e8c6fef85ce86f3603f55836cd919c96f53fd8d0c928157e7b68d74ae8df0b2",
+  "member_count": 26,
+  "jar_sha256": "a10199c9267ca1edd150df36a1fc0a1ca77614ed1c76165998101d35b402661e",
+  "schema_sha256": "ab2ff1b07f213c5ffd8b9a6cf609d5c3c81f3057b944e3764e31a6fde39ea6ef",
+  "migration_sha256": "247a928976e4ff0f61092a113ad66024c083c48d238c32877b2beb33309587da",
+  "source_commit": "0b50c74",
+  "payments": {
+    "alipay_enabled": false,
+    "wechat_enabled": false
+  },
+  "decrement_enabled": false,
+  "qr_asset_count": 0,
+  "line_endings": "LF"
+}

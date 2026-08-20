@@ -1,17 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BadgeCheck, ExternalLink, MessageCircle, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react';
+import { BadgeCheck, Check, Copy, ExternalLink, LampDesk, ShieldCheck, Users } from 'lucide-react';
 
-// NOTE: QQ numbers are stored server-side. Frontend only renders display-safe data.
+const TEAM_QQ = '873082710';
+
 const TEAM_MEMBERS = [
   { name: "银河", role: "服联负责人", description: "服联运营者" },
-  { name: "封神", role: "常任委员", description: "服联创始人、擅长人员调度" },
   { name: "木匠", role: "常任委员", description: "擅长项目策划，技术支持" },
   { name: "蓝海狐", role: "常任委员", description: "精通网页部署、Bot开发" },
   { name: "ADDxiaoyi", role: "网站运维组组长", description: "群组腐竹" },
   { name: "龙凌渊", role: "文书运营组组长", description: "精通文案拟定" },
   { name: "紫蝎", role: "自媒体负责人", description: "擅长账号运营" },
-  { name: "倔强男孩", role: "技术总监", description: "擅长服务器策划与程序开发" },
 ];
 
 const RULE_SECTIONS = [
@@ -27,12 +26,29 @@ const RULE_SECTIONS = [
   },
   {
     title: '奖励与激励',
-    icon: Sparkles,
+    icon: LampDesk,
     items: ['激励任务需按要求完成并通过审核', '奖励发放以记录与审核结果为准', '个人主页可查看相关记录与历史'],
   },
 ];
 
 const Team: React.FC = () => {
+  const [copyState, setCopyState] = React.useState<'idle' | 'copied' | 'failed'>('idle');
+
+  const copyManagementQq = async () => {
+    try {
+      await navigator.clipboard.writeText(TEAM_QQ);
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+  };
+
+  const copyLabel = copyState === 'copied'
+    ? 'QQ 已复制'
+    : copyState === 'failed'
+      ? '复制失败'
+      : '复制 QQ 号';
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-6 py-24">
@@ -43,7 +59,7 @@ const Team: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl font-black tracking-tighter mb-6"
           >
-            OUR TEAM
+            社区团队
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -80,16 +96,17 @@ const Team: React.FC = () => {
               </p>
 
               <div className="flex items-center gap-3">
-                <button type="button" 
-                  onClick={() => window.open('https://wpa.qq.com/msgrd?v=3&uin=873082710&site=qq&menu=yes', '_blank', 'noopener,noreferrer')}
-                  className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-all"
-                  title="Contact via QQ"
+                <button type="button"
+                  onClick={copyManagementQq}
+                  className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-colors"
+                  title={copyLabel}
+                  aria-label={`${copyLabel}，咨询 ${member.name} 的团队事务`}
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  {copyState === 'copied' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 </button>
-                <button type="button" className="p-2 bg-muted rounded-lg hover:bg-black hover:text-white transition-all">
-                  <Zap className="w-4 h-4" />
-                </button>
+                <span aria-live="polite" className="text-[10px] font-mono text-muted-foreground">
+                  {copyLabel}
+                </span>
                 <div className="flex-grow" />
                 <span className="text-[10px] font-mono text-muted-foreground/40 uppercase group-hover:text-muted-foreground transition-colors">
                    Staff verified

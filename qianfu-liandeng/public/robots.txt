@@ -1,46 +1,32 @@
 User-agent: *
 Disallow: /api/
+Disallow: /auth/
 Disallow: /admin/
-Disallow: /admin-users
-Disallow: /admin-review
-Disallow: /admin-tickets
-Disallow: /admin-reports
-Disallow: /admin-audit
-Disallow: /admin-settings
+Disallow: /dashboard
+Disallow: /me
+Disallow: /messages
+Disallow: /tickets
+Disallow: /editor
+Disallow: /payment
+Disallow: /seller
+Disallow: /marketplace/manage
+Disallow: /marketplace/new
+Disallow: /marketplace/edit/
+Disallow: /marketplace/orders/
+Disallow: /marketplace/favorites
+Disallow: /promotion
+Disallow: /oauth/
 Disallow: /private/
 Disallow: /tmp/
 Disallow: /uploads/private/
+
 Allow: /
 Allow: /logo.png
 Allow: /favicon.svg
 Allow: /manifest.json
 Allow: /llms.txt
 Allow: /sitemap.xml
+Allow: /.well-known/security.txt
 
-# Public pages are available to search and AI answer engines.
-User-agent: GPTBot
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: FacebookBot
-Allow: /
-
-# Rate limiting hint (not standard but respected by some)
 Crawl-delay: 10
-
-# Sitemaps
 Sitemap: https://mc-u.top/sitemap.xml

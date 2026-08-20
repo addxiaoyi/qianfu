@@ -1,0 +1,12 @@
+{
+  "marker": "qfqa_5b6e15f966a9fccd",
+  "startedAt": "2026-07-18T12:22:36.674Z",
+  "deployment": "qianfu-20260718-2002",
+  "marketplace": {},
+  "promotion": {},
+  "cleanup": {
+    "error": "Unexpected non-whitespace character after JSON at position 4 (line 1 column 5)"
+  },
+  "completedAt": "2026-07-18T12:22:48.640Z",
+  "cleanupVerified": false
+}

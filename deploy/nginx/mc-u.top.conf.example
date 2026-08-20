@@ -1,5 +1,5 @@
 # Production site config for mc-u.top
-# Frontend root: /www/wwwroot/qianfu-app/qianfu-liandeng/dist
+# Frontend root: /www/wwwroot/mc-u.top/current
 # Node API: 127.0.0.1:3001
 
 upstream qianfu_web_api {
@@ -10,24 +10,96 @@ upstream qianfu_web_api {
 server {
     listen 80;
     listen [::]:80;
-    server_name mc-u.top www.mc-u.top;
-    return 301 https://$host$request_uri;
+    server_name mc-u.top;
+    if ($host != "mc-u.top") { return 400; }
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /www/wwwroot/mc-u.top;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://mc-u.top$request_uri;
+    }
 }
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name mc-u.top www.mc-u.top;
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name mc-u.top;
+    if ($host != "mc-u.top") { return 400; }
 
-    ssl_certificate     /etc/letsencrypt/live/mc-u.top/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/mc-u.top/privkey.pem;
+    ssl_certificate /www/server/panel/vhost/letsencrypt/mc-u.top/fullchain.pem;
+    ssl_certificate_key /www/server/panel/vhost/letsencrypt/mc-u.top/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
 
-    root /www/wwwroot/qianfu-app/qianfu-liandeng/dist;
+    root /www/wwwroot/mc-u.top/current;
     index index.html;
+    client_max_body_size 20m;
 
-    location / {
+    include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+
+    # Fingerprinted Vite assets are safe to cache permanently. Avoid `expires`
+    # here because it emits a second Cache-Control header beside the immutable one.
+    location ^~ /assets/ {
+        try_files $uri =404;
         include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
-        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+
+    # Public files keep stable names between releases, so use bounded caching.
+    location ^~ /icons/ {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "public, max-age=604800, stale-while-revalidate=86400" always;
+    }
+
+    location ^~ /fonts/ {
+        try_files $uri =404;
+        types {
+            font/woff2 woff2;
+            font/woff woff;
+            font/ttf ttf;
+        }
+        default_type application/octet-stream;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "public, max-age=604800, stale-while-revalidate=86400" always;
+    }
+
+    location ~* ^/(?:favicon\.svg|logo\.png)$ {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "public, max-age=604800, stale-while-revalidate=86400" always;
+    }
+
+    # HTML and update manifests must revalidate so clients discover new releases.
+    location = /index.html {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
+    location = /manifest.json {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
+    location = /sw.js {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "no-cache, must-revalidate" always;
+    }
+
+    location = /qianfu-dist-manifest.json {
+        try_files $uri =404;
+        include /www/server/panel/vhost/nginx/qianfu-spa-security-headers.conf;
+        add_header Cache-Control "no-store" always;
     }
 
     location /api/ {
@@ -37,8 +109,9 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 60s;
-        proxy_connect_timeout 60s;
+        # Reasoning models may take over a minute before the first SSE token.
+        proxy_read_timeout 180s;
+        proxy_connect_timeout 10s;
     }
 
     location /auth/ {
@@ -49,15 +122,51 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 60s;
-        proxy_connect_timeout 60s;
+        proxy_connect_timeout 10s;
     }
 
-    location = /health {
-        proxy_pass http://qianfu_web_api/health;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+    # Never let deployment metadata, databases, backups, or source maps become public.
+    location ~* ^/(?:\.env|\.git|\.svn|\.hg|\.htaccess|\.user\.ini|.*\.(?:db|sqlite|sqlite3|sql|bak|backup|map|log|pem|key))$ {
+        return 404;
     }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    access_log /www/wwwlogs/mc-u.top.log;
+    error_log /www/wwwlogs/mc-u.top.error.log;
+}
+
+# Keep the www host out of the main virtual host so ACME validation and the
+# canonical redirect do not weaken the main host-header allowlist.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.mc-u.top;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /www/wwwroot/mc-u.top;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+
+    location / {
+        return 301 https://mc-u.top$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name www.mc-u.top;
+
+    ssl_certificate /etc/letsencrypt/live/www.mc-u.top/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/www.mc-u.top/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    return 301 https://mc-u.top$request_uri;
 }

@@ -1,0 +1,51 @@
+{
+  "startedAt": "2026-07-20T06:38:46.837Z",
+  "finishedAt": "2026-07-20T06:39:31.766Z",
+  "baseUrl": "https://mc-u.top",
+  "browser": {
+    "proxyMode": "direct",
+    "navTimeoutMs": 30000,
+    "fetchTimeoutMs": 30000
+  },
+  "plannedRoutes": 2,
+  "passedRoutes": 0,
+  "failedRoutes": 2,
+  "skipped": [
+    {
+      "scope": "desktop-admin",
+      "reason": "admin login probe failed (403)"
+    }
+  ],
+  "login": {
+    "username": null,
+    "role": null,
+    "emailVerified": null,
+    "adminProbeOk": false
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "(login)",
+      "label": "desktop-user login",
+      "ok": false,
+      "finalUrl": "https://mc-u.top/login",
+      "error": {
+        "message": "login failed for 2293237813@qq.com: {\"status\":401}",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\desktop-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\desktop-user-login.png"
+      }
+    },
+    {
+      "context": "mobile-user",
+      "path": "(login)",
+      "label": "mobile-user login",
+      "ok": false,
+      "finalUrl": "https://mc-u.top/login",
+      "error": {
+        "message": "login failed for 2293237813@qq.com: {\"status\":401}",
+        "html": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\mobile-user-login.html",
+        "screenshot": "D:\\qwq\\项目\\千服\\output\\prod-auth-nonpay-verify\\mobile-user-login.png"
+      }
+    }
+  ]
+}

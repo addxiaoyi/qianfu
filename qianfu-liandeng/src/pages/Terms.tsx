@@ -1,54 +1,53 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import LegalDocument, { LegalSection } from '@/components/layout/LegalDocument';
 
-const Terms: React.FC = () => {
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-24">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="prose prose-invert max-w-none bg-card border border-border p-12 rounded-[2.5rem] shadow-xl"
-      >
-        <div className="mb-10 text-[10px] font-black uppercase tracking-[0.45em] italic text-accent">LEGAL_FRAMEWORK</div>
-        <h1 className="text-4xl font-black mb-8 tracking-tight">服务条款 (Terms of Service)</h1>
-        
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">1. 接受条款</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            通过访问或使用千服联灯平台，即表示您同意受本服务条款的约束。如果您不同意本条款的任何部分，则您无权访问本平台。
-          </p>
-        </section>
+const Terms: React.FC = () => (
+  <LegalDocument
+    eyebrow="LEGAL / TERMS"
+    title="千服联灯服务条款"
+    summary="本条款适用于千服联灯提供的 Minecraft 服务器发现、免费发布、状态展示、内容审核、举报和工单支持服务。平台不提供交易、收费、资金账户或商业推广服务。"
+  >
+    <LegalSection id="scope" title="1. 条款范围与接受">
+      <p>“平台”指千服联灯网站、应用界面、接口及相关服务；“用户”包括访客、注册用户、服务器发布者和其他使用者。</p>
+      <p>访问平台、注册账户或提交内容，即表示您已阅读并同意本条款、隐私声明和平台公布的内容规则。法律法规另有强制性规定的，从其规定。</p>
+    </LegalSection>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">2. 服务说明</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            千服联灯为 Minecraft 服务器提供宣传位购买、列表展示及玩家互动服务。我们保留随时修改、暂停或终止任何服务的权利，且无需另行通知。
-          </p>
-        </section>
+    <LegalSection id="services" title="2. 平台服务边界">
+      <p>平台仅提供服务器信息展示、免费服务器发布、公开状态查询、新闻公告、内容审核、举报和工单支持。服务器是否真实可用由发布者负责，平台不对外部服务器作运营或履约保证。</p>
+      <p>平台不提供交易、资金收付、余额记账、数字商品交付、付费置顶、返利任务或其他商业撮合功能。任何页面、接口或旧链接出现相关内容，均不代表平台开放该能力。</p>
+    </LegalSection>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">3. 用户义务</h2>
-          <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-            <li>您必须年满 13 周岁才能使用本平台。</li>
-            <li>您对您账户下的所有活动负责。</li>
-            <li>不得上传任何侵权、违禁或恶意攻击性的内容。</li>
-            <li>服务器宣传内容必须真实有效，禁止刷票等作弊行为。</li>
-          </ul>
-        </section>
+    <LegalSection id="account" title="3. 账户与安全">
+      <p>您应提供真实、准确、完整且保持更新的账户资料，不得冒用他人身份、批量注册、买卖账户或绕过验证和安全措施。</p>
+      <p>请妥善保管登录凭据、验证码和设备。发现账户异常时，应立即修改凭据并通过工单或邮件联系平台。</p>
+    </LegalSection>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">4. 支付与退款</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            宣传位购买一旦完成并生效，除因平台技术故障导致的无法展示外，原则上不予退款。所有余额充值均不可提现为现金。
-          </p>
-        </section>
+    <LegalSection id="content" title="4. 用户内容与服务器信息">
+      <p>您应确保服务器名称、地址、版本、截图、介绍、活动和在线状态真实、合法、及时，不得虚构在线人数、伪造评价、恶意刷量或冒充其他服务器。</p>
+      <p>您保留对合法上传内容所享有的权利。为展示、审核、搜索和提供平台服务，您授予平台必要范围内的非独占使用许可。平台可以调整展示格式、添加风险提示、暂停展示或要求补充证明。</p>
+      <p>不得发布违法、侵权、欺诈、色情、赌博、恶意软件、未成年人不宜或危害网络安全的内容，不得攻击、扫描、干扰平台或未经授权收集他人个人信息。</p>
+    </LegalSection>
 
-        <div className="pt-10 border-t border-border mt-20 text-xs text-muted-foreground">
-           最后更新日期: 2026年4月29日
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+    <LegalSection id="moderation" title="5. 审核、举报与处置">
+      <p>平台可基于用户举报、自动规则和人工审核，对内容采取要求修改、暂缓发布、降低展示、下架、限制账户或终止服务等措施。</p>
+      <p>审核不代表平台对服务器内容、外部链接或第三方服务的真实性、合法性和安全性作出担保。用户可以通过工单提交事实、证明和整改说明。</p>
+    </LegalSection>
+
+    <LegalSection id="availability" title="6. 服务可用性与责任">
+      <p>平台会采取合理措施维护服务连续性和数据安全，但维护、网络故障、第三方服务异常、不可抗力、监管要求或安全事件可能导致暂时不可用。</p>
+      <p>平台仅在法律允许范围内对因自身过错直接造成且可合理预见的实际损失承担责任。用户自行运营服务器、发布外部链接或提交违法内容产生的责任由相应责任方依法承担。</p>
+    </LegalSection>
+
+    <LegalSection id="privacy" title="7. 个人信息保护">
+      <p>平台按照<Link href="/privacy">《隐私声明》</Link>处理个人信息，并仅在提供账户、审核、展示、举报和支持服务所需范围内使用相关信息。</p>
+    </LegalSection>
+
+    <LegalSection id="changes" title="8. 条款更新与联系">
+      <p>平台可能因法律变化、安全需要或服务调整更新本条款。重大变化会通过页面提示、站内通知或其他合理方式告知。</p>
+      <p>账户、内容审核、举报或申诉问题，可通过平台工单或发送邮件至 <a className="font-bold text-foreground underline underline-offset-4" href="mailto:support@0st.top">support@0st.top</a> 联系。请勿发送密码、验证码或其他不必要的敏感信息。</p>
+    </LegalSection>
+  </LegalDocument>
+);
 
 export default Terms;

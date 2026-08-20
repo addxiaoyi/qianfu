@@ -1,281 +1,199 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NotificationQueue } from '../../server/services/notificationQueue.js';
 import { redisService } from '../../server/services/redisService.js';
-import * as emailServiceModule from '../../server/services/emailService.js';
-import { logger } from '../../server/utils/logger.js';
+import * as emailService from '../../server/services/emailService.js';
 
-describe('NotificationQueue', () => {
+describe('NotificationQueue reliability', () => {
   let queue: NotificationQueue;
-  let redisIncrSpy: any;
-  let redisLpushSpy: any;
-  let redisRpopSpy: any;
-  let sendVerificationEmailSpy: any;
-  let sendPasswordResetEmailSpy: any;
-  let sendTicketNotificationSpy: any;
-  let loggerInfoSpy: any;
+  let incrSpy: ReturnType<typeof vi.spyOn>;
+  let lpushSpy: ReturnType<typeof vi.spyOn>;
+  let rpoplpushSpy: ReturnType<typeof vi.spyOn>;
+  let lremSpy: ReturnType<typeof vi.spyOn>;
+  let verificationSpy: ReturnType<typeof vi.spyOn>;
+  let resetSpy: ReturnType<typeof vi.spyOn>;
+  let ticketSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.useFakeTimers();
     queue = new NotificationQueue();
-
-    redisIncrSpy = vi.spyOn(redisService, 'incr');
-    redisIncrSpy.mockResolvedValue(1);
-
-    redisLpushSpy = vi.spyOn(redisService, 'lpush');
-    redisLpushSpy.mockResolvedValue(undefined);
-
-    redisRpopSpy = vi.spyOn(redisService, 'rpop');
-    redisRpopSpy.mockResolvedValue(null);
-
-    sendVerificationEmailSpy = vi.spyOn(emailServiceModule, 'sendVerificationEmail');
-    sendVerificationEmailSpy.mockResolvedValue(undefined);
-
-    sendPasswordResetEmailSpy = vi.spyOn(emailServiceModule, 'sendPasswordResetEmail');
-    sendPasswordResetEmailSpy.mockResolvedValue(undefined);
-
-    sendTicketNotificationSpy = vi.spyOn(emailServiceModule, 'sendTicketNotification');
-    sendTicketNotificationSpy.mockResolvedValue(undefined);
-
-    loggerInfoSpy = vi.spyOn(logger, 'info');
-    loggerInfoSpy.mockImplementation(() => {});
+    incrSpy = vi.spyOn(redisService, 'incr').mockResolvedValue(1);
+    lpushSpy = vi.spyOn(redisService, 'lpush').mockResolvedValue(true);
+    rpoplpushSpy = vi.spyOn(redisService, 'rpoplpush').mockResolvedValue(null);
+    lremSpy = vi.spyOn(redisService, 'lrem').mockResolvedValue(true);
+    verificationSpy = vi.spyOn(emailService, 'sendVerificationEmail').mockResolvedValue(undefined);
+    resetSpy = vi.spyOn(emailService, 'sendPasswordResetEmail').mockResolvedValue(undefined);
+    ticketSpy = vi.spyOn(emailService, 'sendTicketNotification').mockResolvedValue(undefined);
   });
 
   afterEach(() => {
+    queue.stopWorker();
     vi.restoreAllMocks();
     vi.useRealTimers();
-    try { (queue as any).stopWorker(); } catch {}
   });
 
-  describe('push', () => {
-    it('should push a task to Redis list with auto-generated id', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
+  it('rejects enqueue when Redis did not persist the task', async () => {
+    lpushSpy.mockResolvedValueOnce(false);
 
-      await (queue as any).push({
-        type: 'VERIFICATION_EMAIL',
-        payload: { email: 'test@test.com', token: 'abc' },
-      });
+    await expect(queue.push({
+      type: 'VERIFICATION_EMAIL',
+      payload: { email: 'user@example.com', token: 'token' },
+    })).rejects.toMatchObject({ statusCode: 503 });
 
-      expect(redisLpushSpy).toHaveBeenCalledWith('notification_queue', expect.objectContaining({
-        type: 'VERIFICATION_EMAIL',
-        id: expect.any(String),
-        retryCount: 0,
-      }));
-    });
-
-    it('should use provided id when given', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
-
-      await (queue as any).push({
-        type: 'RESET_PASSWORD_EMAIL',
-        payload: { email: 'test@test.com', token: 'xyz' },
-        id: 'my-custom-id',
-      });
-
-      expect(redisLpushSpy).toHaveBeenCalledWith('notification_queue', expect.objectContaining({
-        id: 'my-custom-id',
-      }));
-    });
-
-    it('should respect rate limit of 10 per minute per userId', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
-      redisIncrSpy.mockResolvedValueOnce(11);
-
-      await expect(
-        (queue as any).push({
-          type: 'VERIFICATION_EMAIL',
-          payload: { email: 'test@test.com', token: 'abc' },
-          userId: 'user-1',
-        }),
-      ).rejects.toThrow('Too many notification requests');
-    });
-
-    it('should still proceed when rate limit allows (count <= 10)', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
-      redisIncrSpy.mockResolvedValueOnce(5);
-
-      await (queue as any).push({
-        type: 'VERIFICATION_EMAIL',
-        payload: { email: 'test@test.com', token: 'abc' },
-        userId: 'user-2',
-      });
-
-      expect(redisLpushSpy).toHaveBeenCalled();
-    });
-
-    it('should not call incr when userId is missing', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
-      redisIncrSpy.mockResolvedValueOnce(999);
-
-      await (queue as any).push({
-        type: 'VERIFICATION_EMAIL',
-        payload: { email: 'test@test.com', token: 'abc' },
-      });
-
-      expect(redisIncrSpy).not.toHaveBeenCalled();
-      expect(redisLpushSpy).toHaveBeenCalled();
-    });
+    expect(rpoplpushSpy).not.toHaveBeenCalled();
   });
 
-  describe('startWorker', () => {
-    it('should process tasks periodically', async () => {
-      redisRpopSpy.mockResolvedValueOnce({
-        type: 'VERIFICATION_EMAIL',
-        payload: { email: 'test@test.com', token: 'abc' },
-        id: 'task-1',
-        retryCount: 0,
-      });
-
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      expect(sendVerificationEmailSpy).toHaveBeenCalledWith('test@test.com', 'abc');
-
-      (queue as any).stopWorker();
+  it('persists a generated task id before processing', async () => {
+    await queue.push({
+      type: 'VERIFICATION_EMAIL',
+      payload: { email: 'user@example.com', token: 'token' },
     });
 
-    it('should not start a second worker if one is already running', () => {
-      (queue as any).startWorker(100);
-      (queue as any).startWorker(100);
-
-      expect((queue as any).interval).toBeDefined();
-
-      (queue as any).stopWorker();
-    });
+    expect(lpushSpy).toHaveBeenCalledWith('notification_queue', expect.objectContaining({
+      id: expect.any(String),
+      retryCount: 0,
+    }));
   });
 
-  describe('task handling', () => {
-    it('should handle VERIFICATION_EMAIL task type', async () => {
-      redisRpopSpy.mockResolvedValueOnce({
-        type: 'VERIFICATION_EMAIL',
-        payload: { email: 'user@example.com', token: 'tok123' },
-        id: 'v-1',
-        retryCount: 0,
-      });
+  it('keeps the per-user notification rate limit', async () => {
+    incrSpy.mockResolvedValueOnce(11);
 
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
+    await expect(queue.push({
+      type: 'VERIFICATION_EMAIL',
+      payload: { email: 'user@example.com', token: 'token' },
+      userId: 7,
+    })).rejects.toMatchObject({ statusCode: 429 });
 
-      expect(sendVerificationEmailSpy).toHaveBeenCalledWith('user@example.com', 'tok123');
-      (queue as any).stopWorker();
-    });
-
-    it('should handle RESET_PASSWORD_EMAIL task type', async () => {
-      redisRpopSpy.mockResolvedValueOnce({
-        type: 'RESET_PASSWORD_EMAIL',
-        payload: { email: 'user@example.com', token: 'reset-abc' },
-        id: 'r-1',
-        retryCount: 0,
-      });
-
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      expect(sendPasswordResetEmailSpy).toHaveBeenCalledWith('user@example.com', 'reset-abc');
-      (queue as any).stopWorker();
-    });
-
-    it('should handle TICKET_NOTIFICATION task type', async () => {
-      redisRpopSpy.mockResolvedValueOnce({
-        type: 'TICKET_NOTIFICATION',
-        payload: {
-          ticket: { id: 'T-001', title: 'Login issue' },
-          user: { id: 'u-1', name: 'Tester' },
-          adminEmails: ['admin@example.com'],
-        },
-        id: 't-1',
-        retryCount: 0,
-      });
-
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      expect(sendTicketNotificationSpy).toHaveBeenCalledWith(
-        { id: 'T-001', title: 'Login issue' },
-        { id: 'u-1', name: 'Tester' },
-        ['admin@example.com'],
-      );
-      (queue as any).stopWorker();
-    });
+    expect(lpushSpy).not.toHaveBeenCalled();
   });
 
-  describe('retry logic', () => {
-    it('should re-queue task on failure if retryCount < MAX_RETRIES', async () => {
-      redisRpopSpy
-        .mockResolvedValueOnce({
-          type: 'VERIFICATION_EMAIL',
-          payload: { email: 'fail@test.com', token: 'tok' },
-          id: 'retry-1',
-          retryCount: 0,
-        });
+  it('claims a task atomically and acknowledges only after successful delivery', async () => {
+    const task = {
+      type: 'RESET_PASSWORD_EMAIL' as const,
+      payload: { email: 'user@example.com', token: 'reset-token' },
+      id: 'task-success',
+      retryCount: 0,
+    };
+    rpoplpushSpy.mockResolvedValueOnce(task);
 
-      sendVerificationEmailSpy.mockRejectedValueOnce(new Error('Email service down'));
+    await (queue as any).processNext();
 
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
-
-      // lpush from retry re-queue only (no initial push in this test)
-      expect(redisLpushSpy).toHaveBeenCalledTimes(1);
-      expect(sendVerificationEmailSpy).toHaveBeenCalledTimes(1);
-      (queue as any).stopWorker();
-    });
-
-    it('should permanently fail after MAX_RETRIES (3) exceeded', async () => {
-      redisRpopSpy
-        .mockResolvedValueOnce({
-          type: 'VERIFICATION_EMAIL',
-          payload: { email: 'perm-fail@test.com', token: 'tok' },
-          id: 'perm-1',
-          retryCount: 0,
-        })
-        .mockResolvedValueOnce({
-          type: 'VERIFICATION_EMAIL',
-          payload: { email: 'perm-fail@test.com', token: 'tok' },
-          id: 'perm-1',
-          retryCount: 1,
-        })
-        .mockResolvedValueOnce({
-          type: 'VERIFICATION_EMAIL',
-          payload: { email: 'perm-fail@test.com', token: 'tok' },
-          id: 'perm-1',
-          retryCount: 2,
-        })
-        .mockResolvedValueOnce(null);
-
-      sendVerificationEmailSpy.mockRejectedValue(new Error('Permanent failure'));
-
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(1000);
-
-      expect(sendVerificationEmailSpy).toHaveBeenCalledTimes(3);
-      (queue as any).stopWorker();
-    });
+    expect(rpoplpushSpy).toHaveBeenCalledWith('notification_queue', 'notification_queue:processing');
+    expect(resetSpy).toHaveBeenCalledWith('user@example.com', 'reset-token');
+    expect(lremSpy).toHaveBeenCalledWith('notification_queue:processing', task, 1);
   });
 
-  describe('empty queue', () => {
-    it('should do nothing when queue is empty', async () => {
-      redisRpopSpy.mockResolvedValueOnce(null);
+  it('uses real exponential delay before requeueing a failed task', async () => {
+    const task = {
+      type: 'VERIFICATION_EMAIL' as const,
+      payload: { email: 'user@example.com', token: 'token' },
+      id: 'task-retry',
+      retryCount: 0,
+    };
+    rpoplpushSpy.mockResolvedValueOnce(task);
+    verificationSpy.mockRejectedValueOnce(new Error('temporary SMTP failure'));
 
-      (queue as any).startWorker(100);
-      await vi.advanceTimersByTimeAsync(200);
+    const processing = (queue as any).processNext();
+    await vi.advanceTimersByTimeAsync(999);
+    expect(lpushSpy).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    await processing;
 
-      expect(redisLpushSpy).not.toHaveBeenCalled();
-      expect(sendVerificationEmailSpy).not.toHaveBeenCalled();
-      (queue as any).stopWorker();
-    });
+    expect(lpushSpy).toHaveBeenCalledWith('notification_queue', expect.objectContaining({
+      id: 'task-retry',
+      retryCount: 1,
+    }));
+    expect(lremSpy).toHaveBeenCalledWith('notification_queue:processing', task, 1);
   });
 
-  describe('stopWorker', () => {
-    it('should clear the interval', () => {
-      const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
-      (queue as any).startWorker(100);
-      (queue as any).stopWorker();
+  it('moves the third failed attempt to the dead-letter queue', async () => {
+    const task = {
+      type: 'TICKET_NOTIFICATION' as const,
+      payload: { ticket: {}, user: {}, adminEmails: [] },
+      id: 'task-dead',
+      retryCount: 2,
+    };
+    rpoplpushSpy.mockResolvedValueOnce(task);
+    ticketSpy.mockRejectedValueOnce(new Error('permanent delivery failure'));
 
-      expect(clearIntervalSpy).toHaveBeenCalledTimes(1);
-      clearIntervalSpy.mockRestore();
-    });
+    await (queue as any).processNext();
 
-    it('should be safe to call when worker was never started', () => {
-      expect(() => (queue as any).stopWorker()).not.toThrow();
-    });
+    expect(lpushSpy).toHaveBeenCalledWith('notification_queue:dead', expect.objectContaining({
+      id: 'task-dead',
+      retryCount: 3,
+      failedAt: expect.any(String),
+      lastError: 'permanent delivery failure',
+    }));
+    expect(lremSpy).toHaveBeenCalledWith('notification_queue:processing', task, 1);
+  });
+
+  it('leaves an unacknowledged task recoverable when retry persistence fails', async () => {
+    const task = {
+      type: 'VERIFICATION_EMAIL' as const,
+      payload: { email: 'user@example.com', token: 'token' },
+      id: 'task-stays-processing',
+      retryCount: 0,
+    };
+    rpoplpushSpy.mockResolvedValueOnce(task);
+    verificationSpy.mockRejectedValueOnce(new Error('temporary failure'));
+    lpushSpy.mockResolvedValueOnce(false);
+
+    const processing = (queue as any).processNext();
+    await vi.advanceTimersByTimeAsync(1000);
+    await processing;
+
+    expect(lremSpy).not.toHaveBeenCalled();
+  });
+
+  it('recovers tasks left in the processing queue after a crash', async () => {
+    const task = {
+      type: 'VERIFICATION_EMAIL' as const,
+      payload: { email: 'user@example.com', token: 'token' },
+      id: 'task-recover',
+      retryCount: 0,
+    };
+    rpoplpushSpy.mockResolvedValueOnce(task).mockResolvedValueOnce(null);
+
+    await expect(queue.recoverProcessingTasks()).resolves.toBe(1);
+
+    expect(rpoplpushSpy).toHaveBeenNthCalledWith(1, 'notification_queue:processing', 'notification_queue');
+  });
+
+  it('does not continue pulling tasks after the worker is stopped', async () => {
+    const task = {
+      type: 'VERIFICATION_EMAIL' as const,
+      payload: { email: 'user@example.com', token: 'token' },
+      id: 'task-stop',
+      retryCount: 0,
+    };
+    let resolveDelivery: (() => void) | undefined;
+    verificationSpy.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      resolveDelivery = resolve;
+    }));
+    rpoplpushSpy.mockResolvedValueOnce(task).mockResolvedValue(null);
+
+    const processing = (queue as any).processNext();
+    await Promise.resolve();
+    queue.stopWorker();
+    resolveDelivery?.();
+    await processing;
+    await vi.runAllTimersAsync();
+
+    expect(rpoplpushSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not start processing after recovery finishes when the worker was stopped', async () => {
+    let resolveRecovery: (() => void) | undefined;
+    const processNextSpy = vi.spyOn(queue as any, 'processNext');
+    rpoplpushSpy.mockImplementationOnce(() => new Promise<null>((resolve) => {
+      resolveRecovery = () => resolve(null);
+    }));
+
+    queue.startWorker();
+    queue.stopWorker();
+    resolveRecovery?.();
+    await vi.runAllTimersAsync();
+
+    expect(rpoplpushSpy).toHaveBeenCalledTimes(1);
+    expect(processNextSpy).not.toHaveBeenCalled();
   });
 });

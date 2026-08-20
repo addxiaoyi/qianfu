@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-08-10T10:08:05.252Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"healthy\",\"ready\":true,\"timestamp\":\"2026-08-10T10:07:47.633Z\",\"version\":\"1.0.0\",\"uptime\":{\"seconds\":32043,\"human\":\"8h 54m 3s\"},\"services\":{\"database\":{\"status\":\"healthy\",\"latency\":\"1ms\"},\"lo...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"ready\",\"ready\":true,\"cache\":\"connected\",\"metrics\":\"ready\",\"smtp\":\"ready\",\"timestamp\":\"2026-08-10T10:07:47.637Z\",\"checks\":{\"database\":\"ok\",\"cache\":\"ok\",\"metrics\":\"ok\",\"smtp\":\"ok\"}}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/js/index-Ce4bmIzH.js",
+    "localBundle": "/assets/js/index-C9iODB4T.js",
+    "bundleMatch": "false",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "false",
+    "assetContentMatch": "false",
+    "missingOrMismatchedAssets": "/assets/css/index-cTiz4EGb.css:404,/assets/js/index-C9iODB4T.js:404,/assets/js/uiStore-BTMEioT8.js:404",
+    "manifestChecked": "true",
+    "manifestMatch": "false",
+    "manifestError": "",
+    "manifestDistHash": "707c7974b2462a7c955168d838b9dfe2e06c59575ac0fc3f842feb6b3ae0a6d8",
+    "diagnosis": "stale_bundle"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "probeOk": false,
+    "probeError": "Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=Client network socket disconnected before secure TLS connection was established\n",
+    "tlsStatus": "",
+    "certCn": "",
+    "certSan": "",
+    "htmlStatus": "",
+    "looksLikeMainSite": "",
+    "rootMarkerMatch": "",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "pay_probe_failed"
+  },
+  "findings": [
+    "主站前端仍在使用旧 bundle：remote=/assets/js/index-Ce4bmIzH.js local=/assets/js/index-C9iODB4T.js。",
+    "主站前端 dist manifest 未部署或与本地不一致：manifest mismatch。",
+    "支付域探针执行失败：Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=Client network socket disconnected before secure TLS connection was established\n"
+  ],
+  "recommendedActions": [
+    "前端下一步：重新执行 npm run build 并部署 qianfu-liandeng/dist，确认线上入口从 /assets/js/index-Ce4bmIzH.js 更新为 /assets/js/index-C9iODB4T.js。",
+    "前端整包验收下一步：使用 scripts/linux/deploy-frontend-dist.sh 原子发布完整 dist，确认 /qianfu-dist-manifest.json 返回 JSON 且 dist_hash 与本地一致。",
+    "支付域下一步：先修复 domain-cert-probe 运行环境或 DNS/TLS 访问，再判断 vhost 是否恢复。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260810-180746.json"
+}

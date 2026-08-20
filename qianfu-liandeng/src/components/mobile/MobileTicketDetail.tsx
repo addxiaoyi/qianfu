@@ -7,6 +7,14 @@ import { toast } from '../../hooks/use-toast';
 import { cn } from '../../utils/cn';
 import { formatDateTime } from '../../utils/serverView';
 
+const statusLabels: Record<string, string> = {
+  OPEN: '待处理',
+  IN_PROGRESS: '处理中',
+  WAITING_USER: '等待您回复',
+  RESOLVED: '已解决',
+  CLOSED: '已关闭',
+};
+
 interface Message {
   id: number | string;
   content: string;
@@ -78,6 +86,9 @@ export default function MobileTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['tickets', 'mobile'] });
       toast({ title: '回复已发送' });
     },
+    onError: () => {
+      toast({ variant: 'destructive', title: '回复发送失败', description: '请检查网络后重试。' });
+    },
   });
 
   const handleSubmit = () => {
@@ -121,12 +132,15 @@ export default function MobileTicketDetail() {
     <div className="flex flex-col h-[calc(100svh-132px)] bg-zinc-50">
       <div className="px-4 py-3 border-b border-zinc-100 bg-white">
         <h2 className="text-base font-black line-clamp-1">{ticket?.title || ticket?.subject || `工单 #${id}`}</h2>
-        <p className="text-[10px] font-bold text-zinc-400 mt-1">状态：{ticket?.status || 'UNKNOWN'}</p>
+        <p className="text-[10px] font-bold text-zinc-400 mt-1">状态：{statusLabels[String(ticket?.status || '').toUpperCase()] || '待确认'}</p>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {messages.length === 0 ? (
-          <div className="py-16 text-center text-sm font-bold text-zinc-400">暂无消息记录</div>
+          <div className="py-16 text-center">
+            <p className="text-sm font-bold text-zinc-500">尚无沟通记录</p>
+            <p className="mt-2 text-xs text-zinc-400">补充问题细节后，客服会在此回复。</p>
+          </div>
         ) : (
           messages.map((msg) => <MessageItem key={msg.id} msg={msg} />)
         )}
@@ -136,6 +150,7 @@ export default function MobileTicketDetail() {
         <div className="flex items-center gap-2">
           <input
             type="text"
+            aria-label="工单回复内容"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -146,6 +161,7 @@ export default function MobileTicketDetail() {
             type="button"
             onClick={handleSubmit}
             disabled={!input.trim() || replyMutation.isPending}
+            aria-label="发送回复"
             className="w-11 h-11 flex items-center justify-center rounded-full bg-zinc-900 text-white disabled:opacity-40 transition-opacity"
           >
             <Send className="w-5 h-5" />

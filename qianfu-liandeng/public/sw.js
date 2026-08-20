@@ -3,28 +3,45 @@
  * 提供缓存策略、离线支持和后台同步功能
  */
 
-const CACHE_NAME = 'qianfu-v2';
-const STATIC_CACHE = 'qianfu-static-v2';
-const DYNAMIC_CACHE = 'qianfu-dynamic-v2';
-const IMAGE_CACHE = 'qianfu-images-v2';
-
-const STATIC_ASSETS = [
-  '/',
+const BUILD_ID = self.__QIANFU_BUILD_ID__ || 'dev';
+const PRECACHE_INTEGRITY = Object.freeze(self.__QIANFU_PRECACHE_INTEGRITY__ || {});
+const BASE_STATIC_ASSETS = Object.freeze([
   '/index.html',
   '/manifest.json',
+  '/offline.html',
   '/logo.png',
   '/fonts/minecraft.ttf',
-];
+]);
+const PRECACHE_ASSETS = Object.freeze(
+  self.__QIANFU_PRECACHE_ASSETS__ || BASE_STATIC_ASSETS,
+);
 
+const STATIC_CACHE = `qianfu-static-${BUILD_ID}`;
+const DYNAMIC_CACHE = `qianfu-dynamic-${BUILD_ID}`;
+const IMAGE_CACHE = `qianfu-images-${BUILD_ID}`;
 const OFFLINE_PAGE = '/offline.html';
+
+async function precacheAssets(cache) {
+  await Promise.all(PRECACHE_ASSETS.map(async (asset) => {
+    const integrity = PRECACHE_INTEGRITY[asset];
+    const request = new Request(asset, {
+      cache: 'reload',
+      credentials: 'same-origin',
+      ...(integrity ? { integrity } : {}),
+    });
+    const response = await fetch(request);
+    if (!response.ok) {
+      throw new Error(`Unable to precache ${asset}: HTTP ${response.status}`);
+    }
+    await cache.put(asset, response);
+  }));
+}
 
 // 安装事件：缓存静态资源
 self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => {
-        return cache.addAll(STATIC_ASSETS);
-      }),
+      caches.open(STATIC_CACHE).then(precacheAssets),
       self.skipWaiting(),
     ])
   );
@@ -105,7 +122,7 @@ const cacheFirst = async (request, cacheName) => {
     return networkResponse;
   } catch (error) {
     if (isImage(new URL(request.url))) {
-      return caches.match('/icons/fallback-image.png');
+      return caches.match('/logo.png');
     }
     throw error;
   }

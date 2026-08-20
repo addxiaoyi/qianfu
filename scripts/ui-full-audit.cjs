@@ -6,36 +6,41 @@ const BASE_URL = process.env.QA_BASE_URL || 'http://localhost:5173';
 const OUT_DIR = path.resolve(process.cwd(), 'output', 'ui-audit-2026-05-21');
 const LOCAL_AUTH_TOKEN_KEY = 'qf_local_auth_token';
 const USER_LOGIN = {
-  identifier: process.env.QA_LOGIN_IDENTIFIER || process.env.QA_LOGIN_USER || 'qa_user',
-  password: process.env.QA_LOGIN_PASSWORD || 'QaTest123!',
+  identifier: process.env.QA_LOGIN_IDENTIFIER || process.env.QA_LOGIN_USER || '',
+  password: process.env.QA_LOGIN_PASSWORD || '',
 };
 const ADMIN_LOGIN = {
-  identifier: process.env.QA_ADMIN_IDENTIFIER || process.env.QA_ADMIN_USER || 'qa_admin',
-  password: process.env.QA_ADMIN_PASSWORD || 'QaAdmin123!',
+  identifier: process.env.QA_ADMIN_IDENTIFIER || process.env.QA_ADMIN_USER || '',
+  password: process.env.QA_ADMIN_PASSWORD || '',
 };
+const USER_REQUIRED = process.env.QA_USER_REQUIRED === 'true';
 const ADMIN_REQUIRED = process.env.QA_ADMIN_REQUIRED === 'true';
+const HAS_EXPLICIT_USER_LOGIN = Boolean(USER_LOGIN.identifier && USER_LOGIN.password);
 const HAS_EXPLICIT_ADMIN_LOGIN = Boolean(process.env.QA_ADMIN_IDENTIFIER || process.env.QA_ADMIN_USER)
   && Boolean(process.env.QA_ADMIN_PASSWORD);
 
 const desktopPublicRoutes = [
-  '/', '/servers', '/search', '/rules', '/resources', '/team', '/promotion', '/terms', '/privacy', '/login', '/register', '/forgot-password'
+  '/', '/servers', '/search', '/news', '/rules', '/resources', '/team', '/promotion', '/terms', '/privacy', '/login', '/register', '/forgot-password'
 ];
 
 const desktopUserRoutes = [
-  '/dashboard', '/tickets', '/me', '/me/edit', '/payment', '/editor', '/marketplace/shop', '/marketplace/manage', '/promotion/tasks', '/promotion/claims'
+  '/dashboard', '/tickets', '/tickets/new', '/me', '/me/edit', '/me/favorites', '/me/tags', '/messages', '/me/notifications', '/editor', '/marketplace/shop', '/marketplace/manage', '/marketplace/favorites', '/promotion/tasks', '/promotion/claims'
 ];
 
 const desktopAdminRoutes = [
-  '/admin', '/admin-users', '/admin-review', '/admin-tickets', '/admin-reports', '/admin-audit', '/admin-audit-stats', '/admin-moderation', '/admin-port5555', '/admin-qianfu', '/admin-settings', '/admin-mail'
+  '/admin', '/admin-users', '/admin-review', '/admin-tickets', '/admin-reports', '/admin-audit', '/admin-audit-stats', '/admin-moderation', '/admin-port5555', '/admin-settings', '/admin-mail', '/admin-announcements', '/admin-promo/tasks', '/admin-promo/claims'
 ];
 
 const mobileRoutes = [
-  '/mobile', '/servers', '/search', '/tickets', '/tickets/new', '/me', '/me/edit', '/me/settings', '/me/notifications', '/payment', '/messages', '/editor', '/dashboard'
+  '/mobile', '/servers', '/search', '/news', '/team', '/tickets', '/tickets/new', '/me', '/me/edit', '/me/favorites', '/me/tags', '/me/settings', '/me/notifications', '/marketplace/favorites', '/messages', '/editor', '/dashboard'
 ];
 
+const mobilePublicRoutes = ['/mobile', '/servers', '/search', '/news', '/team'];
+
 function hashPath(route) {
-  if (route === '/') return `${BASE_URL}/#/`;
-  return `${BASE_URL}/#${route}`;
+  const base = BASE_URL.replace(/\/$/, '');
+  if (process.env.QA_USE_HASH_ROUTES === 'true') return route === '/' ? `${base}/#/` : `${base}/#${route}`;
+  return route === '/' ? `${base}/` : `${base}${route}`;
 }
 
 async function ensureDir(p) {
@@ -60,16 +65,12 @@ async function readAuthState(page) {
     const token =
       window.sessionStorage.getItem(tokenKey) ||
       window.localStorage.getItem(tokenKey);
-    if (!token) {
-      return { hasToken: false, profileOk: false, role: '' };
-    }
     try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const resp = await fetch('/api/v1/profile', {
         method: 'GET',
         credentials: 'include',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
       });
       if (!resp.ok) {
         return { hasToken: true, profileOk: false, role: '', status: resp.status };
@@ -85,8 +86,8 @@ async function readAuthState(page) {
 
 async function ensureLoggedIn(page, expectAdmin = false) {
   const state = await readAuthState(page);
-  if (!state.hasToken || !state.profileOk) return false;
-  if (expectAdmin && state.role !== 'ADMIN') return false;
+  if (!state.profileOk) return false;
+  if (expectAdmin && !['ADMIN', 'SUPER_ADMIN'].includes(state.role)) return false;
   return true;
 }
 
@@ -141,7 +142,7 @@ async function login(page, creds, expectAdmin = false) {
 }
 
 function isProtectedRoute(route) {
-  const protectedPrefixes = ['/dashboard', '/tickets', '/me', '/payment', '/editor', '/marketplace/manage', '/admin', '/promotion/tasks', '/promotion/claims'];
+  const protectedPrefixes = ['/dashboard', '/tickets', '/me', '/messages', '/editor', '/marketplace/manage', '/marketplace/favorites', '/admin', '/promotion/tasks', '/promotion/claims'];
   return protectedPrefixes.some((p) => route === p || route.startsWith(`${p}/`));
 }
 
@@ -162,7 +163,7 @@ async function runSection(page, routes, section, tag, options = { loggedIn: fals
       const info = await snapshot(page);
       const currentUrl = page.url();
 
-      if (currentUrl.includes('#/login') && route !== '/login') {
+      if ((currentUrl.includes('#/login') || new URL(currentUrl).pathname === '/login') && route !== '/login') {
         redirectedToLogin = true;
       }
 
@@ -200,6 +201,9 @@ async function runSection(page, routes, section, tag, options = { loggedIn: fals
 
   const deskCtx = await browser.newContext({ viewport: { width: 1440, height: 960 } });
   const deskPage = await deskCtx.newPage();
+  if (USER_REQUIRED && !HAS_EXPLICIT_USER_LOGIN) {
+    throw new Error('QA_USER_REQUIRED=true but QA_LOGIN_IDENTIFIER/QA_LOGIN_USER and QA_LOGIN_PASSWORD were not provided');
+  }
   if (ADMIN_REQUIRED && !HAS_EXPLICIT_ADMIN_LOGIN) {
     throw new Error('QA_ADMIN_REQUIRED=true but QA_ADMIN_IDENTIFIER/QA_ADMIN_USER and QA_ADMIN_PASSWORD were not provided');
   }
@@ -213,10 +217,18 @@ async function runSection(page, routes, section, tag, options = { loggedIn: fals
   const results = [];
   results.push(...await runSection(deskPage, desktopPublicRoutes, 'desktop-public', 'desktop'));
 
-  await login(deskPage, USER_LOGIN, false);
-  results.push(...await runSection(deskPage, desktopUserRoutes, 'desktop-user', 'desktop', { loggedIn: true }));
-
   const skippedSections = [];
+  if (HAS_EXPLICIT_USER_LOGIN) {
+    await login(deskPage, USER_LOGIN, false);
+    results.push(...await runSection(deskPage, desktopUserRoutes, 'desktop-user', 'desktop', { loggedIn: true }));
+  } else {
+    results.push(...await runSection(deskPage, desktopUserRoutes.filter(isProtectedRoute), 'desktop-auth-boundary', 'desktop'));
+    skippedSections.push({
+      section: 'desktop-user',
+      reason: 'QA_LOGIN_IDENTIFIER/QA_LOGIN_USER and QA_LOGIN_PASSWORD were not provided',
+      routes: desktopUserRoutes,
+    });
+  }
   if (adminPage) {
     await login(adminPage, ADMIN_LOGIN, true);
     results.push(...await runSection(adminPage, desktopAdminRoutes, 'desktop-admin', 'desktop', { loggedIn: true }));
@@ -228,8 +240,18 @@ async function runSection(page, routes, section, tag, options = { loggedIn: fals
     });
   }
 
-  await login(mobilePage, USER_LOGIN, false);
-  results.push(...await runSection(mobilePage, mobileRoutes, 'mobile-user', 'mobile', { loggedIn: true }));
+  if (HAS_EXPLICIT_USER_LOGIN) {
+    await login(mobilePage, USER_LOGIN, false);
+    results.push(...await runSection(mobilePage, mobileRoutes, 'mobile-user', 'mobile', { loggedIn: true }));
+  } else {
+    results.push(...await runSection(mobilePage, mobilePublicRoutes, 'mobile-public', 'mobile'));
+    results.push(...await runSection(mobilePage, mobileRoutes.filter(isProtectedRoute), 'mobile-auth-boundary', 'mobile'));
+    skippedSections.push({
+      section: 'mobile-user',
+      reason: 'QA_LOGIN_IDENTIFIER/QA_LOGIN_USER and QA_LOGIN_PASSWORD were not provided',
+      routes: mobileRoutes,
+    });
+  }
 
   await deskCtx.close();
   if (adminCtx) await adminCtx.close();

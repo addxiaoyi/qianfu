@@ -1,0 +1,2 @@
+"beforeAll(async () => {\n  schemas = await import('../../server/core/controller/marketplaceSchemas').catch(() => ({}));\n});\n\nfunction requireSchema(nam"
+count 0

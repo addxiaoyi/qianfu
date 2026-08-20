@@ -1,0 +1,70 @@
+# Weaviate 语义搜索服务
+# 使用 Docker Compose 启动本地 Weaviate 实例
+
+version: '3.8'
+
+services:
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # 启用哪些模块 (embedding 服务)
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-openai'
+      ENABLE_MODULES: 'text2vec-openai,text2vec-cohere,text2vec-huggingface'
+      CLUSTER_HOSTNAME: 'node1'
+
+      # OpenAI Embedding 配置 (如使用 OpenAI)
+      OPENAI_APIKEY: '${OPENAI_API_KEY:-}'
+
+      # Cohere Embedding 配置 (如使用 Cohere)
+      # COHERE_APIKEY: '${COHERE_API_KEY:-}'
+
+      # HuggingFace Embedding 配置 (如使用 HuggingFace)
+      # HF_API_TOKEN: '${HUGGINGFACE_API_KEY:-}'
+
+      # 向量索引配置 (HNSW)
+      # HNSW_INDEX_CACHE_SIZE: 1000000000  # 1GB 缓存
+      # HNSW_CONNECTOR: 64
+
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+
+    networks:
+      - weaviate-network
+
+    healthcheck:
+      test: ["CMD", "wget", "-qOa-", "http://localhost:8080/v1/.well-known/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # 可选: 使用 Ollama 运行本地 embedding 模型
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - weaviate-network
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+volumes:
+  weaviate_data:
+  # ollama_data:
+
+networks:
+  weaviate-network:
+    driver: bridge

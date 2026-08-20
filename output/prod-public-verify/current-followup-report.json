@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-08-13T07:47:49.176Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"healthy\",\"ready\":true,\"timestamp\":\"2026-08-13T07:47:23.835Z\",\"version\":\"1.0.0\",\"uptime\":{\"seconds\":14065,\"human\":\"3h 54m 25s\"},\"services\":{\"database\":{\"status\":\"healthy\",\"latency\":\"2ms\"},\"l...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"ready\",\"ready\":true,\"cache\":\"connected\",\"metrics\":\"ready\",\"smtp\":\"ready\",\"timestamp\":\"2026-08-13T07:47:23.882Z\",\"checks\":{\"database\":\"ok\",\"cache\":\"ok\",\"metrics\":\"ok\",\"smtp\":\"ok\"}}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/js/index-BdBWX3zV.js",
+    "localBundle": "/assets/js/index-BdBWX3zV.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "true",
+    "manifestError": "",
+    "manifestDistHash": "23e9c8476329033faec2ffb27d1b778467c0f7873daf65b01d6c0bcb2771aa0d",
+    "diagnosis": "ok"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "Client network socket disconnected before secure TLS connection was established"
+    },
+    "probeOk": false,
+    "probeError": "Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=Client network socket disconnected before secure TLS connection was established\n",
+    "tlsStatus": "",
+    "certCn": "",
+    "certSan": "",
+    "htmlStatus": "",
+    "looksLikeMainSite": "",
+    "rootMarkerMatch": "",
+    "personalFilingDisabled": "",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "pay_probe_failed"
+  },
+  "findings": [
+    "支付域探针执行失败：Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=Client network socket disconnected before secure TLS connection was established\n"
+  ],
+  "recommendedActions": [
+    "支付域下一步：检查 pay.star-web.top 的 DNS/TLS 可达性与关闭 vhost，目标是 410 PERSONAL_FILING_DISABLED。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\current-followup-report.json"
+}

@@ -1,0 +1,157 @@
+{
+  "startedAt": "2026-07-20T22:35:39.820Z",
+  "finishedAt": "2026-07-20T22:36:09.175Z",
+  "baseUrl": "https://mc-u.top",
+  "browser": {
+    "proxyMode": "direct",
+    "navTimeoutMs": 30000,
+    "fetchTimeoutMs": 30000
+  },
+  "plannedRoutes": 13,
+  "passedRoutes": 13,
+  "failedRoutes": 0,
+  "skipped": [
+    {
+      "scope": "desktop-admin",
+      "reason": "admin login probe failed (403)"
+    }
+  ],
+  "login": {
+    "username": null,
+    "role": null,
+    "emailVerified": null,
+    "adminProbeOk": false
+  },
+  "results": [
+    {
+      "context": "desktop-user",
+      "path": "/dashboard",
+      "label": "dashboard",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard",
+      "matchedText": "快捷概览",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/dashboard/profile",
+      "label": "dashboard profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard/profile",
+      "matchedText": "账号状态",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/me",
+      "label": "profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me",
+      "matchedText": "用户ID",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/me/edit",
+      "label": "profile edit",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me/edit",
+      "matchedText": "账号资料",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/tickets",
+      "label": "tickets",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/tickets",
+      "matchedText": "工单",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/editor",
+      "label": "server editor",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/editor",
+      "matchedText": "发布服务器",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "desktop-user",
+      "path": "/rules",
+      "label": "rules",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/rules",
+      "matchedText": "等级与经验规则",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/dashboard",
+      "label": "mobile dashboard",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/dashboard",
+      "matchedText": "仪表盘",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/me",
+      "label": "mobile profile",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me",
+      "matchedText": "我的服务器",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/me/edit",
+      "label": "mobile profile edit",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/me/edit",
+      "matchedText": "账号资料",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/tickets",
+      "label": "mobile tickets",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/tickets",
+      "matchedText": "工单",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/editor",
+      "label": "mobile editor",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/editor",
+      "matchedText": "发布服务器",
+      "networkErrors": [],
+      "runtimeErrors": []
+    },
+    {
+      "context": "mobile-user",
+      "path": "/rules",
+      "label": "mobile rules",
+      "ok": true,
+      "finalUrl": "https://mc-u.top/rules",
+      "matchedText": "等级与经验规则",
+      "networkErrors": [],
+      "runtimeErrors": []
+    }
+  ]
+}

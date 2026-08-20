@@ -1,527 +1,824 @@
 {
-  "timestamp": "2026-05-26T14:56:09.302Z",
-  "baseUrl": "https://mc-u.top",
-  "total": 47,
-  "failed": 0,
-  "failedRoutes": [],
-  "skippedSections": [],
-  "results": [
+  "timestamp": "2026-08-11T17:56:43.043Z",
+  "baseUrl": "http://localhost:5173",
+  "total": 44,
+  "failed": 44,
+  "failedRoutes": [
     {
       "section": "desktop-public",
       "route": "/",
-      "url": "https://mc-u.top/",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\root.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/"
     },
     {
       "section": "desktop-public",
       "route": "/servers",
-      "url": "https://mc-u.top/#/servers",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\servers.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/servers\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/servers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/servers"
     },
     {
       "section": "desktop-public",
       "route": "/search",
-      "url": "https://mc-u.top/#/search",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\search.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/search\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/search"
+    },
+    {
+      "section": "desktop-public",
+      "route": "/news",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/news\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/news"
     },
     {
       "section": "desktop-public",
       "route": "/rules",
-      "url": "https://mc-u.top/#/rules",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\rules.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/rules\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/rules"
     },
     {
       "section": "desktop-public",
       "route": "/resources",
-      "url": "https://mc-u.top/#/resources",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\resources.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/resources\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/resources\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/resources"
     },
     {
       "section": "desktop-public",
       "route": "/team",
-      "url": "https://mc-u.top/#/team",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\team.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/team\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/team\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/team"
     },
     {
       "section": "desktop-public",
       "route": "/promotion",
-      "url": "https://mc-u.top/#/promotion",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\promotion.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/promotion"
     },
     {
       "section": "desktop-public",
       "route": "/terms",
-      "url": "https://mc-u.top/#/terms",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\terms.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/terms\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/terms\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/terms"
     },
     {
       "section": "desktop-public",
       "route": "/privacy",
-      "url": "https://mc-u.top/#/privacy",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\privacy.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/privacy\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/privacy\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/privacy"
     },
     {
       "section": "desktop-public",
       "route": "/login",
-      "url": "https://mc-u.top/#/login",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\login.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/login"
     },
     {
       "section": "desktop-public",
       "route": "/register",
-      "url": "https://mc-u.top/#/register",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\register.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/register\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/register\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/register"
     },
     {
       "section": "desktop-public",
       "route": "/forgot-password",
-      "url": "https://mc-u.top/#/forgot-password",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-public\\forgot-password.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/forgot-password\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/forgot-password"
     },
     {
-      "section": "desktop-user",
+      "section": "desktop-auth-boundary",
       "route": "/dashboard",
-      "url": "https://mc-u.top/#/dashboard",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\dashboard.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/dashboard\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/dashboard"
     },
     {
-      "section": "desktop-user",
+      "section": "desktop-auth-boundary",
       "route": "/tickets",
-      "url": "https://mc-u.top/#/tickets",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\tickets.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/tickets"
     },
     {
-      "section": "desktop-user",
-      "route": "/me",
-      "url": "https://mc-u.top/#/me",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\me.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/me/edit",
-      "url": "https://mc-u.top/#/me/edit",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\me_edit.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/payment",
-      "url": "https://mc-u.top/#/payment",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\payment.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/editor",
-      "url": "https://mc-u.top/#/editor",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\editor.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/marketplace/shop",
-      "url": "https://mc-u.top/#/marketplace/shop",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\marketplace_shop.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/marketplace/manage",
-      "url": "https://mc-u.top/#/marketplace/manage",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\marketplace_manage.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/promotion/tasks",
-      "url": "https://mc-u.top/#/promotion/tasks",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\promotion_tasks.png"
-    },
-    {
-      "section": "desktop-user",
-      "route": "/promotion/claims",
-      "url": "https://mc-u.top/#/promotion/claims",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 907,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-user\\promotion_claims.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin",
-      "url": "https://mc-u.top/admin",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 557,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-users",
-      "url": "https://mc-u.top/admin-users",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 557,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-users.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-review",
-      "url": "https://mc-u.top/admin-review",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 648,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-review.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-tickets",
-      "url": "https://mc-u.top/admin-tickets",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 1349,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-tickets.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-reports",
-      "url": "https://mc-u.top/admin-reports",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 654,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-reports.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-audit",
-      "url": "https://mc-u.top/admin-audit",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 677,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-audit.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-audit-stats",
-      "url": "https://mc-u.top/admin-audit-stats",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 1424,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-audit-stats.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-moderation",
-      "url": "https://mc-u.top/admin-moderation",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 709,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-moderation.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-port5555",
-      "url": "https://mc-u.top/admin-port5555",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 557,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-port5555.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-qianfu",
-      "url": "https://mc-u.top/admin-qianfu",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 3971,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-qianfu.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-settings",
-      "url": "https://mc-u.top/admin-settings",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 1132,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-settings.png"
-    },
-    {
-      "section": "desktop-admin",
-      "route": "/admin-mail",
-      "url": "https://mc-u.top/admin-mail",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 管理控制台",
-      "textLen": 4919,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\desktop\\desktop-admin\\admin-mail.png"
-    },
-    {
-      "section": "mobile-user",
-      "route": "/mobile",
-      "url": "https://mc-u.top/mobile",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 149,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\mobile.png"
-    },
-    {
-      "section": "mobile-user",
-      "route": "/servers",
-      "url": "https://mc-u.top/servers",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 服务器",
-      "textLen": 298,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\servers.png"
-    },
-    {
-      "section": "mobile-user",
-      "route": "/search",
-      "url": "https://mc-u.top/search",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 150,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\search.png"
-    },
-    {
-      "section": "mobile-user",
-      "route": "/tickets",
-      "url": "https://mc-u.top/tickets",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 工单",
-      "textLen": 115,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\tickets.png"
-    },
-    {
-      "section": "mobile-user",
+      "section": "desktop-auth-boundary",
       "route": "/tickets/new",
-      "url": "https://mc-u.top/tickets/new",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 工单",
-      "textLen": 85,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\tickets_new.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets/new\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/tickets/new"
     },
     {
-      "section": "mobile-user",
+      "section": "desktop-auth-boundary",
       "route": "/me",
-      "url": "https://mc-u.top/me",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 326,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\me.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me"
     },
     {
-      "section": "mobile-user",
+      "section": "desktop-auth-boundary",
       "route": "/me/edit",
-      "url": "https://mc-u.top/me/edit",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 160,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\me_edit.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/edit\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/edit\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/edit"
     },
     {
-      "section": "mobile-user",
-      "route": "/me/settings",
-      "url": "https://mc-u.top/me/settings",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 199,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\me_settings.png"
+      "section": "desktop-auth-boundary",
+      "route": "/me/favorites",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/favorites"
     },
     {
-      "section": "mobile-user",
-      "route": "/me/notifications",
-      "url": "https://mc-u.top/me/notifications",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 93,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\me_notifications.png"
+      "section": "desktop-auth-boundary",
+      "route": "/me/tags",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/tags\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/tags\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/tags"
     },
     {
-      "section": "mobile-user",
-      "route": "/payment",
-      "url": "https://mc-u.top/payment",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 支付",
-      "textLen": 141,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\payment.png"
-    },
-    {
-      "section": "mobile-user",
+      "section": "desktop-auth-boundary",
       "route": "/messages",
-      "url": "https://mc-u.top/messages",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 127,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\messages.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/messages\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/messages"
     },
     {
-      "section": "mobile-user",
+      "section": "desktop-auth-boundary",
+      "route": "/me/notifications",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/notifications\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/notifications\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/notifications"
+    },
+    {
+      "section": "desktop-auth-boundary",
       "route": "/editor",
-      "url": "https://mc-u.top/editor",
-      "ok": true,
-      "note": "",
-      "redirectedToLogin": false,
-      "title": "千服联灯 · 首页",
-      "textLen": 457,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\editor.png"
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/editor\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/editor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/editor"
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/marketplace/manage",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/manage\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/manage\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/marketplace/manage"
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/marketplace/favorites",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/marketplace/favorites"
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/promotion/tasks",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion/tasks\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/promotion/tasks"
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/promotion/claims",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion/claims\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion/claims\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/promotion/claims"
+    },
+    {
+      "section": "mobile-public",
+      "route": "/mobile",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/mobile\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/mobile\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/mobile"
+    },
+    {
+      "section": "mobile-public",
+      "route": "/servers",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/servers\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/servers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/servers"
+    },
+    {
+      "section": "mobile-public",
+      "route": "/search",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/search\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/search"
+    },
+    {
+      "section": "mobile-public",
+      "route": "/news",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/news\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/news"
+    },
+    {
+      "section": "mobile-public",
+      "route": "/team",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/team\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/team\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/team"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/tickets",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/tickets"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/tickets/new",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets/new\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/tickets/new"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/edit",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/edit\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/edit\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/edit"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/favorites",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/favorites"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/tags",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/tags\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/tags\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/tags"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/settings",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/settings\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/settings"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/notifications",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/notifications\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/notifications\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/me/notifications"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/marketplace/favorites",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/marketplace/favorites"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/messages",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/messages\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/messages"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/editor",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/editor\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/editor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/editor"
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/dashboard",
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/dashboard\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "url": "http://localhost:5173/dashboard"
+    }
+  ],
+  "skippedSections": [
+    {
+      "section": "desktop-user",
+      "reason": "QA_LOGIN_IDENTIFIER/QA_LOGIN_USER and QA_LOGIN_PASSWORD were not provided",
+      "routes": [
+        "/dashboard",
+        "/tickets",
+        "/tickets/new",
+        "/me",
+        "/me/edit",
+        "/me/favorites",
+        "/me/tags",
+        "/messages",
+        "/me/notifications",
+        "/editor",
+        "/marketplace/shop",
+        "/marketplace/manage",
+        "/marketplace/favorites",
+        "/promotion/tasks",
+        "/promotion/claims"
+      ]
+    },
+    {
+      "section": "desktop-admin",
+      "reason": "QA_ADMIN_IDENTIFIER/QA_ADMIN_USER and QA_ADMIN_PASSWORD were not provided",
+      "routes": [
+        "/admin",
+        "/admin-users",
+        "/admin-review",
+        "/admin-tickets",
+        "/admin-reports",
+        "/admin-audit",
+        "/admin-audit-stats",
+        "/admin-moderation",
+        "/admin-port5555",
+        "/admin-settings",
+        "/admin-mail",
+        "/admin-announcements",
+        "/admin-promo/tasks",
+        "/admin-promo/claims"
+      ]
     },
     {
       "section": "mobile-user",
-      "route": "/dashboard",
-      "url": "https://mc-u.top/dashboard",
-      "ok": true,
-      "note": "",
+      "reason": "QA_LOGIN_IDENTIFIER/QA_LOGIN_USER and QA_LOGIN_PASSWORD were not provided",
+      "routes": [
+        "/mobile",
+        "/servers",
+        "/search",
+        "/news",
+        "/team",
+        "/tickets",
+        "/tickets/new",
+        "/me",
+        "/me/edit",
+        "/me/favorites",
+        "/me/tags",
+        "/me/settings",
+        "/me/notifications",
+        "/marketplace/favorites",
+        "/messages",
+        "/editor",
+        "/dashboard"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "section": "desktop-public",
+      "route": "/",
+      "url": "http://localhost:5173/",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"domcontentloaded\"\u001b[22m\n",
       "redirectedToLogin": false,
-      "title": "千服联灯 · 控制台",
-      "textLen": 132,
-      "screenshot": "D:\\qwq\\项目\\千服\\output\\ui-audit-2026-05-21\\shots\\mobile\\mobile-user\\dashboard.png"
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/servers",
+      "url": "http://localhost:5173/servers",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/servers\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/servers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/search",
+      "url": "http://localhost:5173/search",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/search\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/news",
+      "url": "http://localhost:5173/news",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/news\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/rules",
+      "url": "http://localhost:5173/rules",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/rules\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/rules\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/resources",
+      "url": "http://localhost:5173/resources",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/resources\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/resources\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/team",
+      "url": "http://localhost:5173/team",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/team\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/team\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/promotion",
+      "url": "http://localhost:5173/promotion",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/terms",
+      "url": "http://localhost:5173/terms",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/terms\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/terms\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/privacy",
+      "url": "http://localhost:5173/privacy",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/privacy\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/privacy\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/login",
+      "url": "http://localhost:5173/login",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/login\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/login\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/register",
+      "url": "http://localhost:5173/register",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/register\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/register\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-public",
+      "route": "/forgot-password",
+      "url": "http://localhost:5173/forgot-password",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/forgot-password\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/forgot-password\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/dashboard",
+      "url": "http://localhost:5173/dashboard",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/dashboard\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/tickets",
+      "url": "http://localhost:5173/tickets",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/tickets/new",
+      "url": "http://localhost:5173/tickets/new",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets/new\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/me",
+      "url": "http://localhost:5173/me",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/me/edit",
+      "url": "http://localhost:5173/me/edit",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/edit\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/edit\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/me/favorites",
+      "url": "http://localhost:5173/me/favorites",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/me/tags",
+      "url": "http://localhost:5173/me/tags",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/tags\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/tags\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/messages",
+      "url": "http://localhost:5173/messages",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/messages\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/me/notifications",
+      "url": "http://localhost:5173/me/notifications",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/notifications\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/notifications\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/editor",
+      "url": "http://localhost:5173/editor",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/editor\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/editor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/marketplace/manage",
+      "url": "http://localhost:5173/marketplace/manage",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/manage\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/manage\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/marketplace/favorites",
+      "url": "http://localhost:5173/marketplace/favorites",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/promotion/tasks",
+      "url": "http://localhost:5173/promotion/tasks",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion/tasks\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion/tasks\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "desktop-auth-boundary",
+      "route": "/promotion/claims",
+      "url": "http://localhost:5173/promotion/claims",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/promotion/claims\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/promotion/claims\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-public",
+      "route": "/mobile",
+      "url": "http://localhost:5173/mobile",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/mobile\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/mobile\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-public",
+      "route": "/servers",
+      "url": "http://localhost:5173/servers",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/servers\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/servers\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-public",
+      "route": "/search",
+      "url": "http://localhost:5173/search",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/search\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/search\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-public",
+      "route": "/news",
+      "url": "http://localhost:5173/news",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/news\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/news\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-public",
+      "route": "/team",
+      "url": "http://localhost:5173/team",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/team\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/team\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/tickets",
+      "url": "http://localhost:5173/tickets",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/tickets/new",
+      "url": "http://localhost:5173/tickets/new",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/tickets/new\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/tickets/new\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me",
+      "url": "http://localhost:5173/me",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/edit",
+      "url": "http://localhost:5173/me/edit",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/edit\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/edit\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/favorites",
+      "url": "http://localhost:5173/me/favorites",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/tags",
+      "url": "http://localhost:5173/me/tags",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/tags\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/tags\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/settings",
+      "url": "http://localhost:5173/me/settings",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/settings\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/settings\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/me/notifications",
+      "url": "http://localhost:5173/me/notifications",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/me/notifications\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/me/notifications\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/marketplace/favorites",
+      "url": "http://localhost:5173/marketplace/favorites",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/marketplace/favorites\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/marketplace/favorites\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/messages",
+      "url": "http://localhost:5173/messages",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/messages\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/messages\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/editor",
+      "url": "http://localhost:5173/editor",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/editor\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/editor\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
+    },
+    {
+      "section": "mobile-auth-boundary",
+      "route": "/dashboard",
+      "url": "http://localhost:5173/dashboard",
+      "ok": false,
+      "note": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/dashboard\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/dashboard\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "redirectedToLogin": false,
+      "title": "",
+      "textLen": 0,
+      "screenshot": ""
     }
   ]
 }

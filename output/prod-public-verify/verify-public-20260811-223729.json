@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-08-11T14:38:14.643Z",
+  "baseUrl": "https://mc-u.top",
+  "mainSiteHost": "mc-u.top",
+  "payHost": "pay.star-web.top",
+  "main": {
+    "apiHealth": {
+      "url": "https://mc-u.top/api/health",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"healthy\",\"ready\":true,\"timestamp\":\"2026-08-11T14:37:33.231Z\",\"version\":\"1.0.0\",\"uptime\":{\"seconds\":39,\"human\":\"39s\"},\"services\":{\"database\":{\"status\":\"healthy\",\"latency\":\"1ms\"},\"local_datab...",
+      "error": ""
+    },
+    "apiReady": {
+      "url": "https://mc-u.top/api/ready",
+      "status": 200,
+      "ok": true,
+      "contentType": "application/json; charset=utf-8",
+      "bodyPreview": "{\"status\":\"ready\",\"ready\":true,\"cache\":\"connected\",\"metrics\":\"ready\",\"smtp\":\"ready\",\"timestamp\":\"2026-08-11T14:37:33.159Z\",\"checks\":{\"database\":\"ok\",\"cache\":\"ok\",\"metrics\":\"ok\",\"smtp\":\"ok\"}}",
+      "error": ""
+    },
+    "diagnosis": "ok"
+  },
+  "frontend": {
+    "probeOk": true,
+    "probeError": "",
+    "remoteRootStatus": "200",
+    "remoteBundle": "/assets/js/index-BbN42TEA.js",
+    "localBundle": "/assets/js/index-BbN42TEA.js",
+    "bundleMatch": "true",
+    "remoteLegacyHashMarkers": "none",
+    "searchTargetMatch": "true",
+    "assetReferenceMatch": "true",
+    "assetContentMatch": "true",
+    "missingOrMismatchedAssets": "none",
+    "manifestChecked": "true",
+    "manifestMatch": "true",
+    "manifestError": "",
+    "manifestDistHash": "d4bb4821dad5210f4007717c8a434e0cb8767cda7f73e62e8b826e7f745e5eed",
+    "diagnosis": "ok"
+  },
+  "pay": {
+    "root": {
+      "url": "https://pay.star-web.top/",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "health": {
+      "url": "https://pay.star-web.top/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "apiHealth": {
+      "url": "https://pay.star-web.top/api/health",
+      "status": null,
+      "ok": false,
+      "contentType": "",
+      "bodyPreview": "",
+      "error": "timeout after 12000ms"
+    },
+    "probeOk": false,
+    "probeError": "Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=tls timeout\n",
+    "tlsStatus": "",
+    "certCn": "",
+    "certSan": "",
+    "htmlStatus": "",
+    "looksLikeMainSite": "",
+    "rootMarkerMatch": "",
+    "canonicalUrl": "",
+    "ogUrl": "",
+    "diagnosis": "pay_probe_failed"
+  },
+  "findings": [
+    "支付域探针执行失败：Command failed: C:\\Program Files\\nodejs\\node.exe scripts/utils/domain-cert-probe.mjs --host pay.star-web.top --expect-host pay.star-web.top --main-site-host mc-u.top\n | probe_error=tls timeout\n"
+  ],
+  "recommendedActions": [
+    "支付域下一步：先修复 domain-cert-probe 运行环境或 DNS/TLS 访问，再判断 vhost 是否恢复。"
+  ],
+  "reportFile": "D:\\qwq\\项目\\千服\\output\\prod-public-verify\\verify-public-20260811-223729.json"
+}

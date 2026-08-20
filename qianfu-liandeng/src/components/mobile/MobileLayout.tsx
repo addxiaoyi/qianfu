@@ -250,7 +250,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
               href={ICP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[9px] font-semibold leading-none text-zinc-500 transition-colors hover:text-black"
+              className="bg-white text-[6px] font-normal leading-3 text-[#e9e7e7] underline decoration-[#e9e7e7] underline-offset-1 transition-colors hover:text-zinc-500 hover:decoration-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {ICP_LABEL}
             </a>

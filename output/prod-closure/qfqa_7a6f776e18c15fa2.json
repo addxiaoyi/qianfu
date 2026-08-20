@@ -1,0 +1,16 @@
+{
+  "marker": "qfqa_7a6f776e18c15fa2",
+  "startedAt": "2026-07-18T12:25:15.402Z",
+  "deployment": "qianfu-20260718-2002",
+  "marketplace": {},
+  "promotion": {},
+  "cleanup": {
+    "users": 0,
+    "products": 0,
+    "orders": 0,
+    "tasks": 0,
+    "claims": 0
+  },
+  "completedAt": "2026-07-18T12:25:52.386Z",
+  "cleanupVerified": true
+}

@@ -1,0 +1,1007 @@
+{
+  "timestamp": "2026-08-12T03:45:34.510Z",
+  "baseUrl": "https://mc-u.top",
+  "payUrl": "https://pay.star-web.top",
+  "outDir": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z",
+  "plannedTotal": 21,
+  "completed": 21,
+  "partial": false,
+  "missingRoutes": [],
+  "options": {
+    "navTimeoutMs": 15000,
+    "domReadyTimeoutMs": 5000,
+    "routeReadyTimeoutMs": 8000,
+    "interactionTimeoutMs": 3000,
+    "stableWaitMs": 1000,
+    "waitUntil": "commit",
+    "concurrency": 3
+  },
+  "total": 21,
+  "failed": 14,
+  "failedRoutes": [
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2"
+      ]
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2"
+      ]
+    },
+    {
+      "label": "oauth-selection-history",
+      "url": "https://mc-u.top/login/oauth",
+      "finalUrl": "https://mc-u.top/login/oauth",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2"
+      ]
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=2"
+      ]
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=6",
+        "request_failures=6"
+      ]
+    },
+    {
+      "label": "reset-password-history",
+      "url": "https://mc-u.top/reset-password",
+      "finalUrl": "https://mc-u.top/reset-password",
+      "documentStatus": 200,
+      "findings": [
+        "console_errors=3",
+        "request_failures=3"
+      ]
+    },
+    {
+      "label": "verify-code-history",
+      "url": "https://mc-u.top/verify-code",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/verify-code Call log: \u001b[2m - navigating to \"https://mc-u.top/verify-code\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "terms-history",
+      "url": "https://mc-u.top/terms/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/terms/ Call log: \u001b[2m - navigating to \"https://mc-u.top/terms/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "privacy-history",
+      "url": "https://mc-u.top/privacy/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/privacy/ Call log: \u001b[2m - navigating to \"https://mc-u.top/privacy/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "compliance-history",
+      "url": "https://mc-u.top/compliance",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/compliance Call log: \u001b[2m - navigating to \"https://mc-u.top/compliance\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "dashboard-billing-history",
+      "url": "https://mc-u.top/dashboard/billing",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/dashboard/billing Call log: \u001b[2m - navigating to \"https://mc-u.top/dashboard/billing\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/search Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/servers Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/resources Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ]
+    }
+  ],
+  "titleMismatchRoutes": [],
+  "renderedTitleMismatchRoutes": [],
+  "documentFailureRoutes": [
+    "verify-code-history",
+    "terms-history",
+    "privacy-history",
+    "compliance-history",
+    "dashboard-billing-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash"
+  ],
+  "routeNotReadyRoutes": [],
+  "stableWaitWarningRoutes": [],
+  "emptyBodyRoutes": [],
+  "resourceFailureRoutes": [
+    "forgot-history",
+    "reset-password-history",
+    "verify-code-history",
+    "terms-history",
+    "privacy-history",
+    "compliance-history",
+    "dashboard-billing-history",
+    "search-hash",
+    "servers-hash",
+    "resources-hash"
+  ],
+  "certificateErrorRoutes": [],
+  "interactionFailures": [],
+  "searchInteractionResults": [
+    {
+      "label": "search-history",
+      "ok": true,
+      "detail": "search_input_value=RPG"
+    }
+  ],
+  "commonErrorResponses": [],
+  "allowedAuthProbeResponses": 0,
+  "payRoot": null,
+  "results": [
+    {
+      "label": "home-history",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/",
+      "textSnippet": "千服联灯 - Minecraft 服务器发现与发布平台 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 协议: LIANDENG_V4.0_CORE 找 MINECRAFT 服务器 按版本和玩法浏览服务器。服主也可以提交资料，审核通过后公开展示。 浏览服务器 查看站点新闻 ...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\home-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "servers-history",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "服务器列表 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 公开展示中 公开列表已开放 发现服务器 目前共有 2 个已公开的服务器可浏览。 全部 生存 创造 极限 小游戏 角色扮演 当前显示 2 个服务器 公开索引 MINECRAFT 服务器公开列表 这里汇总...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\servers-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "search-history",
+      "url": "https://mc-u.top/search",
+      "finalUrl": "https://mc-u.top/search",
+      "documentStatus": 200,
+      "title": "搜索服务器 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/search",
+      "ogUrl": "https://mc-u.top/search",
+      "textSnippet": "搜索服务器 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 通用发现 / 搜索核心 搜索 MINECRAFT 服务器 通过名称、玩法和版本筛选已通过审核的公开服务器。当前结果直接来自站内公开目录。 ENTER 发现标签 生存 创造 PVP 模组 小游戏 RPG...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": {
+        "ok": true,
+        "detail": "search_input_value=RPG"
+      },
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\search-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "resources-history",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "资源中心 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 RESOURCE CENTER 资源中心 整理常用的官方链接、技术百科与实用工具，帮助玩家和服主快速找到可靠入口。 当前分类共有 2 个资源 资源概览 MINECRAFT 工具、社区与店铺聚合页 千服联...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\resources-history.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "home-mobile",
+      "url": "https://mc-u.top/",
+      "finalUrl": "https://mc-u.top/mobile",
+      "documentStatus": 200,
+      "title": "千服联灯 - Minecraft 服务器发现与发布平台",
+      "canonicalHref": "https://mc-u.top/mobile",
+      "ogUrl": "https://mc-u.top/mobile",
+      "textSnippet": "千服联灯 - Minecraft 服务器发现与发布平台 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服 千服联灯 发现下一台 想加入的服务器 在手机上快速找服、发布服务器和提交支持请求。 找服 发布 搜索 工单 精选推荐 查看全部 HELSTREA 服务器 1.21-26.2 在线 0 人 › 宇阳 服务器 26.1.2 在线 0 人 › 苏IC...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": {
+        "viewport": 360,
+        "documentWidth": 360,
+        "bodyWidth": 360
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\home-mobile.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "servers-mobile",
+      "url": "https://mc-u.top/servers",
+      "finalUrl": "https://mc-u.top/servers",
+      "documentStatus": 200,
+      "title": "服务器列表 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/servers",
+      "ogUrl": "https://mc-u.top/servers",
+      "textSnippet": "服务器列表 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服 发现 发现服务器 全部 生存 PVP RPG 小游戏 创造 模组 热门搜索 生存 PVP RPG 模组 建筑 科技 魔法 推荐服务器 HELSTREA 0 1.21-26.2 宇阳 0 26.1.2 全部服务器 HELSTREA Helstrea 生存 0/2048 1.2...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": {
+        "viewport": 360,
+        "documentWidth": 360,
+        "bodyWidth": 360
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\servers-mobile.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "resources-mobile",
+      "url": "https://mc-u.top/resources",
+      "finalUrl": "https://mc-u.top/resources",
+      "documentStatus": 200,
+      "title": "资源中心 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/resources",
+      "ogUrl": "https://mc-u.top/resources",
+      "textSnippet": "资源中心 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服 资源中心 RESOURCE CENTER 资源中心 整理常用的官方链接、技术百科与实用工具，帮助玩家和服主快速找到可靠入口。 当前分类共有 2 个资源 资源概览 MINECRAFT 工具、社区与店铺聚合页 千服联灯资源中心整理 Minecraft 官方网站、百科、启动器和常用...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": {
+        "viewport": 360,
+        "documentWidth": 360,
+        "bodyWidth": 360
+      },
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\resources-mobile.png",
+      "ok": true,
+      "findings": [],
+      "warnings": []
+    },
+    {
+      "label": "rules-history",
+      "url": "https://mc-u.top/rules",
+      "finalUrl": "https://mc-u.top/rules",
+      "documentStatus": 200,
+      "title": "等级与经验规则 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/rules",
+      "ogUrl": "https://mc-u.top/rules",
+      "textSnippet": "等级与经验规则 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 返回 GROWTH SYSTEM 等级与经验规则 查看经验来源、等级解锁和你的当前成长进度。规则以服务端最新配置为准。 YOUR PROGRESS 成长概览 规则版本实时同步 当前 XP -- 登...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\rules-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "login-history",
+      "url": "https://mc-u.top/login",
+      "finalUrl": "https://mc-u.top/login",
+      "documentStatus": 200,
+      "title": "登录 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login",
+      "textSnippet": "登录 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 千服联灯. MINECRAFT 服务器平台 玩法经验 / REDSTONE 轮播中 红石信号会衰减 红石线最多传递 15 格。线路较长时，需要在合适的位置放置中继器。 登录安全保障 账号登录、验证码和会话通...",
+      "inputCount": 3,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\login-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "oauth-selection-history",
+      "url": "https://mc-u.top/login/oauth",
+      "finalUrl": "https://mc-u.top/login/oauth",
+      "documentStatus": 200,
+      "title": "第三方登录 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/login/oauth",
+      "textSnippet": "第三方登录 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 返回账号登录 第三方快捷登录 选择您信任的服务提供商以继续访问 使用 GitHub 登录 使用 Google 登录 使用 Email 登录 点击上方按钮即表示您同意我们的 服务条款 与 隐私政策 千服...",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\oauth-selection-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "register-history",
+      "url": "https://mc-u.top/register",
+      "finalUrl": "https://mc-u.top/register",
+      "documentStatus": 200,
+      "title": "注册 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/register",
+      "textSnippet": "注册 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 千服联灯. MINECRAFT 服务器平台 服务器内容 / BRAND 轮播中 服务器介绍要写清楚 建议注明版本、玩法、开放时间、连接方式和主要规则，方便玩家判断是否适合加入。 注册与邮箱校验 注册后会立即...",
+      "inputCount": 5,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 429 (Too Many Requests)"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\register-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "forgot-history",
+      "url": "https://mc-u.top/forgot-password",
+      "finalUrl": "https://mc-u.top/forgot-password",
+      "documentStatus": 200,
+      "title": "找回密码 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/forgot-password",
+      "textSnippet": "找回密码 - 千服联灯 系统公告：平台现已切换为个人备案模式，提供服务器展示、资料发布、新闻和工单支持；不提供支付、钱包、商城或推广交易服务。 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 千服联灯. MINECRAFT 服务器平台 SECURITY / RECOVERY 轮播中 忘记密码？ \"请输入您的邮箱地址，我们将发送验证码以重置您的密码。\" 账号找回与重置 重置密码前需要先完成邮箱...",
+      "inputCount": 1,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/assets/js/web-vitals-8kjRSDxy.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/assets/js/GlobalAssistantPanel-L2g6_uhM.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/assets/js/htmlSanitizer-Ctex-EGe.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/assets/js/external-link-DYzcw1X3.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/assets/js/src-D1iKi2cZ.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/assets/js/send-Cl0fde61.js",
+          "method": "GET",
+          "resourceType": "script",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\forgot-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=6",
+        "request_failures=6"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "reset-password-history",
+      "url": "https://mc-u.top/reset-password",
+      "finalUrl": "https://mc-u.top/reset-password",
+      "documentStatus": 200,
+      "title": "重置密码 - 千服联灯",
+      "canonicalHref": "https://mc-u.top/",
+      "ogUrl": "https://mc-u.top/reset-password",
+      "textSnippet": "重置密码 - 千服联灯 跳到主要内容 千服联灯 QIANFU 首页 找服 新闻 资源 团队 访客预览 登录 快速注册 设置新密码. 请为您的账号设置一个强密码。 新密码 确认新密码 重置密码 千服联灯 面向中文 Minecraft 玩家和服主的服务器发现、免费发布、内容审核与工单支持平台。平台不提供支付、充值、钱包、商城交易或推广返利服务。 平台 浏览服务器 高级搜索 资源中心 开发团队 等级规则 法律与隐私 服务条款 隐私声明 可接受...",
+      "inputCount": 2,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/api/v1/web-vitals",
+          "method": "POST",
+          "resourceType": "ping",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/web-vitals",
+          "method": "POST",
+          "resourceType": "ping",
+          "errorText": "net::ERR_CONNECTION_RESET"
+        },
+        {
+          "url": "https://mc-u.top/api/v1/announcements/current",
+          "method": "GET",
+          "resourceType": "fetch",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\reset-password-history.png",
+      "ok": false,
+      "findings": [
+        "console_errors=3",
+        "request_failures=3"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "verify-code-history",
+      "url": "https://mc-u.top/verify-code",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/verify-code",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/verify-code",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\verify-code-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/verify-code Call log: \u001b[2m - navigating to \"https://mc-u.top/verify-code\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "terms-history",
+      "url": "https://mc-u.top/terms/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/terms/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/terms/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\terms-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/terms/ Call log: \u001b[2m - navigating to \"https://mc-u.top/terms/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "privacy-history",
+      "url": "https://mc-u.top/privacy/",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/privacy/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/privacy/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\privacy-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/privacy/ Call log: \u001b[2m - navigating to \"https://mc-u.top/privacy/\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "compliance-history",
+      "url": "https://mc-u.top/compliance",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/compliance",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/compliance",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\compliance-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/compliance Call log: \u001b[2m - navigating to \"https://mc-u.top/compliance\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "dashboard-billing-history",
+      "url": "https://mc-u.top/dashboard/billing",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/dashboard/billing",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/dashboard/billing",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\dashboard-billing-history.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/dashboard/billing Call log: \u001b[2m - navigating to \"https://mc-u.top/dashboard/billing\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "search-hash",
+      "url": "https://mc-u.top/#/search",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\search-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/search Call log: \u001b[2m - navigating to \"https://mc-u.top/#/search\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "servers-hash",
+      "url": "https://mc-u.top/#/servers",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\servers-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/servers Call log: \u001b[2m - navigating to \"https://mc-u.top/#/servers\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    },
+    {
+      "label": "resources-hash",
+      "url": "https://mc-u.top/#/resources",
+      "finalUrl": "chrome-error://chromewebdata/",
+      "documentStatus": null,
+      "title": "",
+      "canonicalHref": null,
+      "ogUrl": null,
+      "textSnippet": "",
+      "inputCount": 0,
+      "overlayCount": 0,
+      "interactionResult": null,
+      "dimensions": null,
+      "consoleEntries": [],
+      "ignoredConsoleEntries": [],
+      "requestFailures": [
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        },
+        {
+          "url": "https://mc-u.top/",
+          "method": "GET",
+          "resourceType": "document",
+          "errorText": "net::ERR_EMPTY_RESPONSE"
+        }
+      ],
+      "ignoredRequestFailures": [],
+      "errorResponses": [],
+      "allowedAuthProbeResponses": [],
+      "screenshotPath": "D:\\qwq\\项目\\千服\\output\\playwright\\live-public-audit-2026-08-12T03-42-10-633Z\\resources-hash.png",
+      "ok": false,
+      "findings": [
+        "navigation_error=page.goto: net::ERR_EMPTY_RESPONSE at https://mc-u.top/#/resources Call log: \u001b[2m - navigating to \"https://mc-u.top/#/resources\", waiting until \"commit\"\u001b[22m",
+        "document_status=null",
+        "request_failures=2"
+      ],
+      "warnings": []
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+- generic [ref=e2]:
+  - button "打开 Gemini 3.5 驱动助手" [ref=e4]
+  - generic [ref=e7]:
+    - navigation [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - link "千服联灯 QianFu" [ref=e12] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e35]:
+              - generic [ref=e36]: 千服联灯
+              - generic [ref=e37]: QianFu
+          - generic [ref=e38]:
+            - link [ref=e39] [cursor=pointer]:
+              - /url: /
+            - link [ref=e46] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=e52] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=e58] [cursor=pointer]:
+              - /url: /team
+            - link [ref=e63] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=e69] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=e73]:
+          - link "登录" [ref=e74] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=e75] [cursor=pointer]:
+            - /url: /register
+    - paragraph [ref=e80]: INITIALIZING_SESSION...
+    - contentinfo [ref=e82]:
+      - generic [ref=e83]:
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - link "千服联灯" [ref=e86] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=e91]: 千服联灯 (QianFu Liandeng) 致力于构建最纯净、高效的 Minecraft 服务器展示平台，连接每一个热爱创作与探索的灵魂。
+            - generic [ref=e92]:
+              - button [ref=e93]
+              - button [ref=e96]
+              - button [ref=e99]
+          - generic [ref=e103]:
+            - heading "平台" [level=4] [ref=e104]
+            - list [ref=e105]:
+              - listitem [ref=e106]:
+                - link "浏览服务器" [ref=e107] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=e108]:
+                - link "高级搜索" [ref=e109] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=e110]:
+                - link "推广方案" [ref=e111] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=e112]:
+                - link "资源中心" [ref=e113] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=e114]:
+            - heading "站点信息" [level=4] [ref=e115]
+            - list [ref=e116]:
+              - listitem [ref=e117]:
+                - link "开发团队" [ref=e118] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=e119]:
+                - link "等级规则" [ref=e120] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=e121]:
+                - link "服务条款" [ref=e122] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e123]:
+                - link "隐私政策" [ref=e124] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=e125]:
+            - heading "服务入口" [level=4] [ref=e126]
+            - list [ref=e127]:
+              - listitem [ref=e128] [cursor=pointer]:
+                - link "钱包与账单" [ref=e129]:
+                  - /url: /dashboard/billing
+              - listitem [ref=e130] [cursor=pointer]:
+                - link "推广中心" [ref=e131]:
+                  - /url: /promotion
+              - listitem [ref=e132] [cursor=pointer]:
+                - link "工单支持" [ref=e133]:
+                  - /url: /tickets
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=e137] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=e138]:
+            - generic [ref=e139]: 公开 API 检测中
+            - button "返回顶部 ↑" [ref=e142]

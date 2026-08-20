@@ -183,17 +183,17 @@ describe('deposit', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const updatedWallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
-      // Simulate the transaction flow
-      mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
-      mockPrisma.transaction.create.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: 5000, type: 'DEPOSIT', status: 'PENDING',
-        description: 'Recharge', created_at: new Date(),
-      });
-      mockPrisma.wallet.update.mockResolvedValue(updatedWallet);
-
-      return updatedWallet;
+    const transaction = {
+      id: 1, wallet_id: 1, amount: 5000, type: 'DEPOSIT', status: 'PENDING',
+      description: 'Recharge', created_at: new Date(),
+    };
+    mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+    mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
+    mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
+    mockPrisma.transaction.create.mockResolvedValue(transaction);
+    mockPrisma.wallet.update.mockResolvedValue(updatedWallet);
+    mockPrisma.transaction.update.mockImplementation(async ({ data }: any) => {
+      return { ...transaction, ...data };
     });
 
     const result = await deposit(1, 50, 'Recharge');
@@ -206,21 +206,18 @@ describe('deposit', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const updatedWallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
-      mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
-      mockPrisma.transaction.create.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: 1000, type: 'CHECKIN_REWARD', status: 'PENDING',
-        description: 'Daily check-in', created_at: new Date(),
-        metadata: JSON.stringify({ day: 5 }),
-      });
-      mockPrisma.wallet.update.mockResolvedValue(updatedWallet);
-      mockPrisma.transaction.update.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: 1000, type: 'CHECKIN_REWARD', status: 'COMPLETED',
-        description: 'Daily check-in', created_at: new Date(), signature: 'sig123',
-      });
-
-      return updatedWallet;
+    mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+    mockPrisma.wallet.upsert.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
+    mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue({ id: 1, user_id: 1, balance: 0, currency: 'CNY' });
+    mockPrisma.transaction.create.mockResolvedValue({
+      id: 1, wallet_id: 1, amount: 1000, type: 'CHECKIN_REWARD', status: 'PENDING',
+      description: 'Daily check-in', created_at: new Date(),
+      metadata: JSON.stringify({ day: 5 }),
+    });
+    mockPrisma.wallet.update.mockResolvedValue(updatedWallet);
+    mockPrisma.transaction.update.mockResolvedValue({
+      id: 1, wallet_id: 1, amount: 1000, type: 'CHECKIN_REWARD', status: 'COMPLETED',
+      description: 'Daily check-in', created_at: new Date(), signature: 'sig123',
     });
 
     await deposit(1, 10, 'Daily check-in', {
@@ -261,19 +258,17 @@ describe('pay', () => {
       description: 'Payment', created_at: new Date(), signature: 'sig123',
     };
 
-    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
-      mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
-      mockPrisma.transaction.create.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: -5000, type: 'PAYMENT', status: 'PENDING',
-        description: 'Payment', created_at: new Date(),
-      });
-      mockPrisma.wallet.updateMany.mockResolvedValue({ count: 1 });
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(updatedWallet);
-      mockPrisma.transaction.update.mockResolvedValue(completedTx);
-
-      return updatedWallet;
+    mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+    mockPrisma.wallet.findUniqueOrThrow
+      .mockResolvedValueOnce(wallet)
+      .mockResolvedValueOnce(updatedWallet);
+    mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
+    mockPrisma.transaction.create.mockResolvedValue({
+      id: 1, wallet_id: 1, amount: -5000, type: 'PAYMENT', status: 'PENDING',
+      description: 'Payment', created_at: new Date(),
     });
+    mockPrisma.wallet.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.transaction.update.mockResolvedValue(completedTx);
 
     const result = await pay(1, 50, 'Payment');
 
@@ -291,19 +286,11 @@ describe('pay', () => {
     mockWithLock.mockImplementation(async (_, fn) => fn());
 
     const wallet = { id: 1, user_id: 1, balance: 1000, currency: 'CNY' };
-    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
-      mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
-      mockPrisma.transaction.create.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: -5000, type: 'PAYMENT', status: 'PENDING',
-        description: 'Payment', created_at: new Date(),
-      });
-      mockPrisma.wallet.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+    mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
+    mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
 
-      return undefined;
-    });
-
-    await expect(pay(1, 50, 'Payment')).rejects.toThrow('Insufficient balance or wallet not found');
+    await expect(pay(1, 50, 'Payment')).rejects.toThrow('Insufficient withdrawable balance');
   });
 
   it('should respect nonWithdrawable (checkin reward) balance in pay', async () => {
@@ -311,20 +298,12 @@ describe('pay', () => {
 
     const wallet = { id: 1, user_id: 1, balance: 10000, currency: 'CNY' };
     // 6000 fen from checkin rewards = nonWithdrawable
-    mockPrisma.$transaction.mockImplementation(async (_fn: any) => {
-      mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
-      mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 6000 } });
-      mockPrisma.transaction.create.mockResolvedValue({
-        id: 1, wallet_id: 1, amount: -4000, type: 'PAYMENT', status: 'PENDING',
-        description: 'Payment', created_at: new Date(),
-      });
-      mockPrisma.wallet.updateMany.mockResolvedValue({ count: 0 });
-
-      return undefined;
-    });
+    mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+    mockPrisma.wallet.findUniqueOrThrow.mockResolvedValue(wallet);
+    mockPrisma.transaction.aggregate.mockResolvedValue({ _sum: { amount: 6000 } });
 
     // withdrawable = 10000 - 6000 = 4000 fen = 40 yuan
     // paying 41 yuan = 4100 fen > 4000 fen => should fail
-    await expect(pay(1, 41, 'Payment')).rejects.toThrow('Insufficient balance or wallet not found');
+    await expect(pay(1, 41, 'Payment')).rejects.toThrow('Insufficient withdrawable balance');
   });
 });

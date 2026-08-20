@@ -1,0 +1,146 @@
+<?php
+header('Content-Type: application/json; charset=utf-8');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: same-origin');
+
+session_start();
+
+function jsonResponse($status, $message = '', $data = []) {
+    echo json_encode(array_merge(['status' => $status, 'message' => $message], $data), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function isLoggedIn() {
+    return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+}
+
+if (!isLoggedIn()) {
+    http_response_code(401);
+    jsonResponse('error', '未登录');
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'GET') {
+    $content = @file_get_contents(__DIR__ . '/data/content.json');
+    if ($content === false) {
+        $content = getDefaultContent();
+    } else {
+        $content = json_decode($content, true);
+        if (!$content) {
+            $content = getDefaultContent();
+        }
+    }
+    jsonResponse('success', '', ['data' => $content]);
+}
+
+if ($method === 'POST') {
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+    
+    if (!$data) {
+        jsonResponse('error', '无效的JSON数据');
+    }
+    
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    $result = file_put_contents(__DIR__ . '/data/content.json', $json, LOCK_EX);
+    
+    if ($result === false) {
+        jsonResponse('error', '保存失败');
+    }
+    
+    jsonResponse('success', '保存成功');
+}
+
+http_response_code(405);
+jsonResponse('error', '不支持的请求方法');
+
+function getDefaultContent() {
+    return [
+        'site' => [
+            'title' => '千服我的世界服务器',
+            'description' => '欢迎来到千服Minecraft服务器，我们提供纯净生存、RPG冒险、建筑创造等精彩玩法',
+            'server_ip' => 'play.qianfu.com',
+            'logo_text' => '千服',
+            'logo_image' => ''
+        ],
+        'hero' => [
+            'badge' => '🌟 暑假精彩活动火热进行中',
+            'titleLine1' => '欢迎来到',
+            'titleHighlight' => '千服我的世界',
+            'subtitle' => '探索无限可能的像素世界，与好友一起创造难忘的冒险体验',
+            'features' => ['自由建造', '生存挑战', '精美材质'],
+            'bgImage' => ''
+        ],
+        'specs' => [
+            'title' => '服务器配置',
+            'subtitle' => '顶级硬件配置提供最流畅的游戏体验',
+            'bgImage' => '',
+            'items' => [
+                ['id' => '1', 'title' => '高性能处理器', 'desc' => 'Intel Core i9-14900K 顶级处理器', 'value' => 'i9-14900K', 'icon' => 'cpu'],
+                ['id' => '2', 'title' => '高速内存', 'desc' => '128GB DDR5 6000MHz ECC 内存', 'value' => '128GB DDR5', 'icon' => 'memory'],
+                ['id' => '3', 'title' => '网络带宽', 'desc' => '1Gbps BGP 顶级带宽，对等互联', 'value' => '1Gbps BGP', 'icon' => 'network'],
+                ['id' => '4', 'title' => '存储设备', 'desc' => 'NVMe SSD RAID 10 存储，数据安全', 'value' => 'NVMe RAID 10', 'icon' => 'storage']
+            ]
+        ],
+        'help' => [
+            'title' => '如何加入',
+            'subtitle' => '按照以下步骤轻松加入我们的服务器',
+            'bgImage' => '',
+            'steps' => [
+                ['id' => '1', 'title' => '下载启动器', 'desc' => '前往官方下载页面下载最新的Minecraft启动器Java版'],
+                ['id' => '2', 'title' => '添加服务器', 'desc' => '打开启动器，点击"添加服务器"，输入服务器地址'],
+                ['id' => '3', 'title' => '开始冒险', 'desc' => '进入服务器，开始你的冒险之旅！']
+            ]
+        ],
+        'features' => [
+            'title' => '游戏特色',
+            'subtitle' => '探索我们独特的玩法和精彩内容',
+            'bgImage' => '',
+            'items' => [
+                ['id' => '1', 'title' => '纯净生存', 'desc' => '原汁原味的生存体验，公平游戏环境', 'icon' => 'sword'],
+                ['id' => '2', 'title' => 'RPG系统', 'desc' => '丰富的职业系统，技能树与装备强化', 'icon' => 'shield'],
+                ['id' => '3', 'title' => '建筑领地', 'desc' => '安全的领地系统，保护你的建筑作品', 'icon' => 'home']
+            ]
+        ],
+        'gallery' => [
+            'title' => '游戏截图',
+            'subtitle' => '欣赏服务器中的精彩瞬间',
+            'bgImage' => '',
+            'items' => [
+                ['id' => '1', 'src' => '/gallery/1.jpg', 'caption' => '服务器的绝美日出'],
+                ['id' => '2', 'src' => '/gallery/2.jpg', 'caption' => '玩家建造的城堡'],
+                ['id' => '3', 'src' => '/gallery/3.jpg', 'caption' => '团队副本战斗']
+            ]
+        ],
+        'team' => [
+            'title' => '管理团队',
+            'subtitle' => '专业的团队为您提供最好的服务',
+            'bgImage' => '',
+            'members' => [
+                ['id' => '1', 'name' => '管理员', 'role' => 'Server Owner', 'desc' => '负责服务器整体运营管理', 'avatar' => ''],
+                ['id' => '2', 'name' => '技术支持', 'role' => 'Technical Admin', 'desc' => '服务器技术维护与优化', 'avatar' => ''],
+                ['id' => '3', 'name' => '资深玩家', 'role' => 'Moderator', 'desc' => '维护服务器秩序与玩家体验', 'avatar' => '']
+            ]
+        ],
+        'community' => [
+            'title' => '加入社区',
+            'subtitle' => '加入我们的社区获取最新资讯',
+            'bgImage' => '',
+            'qqText' => '官方QQ群',
+            'qqDesc' => '与玩家交流，参与活动',
+            'qqLink' => '#',
+            'wechatText' => '微信公众号',
+            'wechatDesc' => '获取最新公告和攻略',
+            'wechatLink' => '#'
+        ],
+        'footer' => [
+            'desc' => '千服Minecraft服务器致力于为玩家提供最好的游戏体验',
+            'copyright' => '© 2024 千服Minecraft. All rights reserved.',
+            'friendLinks' => [
+                ['id' => '1', 'name' => 'Minecraft官网', 'url' => 'https://minecraft.net'],
+                ['id' => '2', 'name' => 'Minecraft中文Wiki', 'url' => 'https://minecraft-zh.gamepedia.com']
+            ]
+        ]
+    ];
+}

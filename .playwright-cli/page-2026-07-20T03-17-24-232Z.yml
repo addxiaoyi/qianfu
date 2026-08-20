@@ -1,0 +1,161 @@
+- generic [ref=f6e2]:
+  - status [ref=f6e162]:
+    - generic [ref=f6e163]:
+      - generic [ref=f6e168]:
+        - generic [ref=f6e169]: 系统公告：
+        - text: 支付、发服与工单系统已切换到生产链路，提交前请确认信息真实有效。
+      - button "关闭当前公告" [ref=f6e170]
+  - button "打开 Gemini 3.5 驱动助手" [ref=f6e4]
+  - generic [ref=f6e7]:
+    - link "跳到主要内容" [ref=f6e8] [cursor=pointer]:
+      - /url: "#main-content"
+    - navigation [ref=f6e10]:
+      - generic [ref=f6e11]:
+        - generic [ref=f6e12]:
+          - link "千服联灯 QianFu" [ref=f6e13] [cursor=pointer]:
+            - /url: /
+            - generic [ref=f6e36]:
+              - generic [ref=f6e37]: 千服联灯
+              - generic [ref=f6e38]: QianFu
+          - generic [ref=f6e39]:
+            - link [ref=f6e40] [cursor=pointer]:
+              - /url: /
+            - link [ref=f6e47] [cursor=pointer]:
+              - /url: /servers
+            - link [ref=f6e54] [cursor=pointer]:
+              - /url: /resources
+            - link [ref=f6e60] [cursor=pointer]:
+              - /url: /team
+            - link [ref=f6e65] [cursor=pointer]:
+              - /url: /rules
+            - link [ref=f6e71] [cursor=pointer]:
+              - /url: /promotion
+        - generic [ref=f6e75]:
+          - link "登录" [ref=f6e76] [cursor=pointer]:
+            - /url: /login
+          - link "快速注册" [ref=f6e77] [cursor=pointer]:
+            - /url: /register
+    - main [ref=f6e78]:
+      - generic [ref=f6e247]:
+        - complementary [ref=f6e248]:
+          - generic [ref=f6e249]:
+            - link "千服联灯. Minecraft 服务器平台" [ref=f6e250] [cursor=pointer]:
+              - /url: /
+              - generic [ref=f6e257]:
+                - generic [ref=f6e258]: 千服联灯.
+                - generic [ref=f6e259]: Minecraft 服务器平台
+            - generic [ref=f6e260]:
+              - generic [ref=f6e261]:
+                - generic [ref=f6e262]:
+                  - generic [ref=f6e263]: 玩法经验 / REDSTONE
+                  - generic [ref=f6e264]: 轮播中
+                - heading "稳定胜过复杂" [level=2] [ref=f6e267]
+                - paragraph [ref=f6e268]: 红石线每传 15 格会衰减。把中继器放在关键节点后，机器从“偶尔能跑”变成“挂机一晚都稳”。这也是大神说的：先做稳定，再做复杂。
+              - generic [ref=f6e269]:
+                - button "查看登录提示 1" [ref=f6e270]
+                - button "查看登录提示 2" [ref=f6e271]
+                - button "查看登录提示 3" [ref=f6e272]
+          - generic [ref=f6e274]:
+            - generic [ref=f6e275]: 登录安全保障
+            - paragraph [ref=f6e285]: 账号登录、验证码和会话通过安全连接传输，异常请求会进入平台风控检查。
+        - main [ref=f6e286]:
+          - generic [ref=f6e287]:
+            - generic [ref=f6e288]:
+              - generic [ref=f6e289]: 登录入口
+              - heading "账号登录" [level=1] [ref=f6e293]
+              - paragraph [ref=f6e294]: 使用用户名或邮箱登录，登录后即可管理服务器、钱包余额和工单记录。
+              - button "使用 GitHub 登录" [ref=f6e295]
+            - generic [ref=f6e298]:
+              - generic [ref=f6e299]:
+                - generic [ref=f6e300]:
+                  - text: 用户名或邮箱
+                  - textbox "用户名或邮箱" [ref=f6e305]:
+                    - /placeholder: 用户名 / 邮箱地址
+                - generic [ref=f6e306]:
+                  - generic [ref=f6e307]:
+                    - generic [ref=f6e308]: 登录密码
+                    - link "需要找回凭据？" [ref=f6e309] [cursor=pointer]:
+                      - /url: /forgot-password
+                  - textbox "登录密码" [ref=f6e314]:
+                    - /placeholder: 请输入您的访问密码
+              - generic [ref=f6e315]:
+                - button "我已阅读并同意" [ref=f6e316] [cursor=pointer]
+                - link "服务条款" [ref=f6e324] [cursor=pointer]:
+                  - /url: /terms
+                - generic [ref=f6e325]: /
+                - link "隐私政策" [ref=f6e326] [cursor=pointer]:
+                  - /url: /privacy
+              - button "登录" [ref=f6e328]
+            - generic [ref=f6e332]:
+              - generic [ref=f6e337]:
+                - generic [ref=f6e338]: 访客访问模式
+                - generic [ref=f6e339]: "Node Status: Limited"
+              - link "新节点？ 初始化注册" [ref=f6e340] [cursor=pointer]:
+                - /url: /register
+                - generic [ref=f6e341]:
+                  - generic [ref=f6e342]: 新节点？
+                  - generic [ref=f6e343]: 初始化注册
+    - contentinfo [ref=f6e84]:
+      - generic [ref=f6e85]:
+        - generic [ref=f6e86]:
+          - generic [ref=f6e87]:
+            - link "千服联灯" [ref=f6e88] [cursor=pointer]:
+              - /url: /
+            - paragraph [ref=f6e110]: 面向中文 Minecraft 玩家和服主的服务器发现、发布与支持平台。公开信息经过审核，异常问题可通过工单追踪处理。
+            - generic [ref=f6e111]:
+              - link "前往推广中心" [ref=f6e112] [cursor=pointer]:
+                - /url: /promotion
+              - link "前往工单支持" [ref=f6e115] [cursor=pointer]:
+                - /url: /tickets
+              - link "发送邮件联系平台" [ref=f6e118] [cursor=pointer]:
+                - /url: mailto:support@0st.top
+          - generic [ref=f6e122]:
+            - heading "平台" [level=4] [ref=f6e123]
+            - list [ref=f6e124]:
+              - listitem [ref=f6e125]:
+                - link "浏览服务器" [ref=f6e126] [cursor=pointer]:
+                  - /url: /servers
+              - listitem [ref=f6e127]:
+                - link "高级搜索" [ref=f6e128] [cursor=pointer]:
+                  - /url: /search
+              - listitem [ref=f6e129]:
+                - link "推广方案" [ref=f6e130] [cursor=pointer]:
+                  - /url: /promotion
+              - listitem [ref=f6e131]:
+                - link "资源中心" [ref=f6e132] [cursor=pointer]:
+                  - /url: /resources
+          - generic [ref=f6e133]:
+            - heading "站点信息" [level=4] [ref=f6e134]
+            - list [ref=f6e135]:
+              - listitem [ref=f6e136]:
+                - link "开发团队" [ref=f6e137] [cursor=pointer]:
+                  - /url: /team
+              - listitem [ref=f6e138]:
+                - link "等级规则" [ref=f6e139] [cursor=pointer]:
+                  - /url: /rules
+              - listitem [ref=f6e140]:
+                - link "服务条款" [ref=f6e141] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=f6e142]:
+                - link "隐私政策" [ref=f6e143] [cursor=pointer]:
+                  - /url: /privacy
+          - generic [ref=f6e144]:
+            - heading "服务入口" [level=4] [ref=f6e145]
+            - list [ref=f6e146]:
+              - listitem [ref=f6e147] [cursor=pointer]:
+                - link "钱包与账单" [ref=f6e148]:
+                  - /url: /dashboard/billing
+              - listitem [ref=f6e149] [cursor=pointer]:
+                - link "推广中心" [ref=f6e150]:
+                  - /url: /promotion
+              - listitem [ref=f6e151] [cursor=pointer]:
+                - link "工单支持" [ref=f6e152]:
+                  - /url: /tickets
+        - generic [ref=f6e153]:
+          - generic [ref=f6e154]:
+            - generic [ref=f6e155]: © 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.
+            - link "苏ICP备2026025306号-2" [ref=f6e156] [cursor=pointer]:
+              - /url: https://beian.miit.gov.cn/
+          - generic [ref=f6e157]:
+            - generic [ref=f6e158]: 公开 API 正常
+            - button "返回顶部 ↑" [ref=f6e161]

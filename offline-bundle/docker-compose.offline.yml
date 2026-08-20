@@ -6,7 +6,7 @@ services:
     container_name: qianfu-mysql
     command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-xpay_root_123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-<SET_STRONG_PASSWORD>}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-xpay}
       TZ: Asia/Shanghai
     ports:

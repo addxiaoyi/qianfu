@@ -10,7 +10,11 @@
   "scope": "/",
   "lang": "zh-CN",
   "dir": "ltr",
-  "categories": ["games", "entertainment", "social"],
+  "categories": [
+    "games",
+    "entertainment",
+    "social"
+  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -83,21 +87,36 @@
       "short_name": "服务器",
       "description": "浏览 Minecraft 服务器列表",
       "url": "/servers",
-      "icons": [{ "src": "/icons/shortcut-servers.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/shortcut-servers.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "个人中心",
       "short_name": "我的",
       "description": "查看个人资料",
-      "url": "/profile",
-      "icons": [{ "src": "/icons/shortcut-profile.png", "sizes": "96x96" }]
+      "url": "/me",
+      "icons": [
+        {
+          "src": "/icons/shortcut-profile.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "资源中心",
       "short_name": "资源",
       "description": "浏览 Minecraft 资源",
       "url": "/resources",
-      "icons": [{ "src": "/icons/shortcut-resources.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/shortcut-resources.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
   "related_applications": [],
@@ -107,16 +126,9 @@
   },
   "handle_links": "preferred",
   "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
-  },
-  "share_target": {
-    "action": "/share",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "name",
-      "text": "description",
-      "url": "link"
-    }
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
   }
 }

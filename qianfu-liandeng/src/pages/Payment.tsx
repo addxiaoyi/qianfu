@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { safeJsonParse } from '@/utils/json';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api/request';
 import { ApiError } from '@/api/request';
@@ -6,6 +7,8 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, QrCode, CreditCard, ChevronRight, ChevronLeft } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useMobile } from '@/hooks/useMobile';
+import { validateCustomPaymentAmount } from '@/utils/paymentAmount';
+import { createPaymentPoller, type PaymentPollStatus } from './paymentPolling';
 
 interface Order {
   orderId: string;
@@ -103,6 +106,7 @@ const PLANS = [
 const paymentMethodMeta = {
   wechat: { label: '微信支付', short: '实时到账', accentClass: 'text-green-500' },
   alipay: { label: '支付宝', short: '实时到账', accentClass: 'text-blue-500' },
+  paypal: { label: 'PayPal', short: '跳转 PayPal 完成支付', accentClass: 'text-sky-600' },
 } as const;
 
 const flowSteps = ['选择方案', '支付方式', '生成订单'];
@@ -137,6 +141,10 @@ const isSafeCheckoutUrl = (value: string, provider?: string) => {
       return hostname === 'creem.io' || hostname.endsWith('.creem.io');
     }
 
+    if (provider === 'paypal') {
+      return hostname === 'paypal.com' || hostname.endsWith('.paypal.com');
+    }
+
     return false;
   } catch {
     return false;
@@ -152,7 +160,8 @@ const openCheckoutUrlSafely = (value: string, provider?: string) => {
 
 const buildLocalQrUrl = (value?: string, size = 220) => {
   if (!value) return '';
-  return `/api/v1/assets/qr?size=${size}&data=${encodeURIComponent(value)}`;
+  const encoded = btoa(unescape(encodeURIComponent(value))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return `/api/v1/assets/qr?size=${size}&data_b64=${encoded}`;
 };
 
 const readPendingOrderSnapshot = () => {
@@ -182,14 +191,14 @@ const Payment: React.FC = () => {
   const [customAmount, setCustomAmount] = useState<number>(10);
   const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
+  const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay' | 'paypal'>('wechat');
   const paymentMeta = paymentMethodMeta[paymentMethod];
-  const pollRef = useRef<number | null>(null);
+  const pollRef = useRef<ReturnType<typeof createPaymentPoller> | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const backoffTimeoutRef = useRef<number | null>(null);
 
   const clearPolling = useCallback(() => {
-    if (pollRef.current) window.clearInterval(pollRef.current);
+    pollRef.current?.stop();
     if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     if (backoffTimeoutRef.current) window.clearTimeout(backoffTimeoutRef.current);
     pollRef.current = null;
@@ -208,14 +217,6 @@ const Payment: React.FC = () => {
 
   const startPolling = useCallback((orderId: string) => {
     clearPolling();
-    let consecutiveFailures = 0;
-    let currentIntervalMs = 3000;
-
-    const schedulePolling = (intervalMs: number) => {
-      if (pollRef.current) window.clearInterval(pollRef.current);
-      currentIntervalMs = intervalMs;
-      pollRef.current = window.setInterval(tick, intervalMs);
-    };
 
     const stopPendingOrder = (title: string, description: string) => {
       resetPendingState({ resetStep: false });
@@ -226,42 +227,31 @@ const Payment: React.FC = () => {
       });
     };
 
-    const tick = async () => {
-      try {
-        const statusData = await api.get<Order>(`/payment/status/${orderId}`);
-        const status = (statusData as any)?.status ?? (statusData as any)?.data?.status;
-        consecutiveFailures = 0;
-        if (currentIntervalMs !== 3000) {
-          schedulePolling(3000);
-        }
-        if (status === 'COMPLETED') {
-          clearPolling();
+    const poller = createPaymentPoller(
+      async (signal): Promise<PaymentPollStatus> => {
+        const statusData = await api.get<Order>(`/payment/status/${orderId}`, undefined, { signal });
+        const status = (statusData as unknown)?.status ?? (statusData as unknown)?.data?.status;
+        return ['PENDING', 'COMPLETED', 'FAILED', 'EXPIRED'].includes(status) ? status : 'PENDING';
+      },
+      {
+        initialDelayMs: 3000,
+        maxDelayMs: 15_000,
+        maxFailures: 4,
+        onStatus: (status) => {
           setPendingOrder((prev) => (prev ? { ...prev, status } : null));
-          clearPendingOrderSnapshot();
-        }
-        if (status === 'FAILED' || status === 'EXPIRED') {
-          clearPolling();
-          setPendingOrder((prev) => (prev ? { ...prev, status } : null));
-          clearPendingOrderSnapshot();
-        }
-      } catch (error) {
-        if (error instanceof ApiError && error.status === 429) {
-          stopPendingOrder('支付状态轮询过于频繁', '已暂停当前订单轮询，请返回支付页重新发起订单。');
-          return;
-        }
-        consecutiveFailures += 1;
-        if (consecutiveFailures >= 4) {
+          if (status !== 'PENDING') clearPendingOrderSnapshot();
+        },
+        onError: (error) => {
+          if (error instanceof ApiError && error.status === 429) {
+            stopPendingOrder('支付状态轮询过于频繁', '已暂停当前订单轮询，请返回支付页重新发起订单。');
+            return;
+          }
           stopPendingOrder('支付状态暂不可达', '已暂停轮询，请稍后重新发起订单。');
-          return;
-        }
-        const nextInterval = Math.min(15000, 3000 * (consecutiveFailures + 1));
-        if (nextInterval !== currentIntervalMs) {
-          schedulePolling(nextInterval);
-        }
-      }
-    };
-
-    schedulePolling(3000);
+        },
+      },
+    );
+    pollRef.current = poller;
+    poller.start();
 
     timeoutRef.current = window.setTimeout(() => {
       resetPendingState();
@@ -276,7 +266,7 @@ const Payment: React.FC = () => {
     const saved = readPendingOrderSnapshot();
     if (saved) {
       try {
-        const order = JSON.parse(saved);
+        const order = safeJsonParse(saved, {});
         if (isValidOrder(order)) {
           const createdAt = typeof order.createdAt === 'number' ? order.createdAt : 0;
           if (createdAt > 0 && Date.now() - createdAt > PENDING_ORDER_TTL_MS) {
@@ -304,16 +294,17 @@ const Payment: React.FC = () => {
   }, [resetPendingState, startPolling, clearPolling]);
 
   const handleCreateOrder = async () => {
-    setLoading(true);
     const amount = customAmount;
-    if (amount < 10 || amount > 10000) {
+    const amountError = validateCustomPaymentAmount(amount);
+    if (amountError) {
       toast({
         title: '金额范围无效',
-        description: '自定义金额必须在 ¥10 至 ¥10000 之间。',
+        description: amountError,
         variant: 'destructive',
       });
       return;
     }
+    setLoading(true);
     try {
       const orderResponse = await api.post<any>('/payment/create', { planId: 'custom', amount, paymentMethod }, {
         headers: { 'Idempotency-Key': uuidv4() },
@@ -327,7 +318,7 @@ const Payment: React.FC = () => {
       setPendingOrder(order);
       writePendingOrderSnapshot(order);
       startPolling(order.orderId);
-      if (order.provider === 'creem') {
+      if (order.provider === 'creem' || order.provider === 'paypal') {
         openCheckoutUrlSafely(order.paymentUrl, order.provider);
         return;
       }
@@ -371,7 +362,7 @@ const Payment: React.FC = () => {
             <Loader2 className="w-4 h-4 animate-spin" /> 正在轮询订单状态
           </div>
           
-          {pendingOrder.provider === 'creem' ? (
+          {pendingOrder.provider === 'creem' || pendingOrder.provider === 'paypal' ? (
             <div className="bg-white p-6 rounded-[2.5rem] mb-8 border border-zinc-100 shadow-sm space-y-4">
               <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic">支付跳转</div>
               <div className="text-sm font-bold text-zinc-500 break-all">{pendingOrder.paymentUrl}</div>
@@ -419,7 +410,14 @@ const Payment: React.FC = () => {
           {pendingOrder.provider === 'creem' && (
             <p className="text-zinc-300 font-black uppercase tracking-[0.3em] text-[10px] italic mb-2">Creem / Hosted Checkout</p>
           )}
-          <p className="text-zinc-400 font-bold italic leading-relaxed mb-8">请扫描二维码完成 ¥{pendingOrder.amount} 的订单支付</p>
+          {pendingOrder.provider === 'paypal' && (
+            <p className="text-zinc-300 font-black uppercase tracking-[0.3em] text-[10px] italic mb-2">PayPal / Orders v2</p>
+          )}
+          <p className="text-zinc-400 font-bold italic leading-relaxed mb-8">
+            {pendingOrder.provider === 'paypal'
+              ? `请在 PayPal 页面完成 ¥${pendingOrder.amount} 的订单支付`
+              : `请扫描二维码完成 ¥${pendingOrder.amount} 的订单支付`}
+          </p>
           {pendingOrder.provider === 'xpay-tenant' && (
             <div className="mb-8 rounded-[2rem] border border-zinc-100 bg-white px-5 py-4 text-left">
               <div className="text-[10px] font-black uppercase tracking-[0.35em] text-zinc-300 italic mb-2">付款备注</div>
@@ -480,29 +478,39 @@ const Payment: React.FC = () => {
           {step === 1 ? (
             <div className="grid grid-cols-1 gap-6">
               {PLANS.map(plan => (
-                <div 
+                <div
                   key={plan.id}
-                  onClick={() => setSelectedPlan(plan)}
-                  className={`relative p-8 rounded-[3rem] border transition-all cursor-pointer shadow-xs overflow-hidden ${
+                  className={`relative rounded-[3rem] border transition-all shadow-xs overflow-hidden ${
                     selectedPlan.id === plan.id ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'
                   }`}
                 >
-                  <div className="absolute top-6 right-6 text-[9px] font-black text-zinc-200 uppercase tracking-widest italic">/ {plan.period}</div>
-                  <div className="flex items-start justify-between gap-8">
-                    <div className="space-y-3 max-w-lg">
-                      <h3 className="text-2xl sm:text-3xl font-black uppercase italic tracking-tighter leading-none">{plan.name}</h3>
-                      <p className="text-zinc-400 font-bold italic leading-relaxed">{plan.desc}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-4xl font-black tracking-tighter italic text-black">¥{customAmount}</div>
-                      <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-2">{selectedPlan.id === plan.id ? '已选择' : '点击选择'}</div>
-                    </div>
-                  </div>
-                  {selectedPlan.id === 'custom' && (
-                    <div className="mt-8 p-6 rounded-[2rem] border border-zinc-100 bg-white/80">
-                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic block mb-3">自定义金额</label>
-                      <input 
-                        type="number" 
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPlan(plan)}
+                    aria-pressed={selectedPlan.id === plan.id}
+                    className="relative w-full p-8 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/30"
+                  >
+                    <span className="absolute top-6 right-6 text-[9px] font-black text-zinc-200 uppercase tracking-widest italic">/ {plan.period}</span>
+                    <span className="flex items-start justify-between gap-8">
+                      <span className="space-y-3 max-w-lg">
+                        <span className="block text-2xl sm:text-3xl font-black uppercase italic tracking-tighter leading-none">{plan.name}</span>
+                        <span className="block text-zinc-400 font-bold italic leading-relaxed">{plan.desc}</span>
+                      </span>
+                      <span className="text-right">
+                        <span className="block text-4xl font-black tracking-tighter italic text-black">¥{customAmount}</span>
+                        <span className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-2">{selectedPlan.id === plan.id ? '已选择' : '点击选择'}</span>
+                      </span>
+                    </span>
+                  </button>
+                  {selectedPlan.id === plan.id && plan.id === 'custom' && (
+                    <div className="mx-8 mb-8 p-6 rounded-[2rem] border border-zinc-100 bg-white/80">
+                      <label htmlFor="mobile-wallet-custom-amount" className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic block mb-3">自定义金额</label>
+                      <input
+                        id="mobile-wallet-custom-amount"
+                        type="number"
+                        min="0.1"
+                        max="10000"
+                        step="0.01"
                         value={customAmount}
                         onChange={(e) => setCustomAmount(Number(e.target.value))}
                         className="w-full text-3xl font-black bg-transparent border-b border-zinc-100 py-2 outline-hidden italic"
@@ -514,30 +522,48 @@ const Payment: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div 
+              <button
+                type="button"
                 onClick={() => setPaymentMethod('wechat')}
-                className={`p-8 rounded-[3rem] border transition-all cursor-pointer shadow-xs ${paymentMethod === 'wechat' ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'}`}
+                aria-pressed={paymentMethod === 'wechat'}
+                className={`p-8 rounded-[3rem] border text-left transition-all shadow-xs focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/30 ${paymentMethod === 'wechat' ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'}`}
               >
-                <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-green-500 shadow-sm"><QrCode className="w-7 h-7" /></div>
-                  <div>
-                    <div className="text-2xl font-black uppercase italic tracking-tighter">微信支付</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</div>
-                  </div>
-                </div>
-              </div>
-              <div 
+                <span className="flex items-center gap-5">
+                  <span className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-green-500 shadow-sm"><QrCode className="w-7 h-7" /></span>
+                  <span>
+                    <span className="block text-2xl font-black uppercase italic tracking-tighter">微信支付</span>
+                    <span className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</span>
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setPaymentMethod('alipay')}
-                className={`p-8 rounded-[3rem] border transition-all cursor-pointer shadow-xs ${paymentMethod === 'alipay' ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'}`}
+                aria-pressed={paymentMethod === 'alipay'}
+                className={`p-8 rounded-[3rem] border text-left transition-all shadow-xs focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/30 ${paymentMethod === 'alipay' ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'}`}
               >
-                <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-blue-500 shadow-sm"><CreditCard className="w-7 h-7" /></div>
-                  <div>
-                    <div className="text-2xl font-black uppercase italic tracking-tighter">支付宝</div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</div>
-                  </div>
-                </div>
-              </div>
+                <span className="flex items-center gap-5">
+                  <span className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-blue-500 shadow-sm"><CreditCard className="w-7 h-7" /></span>
+                  <span>
+                    <span className="block text-2xl font-black uppercase italic tracking-tighter">支付宝</span>
+                    <span className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">扫码支付</span>
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('paypal')}
+                aria-pressed={paymentMethod === 'paypal'}
+                className={`p-8 rounded-[3rem] border text-left transition-all shadow-xs focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/30 ${paymentMethod === 'paypal' ? 'border-accent bg-accent-subtle' : 'border-zinc-50 bg-zinc-50/30 hover:bg-white hover:border-accent'}`}
+              >
+                <span className="flex items-center gap-5">
+                  <span className="w-14 h-14 bg-white rounded-[1.5rem] border border-zinc-100 flex items-center justify-center text-sky-600 shadow-sm"><CreditCard className="w-7 h-7" /></span>
+                  <span>
+                    <span className="block text-2xl font-black uppercase italic tracking-tighter">PayPal</span>
+                    <span className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 italic mt-1">跳转支付</span>
+                  </span>
+                </span>
+              </button>
             </div>
           )}
         </div>
@@ -574,25 +600,27 @@ const Payment: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-8 mb-16">
         {PLANS.map((plan) => (
-          <div 
+          <button
+            type="button"
             key={plan.id}
             onClick={() => setSelectedPlan(plan)}
-            className={`cursor-pointer p-8 rounded-[2rem] border-2 transition-all flex flex-col group ${
+            aria-pressed={selectedPlan.id === plan.id}
+            className={`p-8 rounded-[2rem] border-2 text-left transition-all flex flex-col group focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20 ${
               selectedPlan.id === plan.id ? 'border-brand bg-brand/5 ring-8 ring-brand/5 scale-105' : 'border-border hover:border-brand/30'
             }`}
           >
-            <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-            <div className="flex items-baseline gap-1 mb-6">
+            <span className="text-xl font-bold mb-2">{plan.name}</span>
+            <span className="flex items-baseline gap-1 mb-6">
               <span className="text-3xl font-black">¥{customAmount}</span>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{plan.period}</span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">{plan.desc}</p>
-            <div className={`mt-auto py-2 px-4 rounded-xl text-center text-xs font-bold uppercase tracking-widest ${
+            </span>
+            <span className="text-sm text-muted-foreground mb-8 leading-relaxed">{plan.desc}</span>
+            <span className={`mt-auto py-2 px-4 rounded-xl text-center text-xs font-bold uppercase tracking-widest ${
                selectedPlan.id === plan.id ? 'bg-brand text-white' : 'bg-muted text-muted-foreground group-hover:bg-brand/10 group-hover:text-brand'
             }`}>
               {selectedPlan.id === plan.id ? '已选择' : '点击选择'}
-            </div>
-          </div>
+            </span>
+          </button>
         ))}
       </div>
 
@@ -609,13 +637,20 @@ const Payment: React.FC = () => {
                     <button type="button" onClick={() => setPaymentMethod('alipay')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'alipay' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
                        <CreditCard className="w-4 h-4" /> 支付宝
                     </button>
+                    <button type="button" onClick={() => setPaymentMethod('paypal')} className={`flex-grow py-3 rounded-xl border-2 flex items-center justify-center gap-2 font-bold transition-all ${paymentMethod === 'paypal' ? 'border-brand bg-brand/5 text-brand' : 'border-border hover:border-brand/20'}`}>
+                       <CreditCard className="w-4 h-4" /> PayPal
+                    </button>
                  </div>
                </div>
                {selectedPlan.id === 'custom' && (
                  <div className="space-y-2 animate-in fade-in slide-in-from-left-4">
-                    <label className="text-xs font-bold uppercase text-muted-foreground">自定义金额 (¥)</label>
-                    <input 
+                    <label htmlFor="desktop-wallet-custom-amount" className="text-xs font-bold uppercase text-muted-foreground">自定义金额 (¥)</label>
+                    <input
+                      id="desktop-wallet-custom-amount"
                       type="number" 
+                      min="0.1"
+                      max="10000"
+                      step="0.01"
                       value={customAmount}
                       onChange={(e) => setCustomAmount(Number(e.target.value))}
                       className="w-full px-4 py-3 bg-muted border border-border rounded-xl font-bold text-xl"

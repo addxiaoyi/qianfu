@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertCircle, Search } from 'lucide-react';
 import { api } from '@/api/request';
-import StatusWrapper from '@/components/StatusWrapper';
-import AdminPageHeader from '@/components/AdminPageHeader';
+import StatusWrapper from '@/components/ui/StatusWrapper';
+import AdminPageHeader from '@/components/ui/AdminPageHeader';
 import { toast } from '@/hooks/use-toast';
-import GeometricLantern from '@/components/icons/GeometricLantern';
+import GeometricLantern from '@/components/ui/GeometricLantern';
 import { cn } from '@/utils/cn';
 import { formatDateTime } from '@/utils/serverView';
 
@@ -17,6 +17,7 @@ type ReportItem = {
   reporter_id: number;
   target_type: string;
   target_id: number;
+  target_ref?: string | null;
   reason: string;
   description?: string | null;
   status: ReportStatus;
@@ -64,6 +65,7 @@ const AdminReports: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
       toast({ title: '举报状态已更新' });
     },
+    onError: () => toast({ variant: 'destructive', title: '更新失败', description: '举报状态未能更新，请稍后重试。' }),
   });
 
   const filtered = useMemo(() => {
@@ -77,7 +79,7 @@ const AdminReports: React.FC = () => {
             : report.status === 'RESOLVED' || report.status === 'REJECTED';
       if (!matchTab) return false;
       if (!query) return true;
-      return [report.reason, report.description, report.reporter?.username, String(report.target_id)]
+      return [report.reason, report.description, report.reporter?.username, report.target_ref, String(report.target_id)]
         .filter(Boolean)
         .join(' ')
         .toLowerCase()
@@ -128,6 +130,7 @@ const AdminReports: React.FC = () => {
             <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-accent transition-colors duration-500" />
             <input
               type="text"
+              aria-label="搜索举报记录"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="搜索举报原因、举报人或目标 ID"
@@ -156,7 +159,7 @@ const AdminReports: React.FC = () => {
                         {report.status}
                       </div>
                       <div className="text-[10px] font-black font-mono text-zinc-300 uppercase tracking-[0.3em] italic">
-                        CASE #{report.id} / TARGET {report.target_type} #{report.target_id}
+                        CASE #{report.id} / TARGET {report.target_type} #{report.target_ref || report.target_id}
                       </div>
                     </div>
                     <h3 className="text-4xl font-black tracking-tighter uppercase italic leading-none text-accent">{report.reason}</h3>

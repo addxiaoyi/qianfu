@@ -1,0 +1,79 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCENT COLOR SYSTEM - 与主站完全一致
+   6种主题：zinc | violet | amber | emerald | sky | rose
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-accent="zinc"] {
+    --ui-accent: #18181b;
+    --ui-accent-light: #f4f4f5;
+    --ui-accent-medium: #52525b;
+    --ui-accent-subtle: rgba(24, 24, 27, 0.06);
+    --ui-accent-ring: rgba(24, 24, 27, 0.25);
+    --ui-accent-shadow: rgba(24, 24, 27, 0.18);
+    --ui-accent-border: #d4d4d8;
+    --ui-accent-glow: rgba(24, 24, 27, 0.12);
+}
+
+[data-accent="violet"] {
+    --ui-accent: #7c3aed;
+    --ui-accent-light: #f5f3ff;
+    --ui-accent-medium: #a78bfa;
+    --ui-accent-subtle: rgba(124, 58, 237, 0.07);
+    --ui-accent-ring: rgba(124, 58, 237, 0.30);
+    --ui-accent-shadow: rgba(124, 58, 237, 0.20);
+    --ui-accent-border: #ddd6fe;
+    --ui-accent-glow: rgba(167, 139, 250, 0.25);
+}
+
+[data-accent="amber"] {
+    --ui-accent: #d97706;
+    --ui-accent-light: #fffbeb;
+    --ui-accent-medium: #f59e0b;
+    --ui-accent-subtle: rgba(217, 119, 6, 0.07);
+    --ui-accent-ring: rgba(217, 119, 6, 0.30);
+    --ui-accent-shadow: rgba(217, 119, 6, 0.25);
+    --ui-accent-border: #fde68a;
+    --ui-accent-glow: rgba(251, 191, 36, 0.25);
+}
+
+[data-accent="emerald"] {
+    --ui-accent: #059669;
+    --ui-accent-light: #ecfdf5;
+    --ui-accent-medium: #10b981;
+    --ui-accent-subtle: rgba(5, 150, 105, 0.07);
+    --ui-accent-ring: rgba(5, 150, 105, 0.30);
+    --ui-accent-shadow: rgba(5, 150, 105, 0.20);
+    --ui-accent-border: #a7f3d0;
+    --ui-accent-glow: rgba(16, 185, 129, 0.20);
+}
+
+[data-accent="sky"] {
+    --ui-accent: #0284c7;
+    --ui-accent-light: #f0f9ff;
+    --ui-accent-medium: #38bdf8;
+    --ui-accent-subtle: rgba(2, 132, 199, 0.07);
+    --ui-accent-ring: rgba(2, 132, 199, 0.30);
+    --ui-accent-shadow: rgba(2, 132, 199, 0.20);
+    --ui-accent-border: #bae6fd;
+    --ui-accent-glow: rgba(56, 189, 248, 0.22);
+}
+
+[data-accent="rose"] {
+    --ui-accent: #e11d48;
+    --ui-accent-light: #fff1f2;
+    --ui-accent-medium: #fb7185;
+    --ui-accent-subtle: rgba(225, 29, 72, 0.07);
+    --ui-accent-ring: rgba(225, 29, 72, 0.30);
+    --ui-accent-shadow: rgba(225, 29, 72, 0.20);
+    --ui-accent-border: #fecdd3;
+    --ui-accent-glow: rgba(251, 113, 133, 0.22);
+}
+
+/* Selection colors */
+[data-accent="zinc"] ::selection { background: #18181b; color: #fff; }
+[data-accent="amber"] ::selection { background: #fde68a; color: #78350f; }
+[data-accent="emerald"] ::selection { background: #a7f3d0; color: #064e3b; }
+[data-accent="sky"] ::selection { background: #bae6fd; color: #0c4a6e; }
+[data-accent="violet"] ::selection { background: #ddd6fe; color: #4c1d95; }
+[data-accent="rose"] ::selection { background: #fecdd3; color: #881337; }

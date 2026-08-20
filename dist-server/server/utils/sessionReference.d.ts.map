@@ -1,0 +1,1 @@
+{"version":3,"file":"sessionReference.d.ts","sourceRoot":"","sources":["../../../server/utils/sessionReference.ts"],"names":[],"mappings":"AAOA,eAAO,MAAM,yBAAyB,QAA6B,CAAC;AAEpE,wBAAgB,sBAAsB,CAAC,MAAM,EAAE,MAAM,EAAE,aAAa,EAAE,MAAM,GAAG,MAAM,CAWpF;AAED,wBAAgB,oBAAoB,CAClC,MAAM,EAAE,MAAM,EACd,gBAAgB,EAAE,MAAM,EACxB,cAAc,EAAE,SAAS,MAAM,EAAE,GAChC,MAAM,GAAG,IAAI,CAcf"}
