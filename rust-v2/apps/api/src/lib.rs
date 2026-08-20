@@ -229,6 +229,7 @@ struct ServerListQuery {
     search: Option<String>,
     platform: Option<String>,
     online: Option<bool>,
+    #[serde(rename = "sortBy")]
     sort_by: Option<String>,
 }
 

@@ -242,6 +242,8 @@ async fn public_server_listing_rejects_unbounded_pagination_and_search() {
         "/api/v2/servers?offset=-1",
         "/api/v2/servers?offset=100001",
         "/api/v2/servers?search=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "/api/v2/servers?platform=console",
+        "/api/v2/servers?sortBy=secret",
     ] {
         let response = qianfu_api::router_with_storage(storage.clone())
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
