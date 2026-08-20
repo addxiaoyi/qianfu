@@ -1,0 +1,24 @@
+[package]
+name = "qianfu-api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+axum.workspace = true
+base64.workspace = true
+chrono.workspace = true
+qianfu-auth = { path = "../../crates/auth" }
+qianfu-core = { path = "../../crates/core" }
+qianfu-storage = { path = "../../crates/storage" }
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tokio.workspace = true
+tower.workspace = true
+uuid.workspace = true
+url.workspace = true
+
+[dev-dependencies]
+tower.workspace = true

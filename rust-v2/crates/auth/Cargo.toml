@@ -1,0 +1,13 @@
+[package]
+name = "qianfu-auth"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+argon2.workspace = true
+base64.workspace = true
+getrandom.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+thiserror.workspace = true

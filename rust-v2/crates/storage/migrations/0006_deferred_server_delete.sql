@@ -1,0 +1,2 @@
+ALTER TABLE server_domains
+    ADD COLUMN IF NOT EXISTS delete_after_revoke BOOLEAN NOT NULL DEFAULT FALSE;

@@ -1,0 +1,16 @@
+[package]
+name = "qianfu-worker"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+chrono.workspace = true
+async-trait.workspace = true
+qianfu-core = { path = "../../crates/core" }
+qianfu-providers = { path = "../../crates/providers" }
+qianfu-storage = { path = "../../crates/storage" }
+reqwest.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+url.workspace = true
