@@ -56,6 +56,8 @@ pub struct NewServer {
     pub name: String,
     pub description: String,
     pub edition: ServerEdition,
+    pub category: Option<String>,
+    pub version: Option<String>,
     pub host: String,
     pub port: i32,
     pub qq_group: Option<String>,
@@ -75,6 +77,8 @@ impl NewServer {
             name: name.into(),
             description: String::new(),
             edition,
+            category: None,
+            version: None,
             host: host.into(),
             port: match edition {
                 ServerEdition::Java => 25_565,
@@ -113,6 +117,8 @@ pub struct ServerRecord {
     pub name: String,
     pub description: String,
     pub edition: String,
+    pub category: Option<String>,
+    pub version: Option<String>,
     pub host: String,
     pub port: i32,
     pub qq_group: Option<String>,
@@ -880,9 +886,9 @@ impl PgStorage {
         Ok(sqlx::query_as(
             r#"
             INSERT INTO servers
-                (owner_id, name, description, edition, host, port, qq_group, cover_url, review_status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING id, owner_id, name, description, edition, host, port,
+                (owner_id, name, description, edition, category, version, host, port, qq_group, cover_url, review_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING id, owner_id, name, description, edition, category, version, host, port,
                       qq_group, cover_url, review_status, created_at, updated_at,
                       NULL::boolean AS probe_reachable, NULL::text AS probe_edition,
                       NULL::text AS probe_error, NULL::timestamptz AS probe_checked_at
@@ -895,6 +901,8 @@ impl PgStorage {
             ServerEdition::Java => "java",
             ServerEdition::Bedrock => "bedrock",
         })
+        .bind(&server.category)
+        .bind(&server.version)
         .bind(&server.host)
         .bind(server.port)
         .bind(&server.qq_group)
@@ -912,9 +920,9 @@ impl PgStorage {
         let record: ServerRecord = sqlx::query_as(
             r#"
             INSERT INTO servers
-                (owner_id, name, description, edition, host, port, qq_group, cover_url, review_status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            RETURNING id, owner_id, name, description, edition, host, port,
+                (owner_id, name, description, edition, category, version, host, port, qq_group, cover_url, review_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING id, owner_id, name, description, edition, category, version, host, port,
                       qq_group, cover_url, review_status, created_at, updated_at,
                       NULL::boolean AS probe_reachable, NULL::text AS probe_edition,
                       NULL::text AS probe_error, NULL::timestamptz AS probe_checked_at
@@ -924,6 +932,8 @@ impl PgStorage {
         .bind(&server.name)
         .bind(&server.description)
         .bind(match server.edition { ServerEdition::Java => "java", ServerEdition::Bedrock => "bedrock" })
+        .bind(&server.category)
+        .bind(&server.version)
         .bind(&server.host)
         .bind(server.port)
         .bind(&server.qq_group)
@@ -949,7 +959,7 @@ impl PgStorage {
     pub async fn find_server(&self, server_id: Uuid) -> Result<Option<ServerRecord>, StorageError> {
         Ok(sqlx::query_as(
             r#"
-            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.host, s.port,
+            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.category, s.version, s.host, s.port,
                    s.qq_group, s.cover_url, s.review_status, s.created_at, s.updated_at,
                    p.reachable AS probe_reachable, p.edition AS probe_edition,
                    p.error AS probe_error, p.checked_at AS probe_checked_at
@@ -971,10 +981,10 @@ impl PgStorage {
         Ok(sqlx::query_as(
             r#"
             UPDATE servers
-            SET name = $2, description = $3, edition = $4, host = $5, port = $6,
-                qq_group = $7, cover_url = $8, updated_at = now()
-            WHERE id = $1 AND owner_id = $9
-            RETURNING id, owner_id, name, description, edition, host, port,
+            SET name = $2, description = $3, edition = $4, category = $5, version = $6, host = $7, port = $8,
+                qq_group = $9, cover_url = $10, updated_at = now()
+            WHERE id = $1 AND owner_id = $11
+            RETURNING id, owner_id, name, description, edition, category, version, host, port,
                       qq_group, cover_url, review_status, created_at, updated_at,
                       NULL::boolean AS probe_reachable, NULL::text AS probe_edition,
                       NULL::text AS probe_error, NULL::timestamptz AS probe_checked_at
@@ -987,6 +997,8 @@ impl PgStorage {
             ServerEdition::Java => "java",
             ServerEdition::Bedrock => "bedrock",
         })
+        .bind(&server.category)
+        .bind(&server.version)
         .bind(&server.host)
         .bind(server.port)
         .bind(&server.qq_group)
@@ -1005,10 +1017,10 @@ impl PgStorage {
         let record: Option<ServerRecord> = sqlx::query_as(
             r#"
             UPDATE servers
-            SET name = $2, description = $3, edition = $4, host = $5, port = $6,
-                qq_group = $7, cover_url = $8, updated_at = now()
-            WHERE id = $1 AND owner_id = $9
-            RETURNING id, owner_id, name, description, edition, host, port,
+            SET name = $2, description = $3, edition = $4, category = $5, version = $6, host = $7, port = $8,
+                qq_group = $9, cover_url = $10, updated_at = now()
+            WHERE id = $1 AND owner_id = $11
+            RETURNING id, owner_id, name, description, edition, category, version, host, port,
                       qq_group, cover_url, review_status, created_at, updated_at,
                       NULL::boolean AS probe_reachable, NULL::text AS probe_edition,
                       NULL::text AS probe_error, NULL::timestamptz AS probe_checked_at
@@ -1021,6 +1033,8 @@ impl PgStorage {
             ServerEdition::Java => "java",
             ServerEdition::Bedrock => "bedrock",
         })
+        .bind(&server.category)
+        .bind(&server.version)
         .bind(&server.host)
         .bind(server.port)
         .bind(&server.qq_group)
@@ -1061,7 +1075,7 @@ impl PgStorage {
             r#"
             UPDATE servers SET review_status = $2, updated_at = now()
             WHERE id = $1
-            RETURNING id, owner_id, name, description, edition, host, port,
+            RETURNING id, owner_id, name, description, edition, category, version, host, port,
                       qq_group, cover_url, review_status, created_at, updated_at,
                       NULL::boolean AS probe_reachable, NULL::text AS probe_edition,
                       NULL::text AS probe_error, NULL::timestamptz AS probe_checked_at
@@ -1074,22 +1088,25 @@ impl PgStorage {
     }
 
     pub async fn list_approved_servers(&self) -> Result<Vec<ServerRecord>, StorageError> {
-        self.list_approved_servers_page(100, 0, None, None, None, "created")
+        self.list_approved_servers_page(100, 0, None, None, None, None, None, "created")
             .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn list_approved_servers_page(
         &self,
         limit: i64,
         offset: i64,
         search: Option<&str>,
         edition: Option<&str>,
+        category: Option<&str>,
+        version: Option<&str>,
         online: Option<bool>,
         sort_by: &str,
     ) -> Result<Vec<ServerRecord>, StorageError> {
         Ok(sqlx::query_as(
             r#"
-            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.host, s.port,
+            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.category, s.version, s.host, s.port,
                    s.qq_group, s.cover_url, s.review_status, s.created_at, s.updated_at,
                    p.reachable AS probe_reachable, p.edition AS probe_edition,
                    p.error AS probe_error, p.checked_at AS probe_checked_at
@@ -1098,10 +1115,12 @@ impl PgStorage {
             WHERE s.review_status = 'APPROVED'
               AND ($3::text IS NULL OR s.name ILIKE '%' || $3 || '%' OR s.description ILIKE '%' || $3 || '%' OR s.host ILIKE '%' || $3 || '%')
               AND ($4::text IS NULL OR s.edition = $4)
-              AND ($5::boolean IS NULL OR COALESCE(p.reachable, FALSE) = $5)
+              AND ($5::text IS NULL OR s.category = $5)
+              AND ($6::text IS NULL OR s.version = $6)
+              AND ($7::boolean IS NULL OR COALESCE(p.reachable, FALSE) = $7)
             ORDER BY
               -- Probe results do not persist player counts yet; use freshest probe as the honest fallback.
-              CASE WHEN $6 IN ('players', 'activity') THEN p.checked_at END DESC,
+              CASE WHEN $8 IN ('players', 'activity') THEN p.checked_at END DESC,
               s.created_at DESC, s.id DESC
             LIMIT $1 OFFSET $2
             "#,
@@ -1110,6 +1129,8 @@ impl PgStorage {
         .bind(offset.max(0))
         .bind(search)
         .bind(edition)
+        .bind(category)
+        .bind(version)
         .bind(online)
         .bind(sort_by)
         .fetch_all(&self.pool)
@@ -1223,7 +1244,7 @@ impl PgStorage {
     ) -> Result<Vec<ServerRecord>, StorageError> {
         Ok(sqlx::query_as(
             r#"
-            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.host, s.port,
+            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.category, s.version, s.host, s.port,
                    s.qq_group, s.cover_url, s.review_status, s.created_at, s.updated_at,
                    p.reachable AS probe_reachable, p.edition AS probe_edition,
                    p.error AS probe_error, p.checked_at AS probe_checked_at
@@ -1297,7 +1318,7 @@ impl PgStorage {
     ) -> Result<Vec<ServerRecord>, StorageError> {
         Ok(sqlx::query_as(
             r#"
-            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.host, s.port,
+            SELECT s.id, s.owner_id, s.name, s.description, s.edition, s.category, s.version, s.host, s.port,
                    s.qq_group, s.cover_url, s.review_status, s.created_at, s.updated_at,
                    p.reachable AS probe_reachable, p.edition AS probe_edition,
                    p.error AS probe_error, p.checked_at AS probe_checked_at

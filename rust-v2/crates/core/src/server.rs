@@ -15,6 +15,8 @@ pub struct ServerPublishInput {
     pub name: String,
     pub description: String,
     pub edition: ServerEdition,
+    pub category: Option<String>,
+    pub version: Option<String>,
     pub host: String,
     pub port: Option<u16>,
     pub qq_group: Option<String>,
@@ -44,6 +46,8 @@ pub struct NormalizedServerPublish {
     pub name: String,
     pub description: String,
     pub edition: ServerEdition,
+    pub category: Option<String>,
+    pub version: Option<String>,
     pub host: String,
     pub port: u16,
     pub qq_group: Option<String>,
@@ -56,6 +60,8 @@ impl ServerPublishInput {
         let description =
             trimmed_text(&self.description, 5_000).ok_or(ServerError::InvalidDescription)?;
         let host = normalize_host(&self.host)?;
+        let category = optional_text(self.category.as_deref(), 64);
+        let version = optional_text(self.version.as_deref(), 64);
         let port = self.port.unwrap_or(match self.edition {
             ServerEdition::Java => 25_565,
             ServerEdition::Bedrock => 19_132,
@@ -91,12 +97,21 @@ impl ServerPublishInput {
             name,
             description,
             edition: self.edition,
+            category,
+            version,
             host,
             port,
             qq_group,
             cover_url,
         })
     }
+}
+
+fn optional_text(value: Option<&str>, max_bytes: usize) -> Option<String> {
+    value
+        .map(str::trim)
+        .filter(|value| !value.is_empty() && value.len() <= max_bytes && !value.contains('\u{0}'))
+        .map(ToOwned::to_owned)
 }
 
 fn trimmed_text(value: &str, max_bytes: usize) -> Option<String> {

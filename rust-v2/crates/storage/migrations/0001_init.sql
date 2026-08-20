@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS servers (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     edition TEXT NOT NULL CHECK (edition IN ('java', 'bedrock')),
+    category TEXT,
+    version TEXT,
     host TEXT NOT NULL,
     port INTEGER NOT NULL CHECK (port BETWEEN 1 AND 65535),
     qq_group TEXT,

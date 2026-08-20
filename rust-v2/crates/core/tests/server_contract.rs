@@ -5,6 +5,8 @@ fn input(edition: ServerEdition) -> ServerPublishInput {
         name: "星际生存".to_owned(),
         description: "一个公开的生存服务器".to_owned(),
         edition,
+        category: None,
+        version: None,
         host: "play.example.com".to_owned(),
         port: None,
         qq_group: Some("2293237813".to_owned()),

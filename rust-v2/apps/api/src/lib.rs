@@ -228,6 +228,8 @@ struct ServerListQuery {
     offset: Option<i64>,
     search: Option<String>,
     platform: Option<String>,
+    category: Option<String>,
+    version: Option<String>,
     online: Option<bool>,
     #[serde(rename = "sortBy")]
     sort_by: Option<String>,
@@ -346,6 +348,8 @@ struct ServerView {
     name: String,
     description: String,
     edition: String,
+    category: Option<String>,
+    version: Option<String>,
     host: String,
     port: i32,
     qq_group: Option<String>,
@@ -364,6 +368,8 @@ impl From<ServerRecord> for ServerView {
             name: server.name,
             description: server.description,
             edition: server.edition,
+            category: server.category,
+            version: server.version,
             host: server.host,
             port: server.port,
             qq_group: server.qq_group,
@@ -1686,6 +1692,26 @@ async fn list_servers(
             "搜索关键词最多 100 个字符".to_owned(),
         );
     }
+    let category = query
+        .category
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+    let version = query
+        .version
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty());
+    if category.is_some_and(|value| value.chars().count() > 64)
+        || version.is_some_and(|value| value.chars().count() > 64)
+    {
+        return api_error(
+            request_id,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            ErrorCode::ValidationError,
+            "分类和版本最多 64 个字符".to_owned(),
+        );
+    }
     let edition = query
         .platform
         .as_deref()
@@ -1709,7 +1735,16 @@ async fn list_servers(
     }
     match state
         .storage
-        .list_approved_servers_page(limit, offset, search, edition, query.online, sort_by)
+        .list_approved_servers_page(
+            limit,
+            offset,
+            search,
+            edition,
+            category,
+            version,
+            query.online,
+            sort_by,
+        )
         .await
     {
         Ok(servers) => Json(ResponseEnvelope::success(
@@ -1938,6 +1973,8 @@ fn normalized_server(owner_id: i64, input: ServerPublishInput) -> Result<NewServ
         name: normalized.name,
         description: normalized.description,
         edition: normalized.edition,
+        category: normalized.category,
+        version: normalized.version,
         host: normalized.host,
         port: i32::from(normalized.port),
         qq_group: normalized.qq_group,
