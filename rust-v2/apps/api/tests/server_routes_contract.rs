@@ -223,6 +223,23 @@ async fn server_mutations_require_an_authenticated_session() {
 }
 
 #[tokio::test]
+async fn server_review_requires_an_authenticated_admin_session() {
+    let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
+    let request = Request::builder()
+        .method("POST")
+        .uri("/api/v2/admin/servers/550e8400-e29b-41d4-a716-446655440000/review")
+        .header("content-type", "application/json")
+        .body(Body::from(r#"{"approved":true}"#))
+        .unwrap();
+
+    let response = qianfu_api::router_with_storage(storage)
+        .oneshot(request)
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 401);
+}
+
+#[tokio::test]
 async fn password_change_requires_an_authenticated_session() {
     let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
     let request = Request::builder()
