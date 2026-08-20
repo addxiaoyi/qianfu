@@ -23,6 +23,8 @@ export function isUrlSafe(url: string): boolean {
 
   // 阻止以 < 开头的 HTML 注入
   if (trimmed.startsWith('<')) return false;
+  // Protocol-relative URLs can escape the application's origin without a visible scheme.
+  if (trimmed.startsWith('//')) return false;
 
   try {
     const urlObj = new URL(trimmed);

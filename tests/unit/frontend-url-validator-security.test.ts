@@ -6,5 +6,6 @@ describe('frontend URL injection policy', () => {
     expect(isUrlSafe('https://example.com/file.zip')).toBe(true);
     expect(isUrlSafe('http://example.com/file.zip')).toBe(true);
     expect(isUrlSafe('ftp://example.com/file.zip')).toBe(false);
+    expect(isUrlSafe('//attacker.example/file.zip')).toBe(false);
   });
 });
