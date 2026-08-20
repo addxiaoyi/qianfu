@@ -1115,7 +1115,7 @@ impl PgStorage {
             WHERE s.review_status = 'APPROVED'
               AND ($3::text IS NULL OR s.name ILIKE '%' || $3 || '%' OR s.description ILIKE '%' || $3 || '%' OR s.host ILIKE '%' || $3 || '%')
               AND ($4::text IS NULL OR s.edition = $4)
-              AND ($5::text IS NULL OR s.category = $5)
+              AND ($5::text IS NULL OR s.category = ANY(string_to_array($5, ',')))
               AND ($6::text IS NULL OR s.version = $6)
               AND ($7::boolean IS NULL OR COALESCE(p.reachable, FALSE) = $7)
             ORDER BY

@@ -1702,7 +1702,17 @@ async fn list_servers(
         .as_deref()
         .map(str::trim)
         .filter(|value| !value.is_empty());
-    if category.is_some_and(|value| value.chars().count() > 64)
+    let category_parts = category
+        .map(|value| {
+            value
+                .split(',')
+                .map(str::trim)
+                .filter(|part| !part.is_empty())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if category_parts.iter().any(|part| part.chars().count() > 64)
+        || category_parts.len() > 10
         || version.is_some_and(|value| value.chars().count() > 64)
     {
         return api_error(
@@ -1712,6 +1722,7 @@ async fn list_servers(
             "分类和版本最多 64 个字符".to_owned(),
         );
     }
+    let category = (!category_parts.is_empty()).then(|| category_parts.join(","));
     let edition = query
         .platform
         .as_deref()
@@ -1740,7 +1751,7 @@ async fn list_servers(
             offset,
             search,
             edition,
-            category,
+            category.as_deref(),
             version,
             query.online,
             sort_by,
