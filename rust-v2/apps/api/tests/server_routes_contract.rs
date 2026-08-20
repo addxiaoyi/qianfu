@@ -196,6 +196,33 @@ async fn favorites_require_an_authenticated_session() {
 }
 
 #[tokio::test]
+async fn server_mutations_require_an_authenticated_session() {
+    let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
+    let server_id = "550e8400-e29b-41d4-a716-446655440000";
+    let update = Request::builder()
+        .method("PUT")
+        .uri(format!("/api/v2/servers/{server_id}"))
+        .header("content-type", "application/json")
+        .body(Body::from(
+            r#"{"name":"测试服务器","description":"一个公开的测试服务器","edition":"java","host":"play.example.com"}"#,
+        ))
+        .unwrap();
+    let delete = Request::builder()
+        .method("DELETE")
+        .uri(format!("/api/v2/servers/{server_id}"))
+        .body(Body::empty())
+        .unwrap();
+
+    for request in [update, delete] {
+        let response = qianfu_api::router_with_storage(storage.clone())
+            .oneshot(request)
+            .await
+            .unwrap();
+        assert_eq!(response.status(), 401);
+    }
+}
+
+#[tokio::test]
 async fn password_change_requires_an_authenticated_session() {
     let storage = PgStorage::connect_lazy("postgres://qianfu:qianfu@127.0.0.1/qianfu", 1).unwrap();
     let request = Request::builder()
