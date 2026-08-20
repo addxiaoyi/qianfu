@@ -3,6 +3,7 @@ import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '@/api/request';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ChevronDown, ChevronLeft, Eye, Layout, Settings, FileText, CheckCircle2, AlertCircle, RefreshCcw, X, Shield, Save } from 'lucide-react';
@@ -30,27 +31,31 @@ type ListingPlan = 'free-monthly';
 const createServerSchema = z.object({
   name: z.string().min(2, '名称至少2位').max(50, '名称至多50位'),
   version: z.string().min(1, '请输入版本'),
-  ip: z.string().min(1, '请输入IP地址'),
+  ip: z.string().min(1, '请输入服务器地址'),
+  platform: z.enum(['java', 'bedrock']),
+  groupNumber: z.string().max(50, 'QQ群号至多50位'),
   tags: z.string().min(1, '请至少输入一个标签'),
   description: z.string().min(20, '描述至少20字'),
   image: z.string().min(1, '请上传宣传图'),
   listingPlan: z.literal('free-monthly'),
   freeDomainEnabled: z.boolean().default(false),
-  freeDomainSuffixId: z.number().int().positive().nullable().default(null),
+  freeDomainSuffixId: z.union([z.string().uuid(), z.number().int().positive()]).nullable().default(null),
   freeDomainPrefix: z.string().max(63).default(''),
 });
 
-// Schema for editing a server (version and ip are locked, so they are optional in the form)
+// Version is retained from the published record; the address can change and is rechecked by the API.
 const editServerSchema = z.object({
   name: z.string().min(2, '名称至少2位').max(50, '名称至多50位'),
   version: z.string().optional(),
   ip: z.string().optional(),
+  platform: z.enum(['java', 'bedrock']),
+  groupNumber: z.string().max(50, 'QQ群号至多50位'),
   tags: z.string().min(1, '请至少输入一个标签'),
   description: z.string().min(20, '描述至少20字'),
   image: z.string().min(1, '请上传宣传图'),
   listingPlan: z.literal('free-monthly').optional(),
   freeDomainEnabled: z.boolean().default(false),
-  freeDomainSuffixId: z.number().int().positive().nullable().default(null),
+  freeDomainSuffixId: z.union([z.string().uuid(), z.number().int().positive()]).nullable().default(null),
   freeDomainPrefix: z.string().max(63).default(''),
 });
 
@@ -59,6 +64,8 @@ type ServerFormValues = {
   name: string;
   version: string;
   ip: string;
+  platform: 'java' | 'bedrock';
+  groupNumber: string;
   tags: string;
   description: string;
   image: string | null;
@@ -68,12 +75,13 @@ type ServerFormValues = {
   freeDomainPrefix: string;
 };
 
-type FreeDomainSuffix = { id: number; suffix: string; provider: string; ttl: number; quotaPerUser: number };
+type FreeDomainSuffix = { id: string | number; suffix: string; provider: string; ttl: number; quotaPerUser: number };
 
 const ServerEditor: React.FC = () => {
   const t = useT();
   const [searchParams] = useSearchParams();
   const serverId = searchParams.get('id');
+  const useRustV2 = isRustV2Enabled();
   const [loading, setLoading] = useState(false);
   const [draftStatus, setDraftStatus] = useState<'idle' | 'saving' | 'saved' | 'unavailable'>('idle');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -107,12 +115,14 @@ const ServerEditor: React.FC = () => {
     return () => observers.forEach(o => o.disconnect());
   }, []);
 
-  const { register, handleSubmit, reset, control, formState: { errors, isDirty } } = useForm<ServerFormValues>({
+  const { register, handleSubmit, reset, control, setValue, formState: { errors, isDirty } } = useForm<ServerFormValues>({
     resolver: zodResolver(schema) as unknown,
     defaultValues: {
       name: '',
       version: '',
       ip: '',
+      platform: 'java',
+      groupNumber: '',
       tags: '',
       description: '',
       image: null,
@@ -126,7 +136,10 @@ const ServerEditor: React.FC = () => {
   const formData = useWatch({ control }) as ServerFormValues;
   const suffixQuery = useQuery({
     queryKey: ['free-domain-suffixes'],
-    queryFn: () => api.get<FreeDomainSuffix[]>('/free-domain-suffixes'),
+    queryFn: async () => {
+      const response = await api.get<{ data?: FreeDomainSuffix[] } | FreeDomainSuffix[]>(useRustV2 ? rustV2Path('/dns/suffixes') : '/free-domain-suffixes', undefined, useRustV2 ? rustV2RequestOptions : undefined);
+      return Array.isArray(response) ? response : response.data ?? [];
+    },
     staleTime: 60_000,
   });
   const selectedSuffix = suffixQuery.data?.find((suffix) => suffix.id === formData.freeDomainSuffixId);
@@ -164,12 +177,14 @@ const ServerEditor: React.FC = () => {
       name: formData.name,
       version: formData.version,
       ip: formData.ip,
+      platform: formData.platform,
+      groupNumber: formData.groupNumber,
       tags: formData.tags,
       description: formData.description,
       image: formData.image,
       listingPlan: formData.listingPlan,
     }),
-    [formData.name, formData.version, formData.ip, formData.tags, formData.description, formData.image, formData.listingPlan],
+    [formData.name, formData.version, formData.ip, formData.platform, formData.groupNumber, formData.tags, formData.description, formData.image, formData.listingPlan],
   );
 
   useEffect(() => {
@@ -216,7 +231,10 @@ const ServerEditor: React.FC = () => {
     queryKey: ['server', serverId],
     queryFn: async () => {
       if (!serverId) return null;
-      const data = await api.get<any>(`/servers/${serverId}`);
+      const data = await api.get<any>(useRustV2 ? rustV2Path(`/servers/${serverId}`) : `/servers/${serverId}`, undefined, useRustV2 ? rustV2RequestOptions : undefined);
+      const domain = useRustV2
+        ? await api.get<{ data?: { suffix_id: string; prefix: string; status: string } | null }>(rustV2Path(`/servers/${serverId}/domain`), undefined, rustV2RequestOptions)
+        : null;
       const draft = await draftPersistence.load(draftKey);
       if (draft) {
         reset(draft);
@@ -227,15 +245,17 @@ const ServerEditor: React.FC = () => {
       }
       const serverDraft: ServerEditorDraft = {
         name: data.name || '',
-        version: data.version || '',
-        ip: data.ip || '',
-        tags: Array.isArray(data.tags) ? data.tags.join(' ') : data.tags || '',
-        description: data.content_html || data.description || '',
-        image: data.thumbnail || data.image || null,
+        version: useRustV2 ? data.version || '' : data.version || '',
+        ip: useRustV2 ? data.host || '' : data.ip || '',
+        platform: (useRustV2 ? data.edition : data.platform) === 'bedrock' ? 'bedrock' : 'java',
+        groupNumber: useRustV2 ? data.qq_group || '' : data.group_number || '',
+        tags: useRustV2 ? data.category || '' : Array.isArray(data.tags) ? data.tags.join(' ') : data.tags || '',
+        description: useRustV2 ? data.description || '' : data.content_html || data.description || '',
+        image: useRustV2 ? data.cover_url || null : data.thumbnail || data.image || null,
         listingPlan: 'free-monthly',
-        freeDomainEnabled: Boolean(data.free_domain?.domain),
-        freeDomainSuffixId: data.free_domain?.suffix_id ?? null,
-        freeDomainPrefix: data.free_domain?.prefix ?? '',
+        freeDomainEnabled: Boolean(useRustV2 ? domain?.data : data.free_domain?.domain),
+        freeDomainSuffixId: useRustV2 ? domain?.data?.suffix_id ?? null : data.free_domain?.suffix_id ?? null,
+        freeDomainPrefix: useRustV2 ? domain?.data?.prefix ?? '' : data.free_domain?.prefix ?? '',
       };
       reset(serverDraft);
       savedFingerprint.current = getServerEditorDraftFingerprint(serverDraft);
@@ -281,6 +301,14 @@ const ServerEditor: React.FC = () => {
     try {
       let thumbnailUrl = values.image;
       if (thumbnailUrl && thumbnailUrl.startsWith('data:image/')) {
+        if (useRustV2) {
+          toast({
+            variant: 'destructive',
+            title: '暂不支持直接上传封面',
+            description: 'Rust v2 服务器提交需要使用可访问的图片 URL，请先将图片上传到图床。',
+          });
+          return;
+        }
         const uploadResult = await api.post<{ data?: { url: string }; url?: string }>('/upload', {
           filename: `server-cover-${Date.now()}.png`,
           dataUrl: thumbnailUrl,
@@ -288,11 +316,22 @@ const ServerEditor: React.FC = () => {
         thumbnailUrl = uploadResult?.data?.url || uploadResult?.url || thumbnailUrl;
       }
 
-      const payload = {
+      const payload = useRustV2 ? {
         name: values.name,
-        summary: values.name,
+        description: values.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 5000),
+        edition: values.platform,
+        category: String(values.tags || '').trim().split(/\s+/).filter(Boolean)[0] || undefined,
+        version: values.version.trim() || undefined,
+        host: values.ip,
+        qq_group: values.groupNumber.trim() || undefined,
+        cover_url: thumbnailUrl || undefined,
+      } : {
+        name: values.name,
+        summary: values.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200),
         content_html: values.description,
         ip: values.ip,
+        platform: values.platform,
+        group_number: values.groupNumber.trim(),
         tags: JSON.stringify(String(values.tags || '').split(' ').map((tag: string) => tag.trim()).filter(Boolean)),
         thumbnail: thumbnailUrl,
         supported_versions: JSON.stringify([values.version].filter(Boolean)),
@@ -302,10 +341,20 @@ const ServerEditor: React.FC = () => {
         free_domain_prefix: values.freeDomainEnabled ? values.freeDomainPrefix.trim() : undefined,
       };
 
+      let savedServerId = serverId;
       if (serverId) {
-        await api.put(`/servers/${serverId}`, payload);
+        await api.put(useRustV2 ? rustV2Path(`/servers/${serverId}`) : `/servers/${serverId}`, payload, useRustV2 ? rustV2RequestOptions : undefined);
       } else {
-        await api.post('/servers', payload);
+        const response = await api.post<{ data?: { id?: string } } | { id?: string }>(useRustV2 ? rustV2Path('/servers') : '/servers', payload, useRustV2 ? rustV2RequestOptions : undefined);
+        savedServerId = 'data' in response ? response.data?.id ?? null : response.id ?? null;
+      }
+      if (useRustV2 && savedServerId && values.freeDomainEnabled && values.freeDomainSuffixId) {
+        await api.post(rustV2Path(`/servers/${savedServerId}/domain`), {
+          suffix_id: String(values.freeDomainSuffixId),
+          prefix: values.freeDomainPrefix.trim(),
+        }, rustV2RequestOptions);
+      } else if (useRustV2 && serverId && !values.freeDomainEnabled) {
+        await api.delete(rustV2Path(`/servers/${savedServerId}/domain`), rustV2RequestOptions);
       }
       toast({ 
         title: t('common.success'), 
@@ -329,9 +378,17 @@ const ServerEditor: React.FC = () => {
 
   const testConnection = async () => {
     if (!formData.ip) return;
+    if (useRustV2) {
+      setConnectionStatus('offline');
+      toast({ title: '连接测试暂不可用', description: 'Rust v2 会在提交后由后台探测服务器状态。' });
+      return;
+    }
     setConnectionStatus('checking');
     try {
-      await api.get(`/servers/test-connection?ip=${encodeURIComponent(formData.ip)}`);
+      await api.get('/servers/public/servers/status', {
+        host: formData.ip,
+        bedrock: formData.platform === 'bedrock' ? 'true' : 'false',
+      });
       setConnectionStatus('online');
     } catch {
       setConnectionStatus('offline');
@@ -535,7 +592,7 @@ const ServerEditor: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
                     <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic flex items-center gap-3">
-                       <GeometricLantern variant="network" className="w-3.5 h-3.5" /> {t('editor.field.ip.label')}
+                       <GeometricLantern variant="network" className="w-3.5 h-3.5" /> 服务器地址
                     </label>
                     <button 
                       type="button"
@@ -549,16 +606,13 @@ const ServerEditor: React.FC = () => {
                   </div>
                   <div className="relative group/field">
                     <input 
-                      aria-label={t('editor.field.ip.label')}
+                      aria-label="服务器地址"
                       {...register('ip')}
-                      disabled={!!serverId}
-                      className={`matrix-input ${serverId ? 'opacity-50 cursor-not-allowed bg-zinc-50' : ''}`}
-                      placeholder={t('editor.field.ip.placeholder')}
+                      className="matrix-input"
+                      placeholder={formData.platform === 'bedrock' ? '例如 play.example.com:19132' : '例如 mc.example.com:25565'}
                     />
                     {serverId && (
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/field:opacity-100 transition-opacity">
-                         <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 bg-white px-2 py-1 border border-zinc-100 rounded-sm">已锁定</span>
-                      </div>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black tracking-widest text-zinc-400 bg-white px-2 py-1 border border-zinc-100 rounded-sm">修改后重新审核</span>
                     )}
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
                       {connectionStatus === 'online' && (
@@ -575,7 +629,48 @@ const ServerEditor: React.FC = () => {
                       )}
                     </div>
                   </div>
+                  <p className="text-xs leading-5 text-zinc-500">
+                    {formData.platform === 'bedrock' ? '基岩版通常需要填写端口，例如 play.example.com:19132。' : 'Java 版可填写域名或 IP；使用非默认端口时一并填写，例如 mc.example.com:25565。'}
+                  </p>
                   {errors.ip && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">// ERROR: {errors.ip.message}</p>}
+                </div>
+
+                {/* Platform */}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic flex items-center gap-3">
+                    <GeometricLantern variant="data" className="w-3.5 h-3.5" /> 游戏版本
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-1.5" role="group" aria-label="选择游戏版本">
+                    {([
+                      { value: 'java' as const, label: 'Java 版' },
+                      { value: 'bedrock' as const, label: '基岩版' },
+                    ]).map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={formData.platform === option.value}
+                        onClick={() => setValue('platform', option.value, { shouldDirty: true, shouldValidate: true })}
+                        className={`min-h-11 rounded-xl px-3 text-sm font-bold transition-colors ${formData.platform === option.value ? 'bg-black text-white shadow-sm' : 'text-zinc-500 hover:bg-white hover:text-zinc-900'}`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* QQ group */}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black font-mono uppercase tracking-[0.4em] text-zinc-300 italic flex items-center gap-3">
+                    <GeometricLantern variant="message" className="w-3.5 h-3.5" /> 发布QQ群
+                  </label>
+                  <input
+                    aria-label="发布QQ群"
+                    {...register('groupNumber')}
+                    className="matrix-input"
+                    placeholder="例如 123456789（可选）"
+                    inputMode="numeric"
+                  />
+                  {errors.groupNumber && <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">// ERROR: {errors.groupNumber.message}</p>}
                 </div>
 
                 {/* Tags (MatrixTagInput) */}
