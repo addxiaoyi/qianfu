@@ -320,7 +320,7 @@ const ServerEditor: React.FC = () => {
         name: values.name,
         description: values.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 5000),
         edition: values.platform,
-        category: String(values.tags || '').trim().split(/\s+/).filter(Boolean)[0] || undefined,
+        category: String(values.tags || '').trim().split(/\s+/).filter(Boolean).join(',') || undefined,
         version: values.version.trim() || undefined,
         host: values.ip,
         qq_group: values.groupNumber.trim() || undefined,

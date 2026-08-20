@@ -22,6 +22,7 @@ describe('server lifecycle UI contract', () => {
 
   it('keeps Rust v2 discovery metadata in publish and edit flows', () => {
     expect(editor).toContain('category: String(values.tags ||');
+    expect(editor).toContain(".filter(Boolean).join(',') || undefined");
     expect(editor).toContain('version: values.version.trim()');
     expect(editor).toContain("tags: useRustV2 ? data.category || ''");
     expect(editor).toContain("version: useRustV2 ? data.version || ''");
