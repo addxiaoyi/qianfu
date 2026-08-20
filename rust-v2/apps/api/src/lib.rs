@@ -227,6 +227,9 @@ struct ServerListQuery {
     limit: Option<i64>,
     offset: Option<i64>,
     search: Option<String>,
+    platform: Option<String>,
+    online: Option<bool>,
+    sort_by: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1682,9 +1685,30 @@ async fn list_servers(
             "搜索关键词最多 100 个字符".to_owned(),
         );
     }
+    let edition = query
+        .platform
+        .as_deref()
+        .filter(|value| matches!(*value, "java" | "bedrock"));
+    if query.platform.is_some() && edition.is_none() {
+        return api_error(
+            request_id,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            ErrorCode::ValidationError,
+            "平台参数无效".to_owned(),
+        );
+    }
+    let sort_by = query.sort_by.as_deref().unwrap_or("created");
+    if !matches!(sort_by, "created" | "players" | "activity") {
+        return api_error(
+            request_id,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            ErrorCode::ValidationError,
+            "排序参数无效".to_owned(),
+        );
+    }
     match state
         .storage
-        .list_approved_servers_page(limit, offset, search)
+        .list_approved_servers_page(limit, offset, search, edition, query.online, sort_by)
         .await
     {
         Ok(servers) => Json(ResponseEnvelope::success(

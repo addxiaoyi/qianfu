@@ -1074,7 +1074,8 @@ impl PgStorage {
     }
 
     pub async fn list_approved_servers(&self) -> Result<Vec<ServerRecord>, StorageError> {
-        self.list_approved_servers_page(100, 0, None).await
+        self.list_approved_servers_page(100, 0, None, None, None, "created")
+            .await
     }
 
     pub async fn list_approved_servers_page(
@@ -1082,6 +1083,9 @@ impl PgStorage {
         limit: i64,
         offset: i64,
         search: Option<&str>,
+        edition: Option<&str>,
+        online: Option<bool>,
+        sort_by: &str,
     ) -> Result<Vec<ServerRecord>, StorageError> {
         Ok(sqlx::query_as(
             r#"
@@ -1093,13 +1097,21 @@ impl PgStorage {
             LEFT JOIN server_probe_results p ON p.server_id = s.id
             WHERE s.review_status = 'APPROVED'
               AND ($3::text IS NULL OR s.name ILIKE '%' || $3 || '%' OR s.description ILIKE '%' || $3 || '%' OR s.host ILIKE '%' || $3 || '%')
-            ORDER BY s.created_at DESC, s.id DESC
+              AND ($4::text IS NULL OR s.edition = $4)
+              AND ($5::boolean IS NULL OR COALESCE(p.reachable, FALSE) = $5)
+            ORDER BY
+              -- Probe results do not persist player counts yet; use freshest probe as the honest fallback.
+              CASE WHEN $6 IN ('players', 'activity') THEN p.checked_at END DESC,
+              s.created_at DESC, s.id DESC
             LIMIT $1 OFFSET $2
             "#,
         )
         .bind(limit.clamp(1, 100))
         .bind(offset.max(0))
         .bind(search)
+        .bind(edition)
+        .bind(online)
+        .bind(sort_by)
         .fetch_all(&self.pool)
         .await?)
     }

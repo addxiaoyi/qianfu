@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Copy, Search, X, SlidersHorizontal, TrendingUp, MapPin, LampDesk, Users, Clock, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/request';
+import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '../../api/rustV2';
 import { cn } from '../../utils/cn';
 import { toArray } from '../../utils/apiData';
 import { LazyImage } from './MobileLazyImage';
@@ -74,13 +75,13 @@ const MobileSearch: React.FC = () => {
 
   const { data: serverResponse, isLoading, isError, refetch } = useQuery({
     queryKey: ['mobile-search-servers', queryParams],
-    queryFn: () => api.get<any>('/public/servers', queryParams, { useAuth: false }),
+    queryFn: () => api.get<any>(isRustV2Enabled() ? rustV2Path('/servers') : '/public/servers', queryParams, isRustV2Enabled() ? { ...rustV2RequestOptions, useAuth: false } : { useAuth: false }),
   });
   const servers = toArray<any>(serverResponse);
 
   const { data: featuredServerResponse, isError: featuredError, refetch: refetchFeatured } = useQuery({
     queryKey: ['mobile-search-featured-servers'],
-    queryFn: () => api.get<any>('/public/servers', { limit: 6, sortBy: 'activity', sortOrder: 'desc' }, { useAuth: false }),
+    queryFn: () => api.get<any>(isRustV2Enabled() ? rustV2Path('/servers') : '/public/servers', { limit: 6, ...(isRustV2Enabled() ? {} : { sortBy: 'activity', sortOrder: 'desc' }) }, isRustV2Enabled() ? { ...rustV2RequestOptions, useAuth: false } : { useAuth: false }),
     staleTime: 60_000,
   });
   const featuredServers = toArray<any>(featuredServerResponse);
