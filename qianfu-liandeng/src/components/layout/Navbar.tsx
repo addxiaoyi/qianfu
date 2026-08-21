@@ -181,7 +181,7 @@ const Navbar: React.FC = React.memo(() => {
                             <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                             {t(link.key)}
                           </span>
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Open</span>
+                          <span className="text-xs font-semibold text-zinc-400">打开</span>
                         </Link>
                       ))}
                   </div>
@@ -192,7 +192,7 @@ const Navbar: React.FC = React.memo(() => {
                   <div className="grid grid-cols-1 gap-2">
                     <Link to="/resources" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-between rounded-2xl border border-zinc-100 bg-white px-4 py-3 text-sm font-bold text-zinc-700 hover:border-black hover:text-black transition-all">
                       <span className="inline-flex items-center gap-3"><GeometricLantern variant="data" className="w-4 h-4" />资源中心</span>
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Public</span>
+                      <span className="text-xs font-semibold text-zinc-400">公开</span>
                     </Link>
                   </div>
                 </div>

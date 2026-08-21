@@ -96,7 +96,7 @@ const StatusWrapper: React.FC<StatusWrapperProps> = ({
             <Lock className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
           <div className="max-w-md space-y-3 sm:space-y-4">
-            <h3 className="text-3xl sm:text-4xl font-black tracking-tighter uppercase italic leading-none text-zinc-900">Identity Verification Required</h3>
+            <h3 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight text-zinc-900">需要验证邮箱</h3>
             <p className="text-sm text-zinc-500 font-medium leading-relaxed">
               为了保障您的支付与数据安全，请先完成邮箱验证。验证后即可解锁完整功能。{lockedEmail ? `当前邮箱：${lockedEmail}` : '您的当前会话处于受限模式。'}
             </p>
@@ -106,7 +106,7 @@ const StatusWrapper: React.FC<StatusWrapperProps> = ({
           </Link>
         </motion.div>
       ) : isForbidden ? (
-        <StatusShell title="Access Denied" subtitle="Security Clearance Level Insufficient">
+        <StatusShell title="无权访问" subtitle="当前账号没有访问此页面的权限">
           <ShieldOff className="w-10 h-10 text-red-500" />
         </StatusShell>
       ) : isError ? (

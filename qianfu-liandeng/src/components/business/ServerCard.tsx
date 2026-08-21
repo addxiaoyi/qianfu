@@ -71,7 +71,7 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
       className="group flex h-full flex-col"
     >
       <div className="relative flex h-full flex-col">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[2.5rem] bg-zinc-50 shadow-xs transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:-translate-y-2 group-hover:shadow-[0_24px_48px_rgba(0,0,0,0.08)]">
+        <Link aria-label={`查看${name}详情`} to={`/server/${server.id}`} className="relative block aspect-[4/3] overflow-hidden rounded-[2.5rem] bg-zinc-50 shadow-xs transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-[0_24px_48px_rgba(0,0,0,0.08)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
             {image && !imageFailed ? <img
               src={image}
               className={`h-full w-full object-cover transition-all duration-1000 ease-out group-hover:scale-110 group-hover:grayscale-0 ${imageReady ? 'opacity-100 grayscale' : 'absolute inset-0 opacity-0'}`}
@@ -99,7 +99,7 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
                 {initials}
              </div>
           </div>
-        </div>
+        </Link>
         <div className="flex flex-1 flex-col gap-4 px-4 pb-4 pt-5">
           <div className="flex min-h-8 items-start justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -136,11 +136,13 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
             <button
               type="button"
               onClick={handleCopy}
-              aria-label="复制服务器地址"
-              title={endpoint ? '复制服务器地址' : '该服务器未公开连接地址'}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-zinc-200 text-zinc-600 transition-colors hover:border-black hover:text-black"
+              aria-label={endpoint ? `复制服务器地址 ${endpoint}` : '该服务器未公开连接地址'}
+              title={endpoint ? `复制 ${endpoint}` : '该服务器未公开连接地址'}
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border border-zinc-200 px-3 text-xs font-semibold text-zinc-600 transition-colors hover:border-black hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!endpoint}
             >
               {copied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+              <span className="hidden xl:inline">{copied ? '已复制' : '复制地址'}</span>
             </button>
           </div>
         </div>

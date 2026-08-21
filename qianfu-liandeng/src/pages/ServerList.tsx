@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '@/api/request';
@@ -53,7 +53,9 @@ const ServerList: React.FC = () => {
     [searchParams],
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [searchDraft, setSearchDraft] = useState(filters.search);
   const hasActiveFilters = Boolean(filters.search || filters.category || filters.platform || filters.version || filters.online || filters.intent !== 'all' || filters.sortBy !== 'activity');
+  useEffect(() => setSearchDraft(filters.search), [filters.search]);
   const { backendDegraded, isLoading: backendHealthLoading } = useBackendHealth();
 
   const updateFilters = (patch: Partial<DiscoveryFilters>) => {
@@ -149,7 +151,7 @@ const ServerList: React.FC = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full xl:w-auto">
-            <div className="relative group w-full sm:w-[440px]">
+            <form className="relative group w-full sm:w-[440px]" onSubmit={(event) => { event.preventDefault(); updateFilters({ search: searchDraft.trim() }); }}>
               <GeometricLantern variant="spark" className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-100 group-focus-within:text-black transition-all duration-500" />
               <input 
                 type="search"
@@ -158,12 +160,13 @@ const ServerList: React.FC = () => {
                 aria-describedby="server-search-status"
                 autoComplete="off"
                 spellCheck={false}
-                value={filters.search}
-                onChange={(e) => updateFilters({ search: e.target.value })}
-                className="w-full pl-16 pr-6 py-5 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-black focus-visible:ring-4 focus-visible:ring-black/10 rounded-[2rem] transition-[background-color,border-color,box-shadow] duration-300 outline-hidden text-base font-semibold tracking-tight shadow-xs group-hover:bg-zinc-50"
+                value={searchDraft}
+                onChange={(event) => setSearchDraft(event.target.value)}
+                className="w-full py-5 pl-16 pr-24 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-black focus-visible:ring-4 focus-visible:ring-black/10 rounded-[2rem] transition-[background-color,border-color,box-shadow] duration-300 outline-hidden text-base font-semibold tracking-tight shadow-xs group-hover:bg-zinc-50"
                 placeholder={t('discovery.search.placeholder')}
               />
-            </div>
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl bg-black px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800">搜索</button>
+            </form>
             <button
               type="button"
               onClick={() => void refetch()}
