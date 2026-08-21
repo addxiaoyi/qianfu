@@ -33,13 +33,13 @@ const Settings: React.FC = () => {
     <div className="min-h-[70vh] bg-white px-5 py-12 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-5xl">
         <header className="border-b border-zinc-200 pb-8">
-          <p className="text-sm font-bold text-accent">账户偏好</p>
-          <h1 className="mt-3 text-4xl font-black tracking-[-0.045em] text-zinc-950 sm:text-5xl">设置</h1>
+          <p className="text-sm font-medium text-zinc-500">账户偏好</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">设置</h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">管理界面语言、主题颜色，以及账户、安全和支持入口。</p>
         </header>
 
         <section className="grid gap-8 border-b border-zinc-200 py-10 lg:grid-cols-[16rem_1fr]">
-          <div><Languages className="h-5 w-5 text-zinc-500" /><h2 className="mt-3 text-xl font-black">界面语言</h2></div>
+          <div><Languages className="h-5 w-5 text-zinc-500" /><h2 className="mt-3 text-lg font-semibold">界面语言</h2></div>
           <div role="group" aria-label="界面语言" className="grid max-w-xl grid-cols-2 gap-3">
             {([{ value: 'zh', label: '中文' }, { value: 'en', label: 'English' }] as const).map((option) => (
               <button key={option.value} type="button" aria-pressed={locale === option.value} onClick={() => chooseLocale(option.value)} className={`rounded-xl border px-5 py-4 text-left text-sm font-bold transition-colors ${locale === option.value ? 'border-black bg-black text-white' : 'border-zinc-200 hover:border-zinc-400'}`}>{option.label}</button>
@@ -48,7 +48,7 @@ const Settings: React.FC = () => {
         </section>
 
         <section className="grid gap-8 border-b border-zinc-200 py-10 lg:grid-cols-[16rem_1fr]">
-          <div><Palette className="h-5 w-5 text-zinc-500" /><h2 className="mt-3 text-xl font-black">主题颜色</h2></div>
+          <div><Palette className="h-5 w-5 text-zinc-500" /><h2 className="mt-3 text-lg font-semibold">主题颜色</h2></div>
           <div role="group" aria-label="主题颜色" className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {accents.map((option) => (
               <button key={option.value} type="button" aria-pressed={accent === option.value} onClick={() => setAccent(option.value)} className={`flex items-center gap-3 rounded-xl border px-4 py-4 text-left text-sm font-bold transition-colors ${accent === option.value ? 'border-black bg-zinc-50' : 'border-zinc-200 hover:border-zinc-400'}`}>
@@ -59,7 +59,7 @@ const Settings: React.FC = () => {
         </section>
 
         <section className="py-10">
-          <h2 className="text-xl font-black">账户与支持</h2>
+          <h2 className="text-lg font-semibold">账户与支持</h2>
           <div className="mt-6 divide-y divide-zinc-200 border-y border-zinc-200">
             {links.map(({ to, label, hint, Icon }) => (
               <Link key={label} to={to} className="flex items-center gap-4 px-1 py-5 text-zinc-900 transition-colors hover:bg-zinc-50 sm:px-4">

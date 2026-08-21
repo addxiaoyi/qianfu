@@ -132,17 +132,17 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div ref={pageRef} className="min-h-[calc(100dvh-5rem)] flex flex-col lg:flex-row bg-[#f7f7f4] selection:bg-accent selection:text-white">
+    <div ref={pageRef} className="min-h-[calc(100dvh-5rem)] flex flex-col lg:flex-row bg-zinc-50 selection:bg-accent selection:text-white">
       {/* Visual Side: Cinematic Black */}
-      <aside className="hidden lg:flex lg:w-[44%] bg-[#0b0c0e] px-12 py-10 xl:px-16 xl:py-14 flex-col justify-between relative overflow-hidden">
+      <aside className="relative hidden overflow-hidden bg-zinc-950 px-10 py-10 lg:flex lg:w-[34%] lg:flex-col lg:justify-between xl:px-12">
         <div className="relative z-20 space-y-16 xl:space-y-20">
           <Link data-register-brand to="/" className="flex items-center gap-4 group w-fit focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
              <div className="w-11 h-11 bg-[#f7f7f4] rounded-xl flex items-center justify-center group-hover:-translate-y-0.5 transition-transform duration-300 shadow-xl shadow-black/20">
                 <GeometricLantern variant="spark" className="w-6 h-6 text-black fill-current" />
              </div>
              <div className="flex flex-col -space-y-1">
-                <span className="font-black tracking-tighter text-3xl text-white uppercase italic">{t('admin.title')}.</span>
-                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-[0.4em] italic leading-none">Minecraft 服务器平台</span>
+                <span className="text-xl font-semibold tracking-tight text-white">{t('admin.title')}</span>
+                <span className="text-xs text-zinc-500">Minecraft 服务器平台</span>
              </div>
           </Link>
 
@@ -165,7 +165,7 @@ const Register: React.FC = () => {
                          <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest italic">轮播中</span>
                       </div>
                    </div>
-                   <h2 className="text-4xl xl:text-6xl font-black tracking-[-0.055em] leading-[0.96] text-white text-balance break-words">
+                   <h2 className="text-3xl font-semibold leading-tight tracking-tight text-white xl:text-4xl">
                       {t(currentStory.titleKey)}
                    </h2>
                    <p className="text-zinc-400 text-base xl:text-lg font-medium leading-relaxed border-l border-zinc-700 pl-6 max-w-lg text-pretty">
@@ -218,14 +218,14 @@ const Register: React.FC = () => {
         
         <div data-register-form className="w-full max-w-lg space-y-8 relative z-10">
           <header className="space-y-4">
-            <div className="w-16 h-16 bg-black text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl lg:hidden mb-12 animate-float">
+            <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-[10px] bg-black text-white lg:hidden">
                <GeometricLantern variant="spark" className="w-8 h-8 fill-current" />
             </div>
             <div className="flex items-center gap-4">
-               <div className="px-3 py-1 bg-zinc-50 border border-zinc-100 rounded-sm text-[10px] font-black uppercase tracking-[0.3em] italic">创建账号</div>
+               <div className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600">创建账号</div>
                <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-100" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-[-0.055em] leading-none text-zinc-950 text-balance">{t('auth.register.title')}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">{t('auth.register.title')}</h1>
             <p className="text-zinc-500 font-medium text-sm sm:text-base leading-7 max-w-md text-pretty">
                {t('auth.register.subtitle')}
             </p>
@@ -248,8 +248,8 @@ const Register: React.FC = () => {
                   </div>
                   <AnimatePresence>
                     {errors.username && (
-                      <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black text-red-500 uppercase tracking-widest pl-8 italic">
-                         // ERROR: {errors.username.message}
+                      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium text-red-600">
+                         {errors.username.message}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -270,8 +270,8 @@ const Register: React.FC = () => {
                   </div>
                   <AnimatePresence>
                     {errors.email && (
-                      <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black text-red-500 uppercase tracking-widest pl-8 italic">
-                         // ERROR: {errors.email.message}
+                      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium text-red-600">
+                         {errors.email.message}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -330,7 +330,7 @@ const Register: React.FC = () => {
                   <div className={`w-6 h-6 rounded-md border-2 transition-all flex items-center justify-center ${watchAgree ? 'bg-accent border-accent' : 'border-zinc-300'}`}>
                      <GeometricLantern variant="spark" className={`w-4 h-4 text-white transition-opacity ${watchAgree ? 'opacity-100' : 'opacity-0'}`} />
                   </div>
-                  <span className="text-[11px] text-zinc-400 font-black leading-relaxed uppercase tracking-widest italic group-hover:text-zinc-600 transition-colors text-left">
+                  <span className="text-left text-sm text-zinc-600">
                     我已阅读并同意平台《系统协议》
                   </span>
                </button>
@@ -366,7 +366,7 @@ const Register: React.FC = () => {
              </div>
              <Link 
                to="/login" 
-               className="group flex items-center gap-6 px-10 py-5 bg-zinc-50 border border-zinc-100 rounded-[2rem] hover:bg-black hover:text-white transition-all duration-700 shadow-xs"
+               className="group flex items-center gap-3 rounded-[10px] border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-black hover:text-white"
              >
                 <div className="flex flex-col items-end">
                    <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-500 uppercase tracking-widest italic leading-none">{t('auth.form.has_node')}</span>

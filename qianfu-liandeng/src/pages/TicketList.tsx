@@ -17,6 +17,13 @@ type TicketRecord = {
   updated_at?: string;
 };
 
+const ticketStatusLabel: Record<string, string> = {
+  OPEN: '待处理',
+  IN_PROGRESS: '处理中',
+  RESOLVED: '已解决',
+  CLOSED: '已关闭',
+};
+
 const TicketList: React.FC = () => {
   const t = useT();
   const navigate = useNavigate();
@@ -77,14 +84,14 @@ const TicketList: React.FC = () => {
       emptyDescription="需要审核申诉、账户支持或违规举报时，可以在这里发起并持续跟踪。"
       emptyAction={emptyAction}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24 bg-white selection:bg-accent selection:text-white">
+      <div className="ui-page bg-white selection:bg-accent selection:text-white">
         <AdminPageHeader
-          badge="TICKET_QUEUE"
+          badge="帮助与反馈"
           title={t('ticket.list.title')}
           description={t('ticket.list.desc')}
-          statusLabel={`OPEN ${openTickets} / RESOLVED ${resolvedTickets}`}
+          statusLabel={`待处理 ${openTickets} · 已完成 ${resolvedTickets}`}
           rightSlot={(
-            <AdminActionButton className="w-full sm:w-auto px-6 sm:px-8 py-4 text-[11px] uppercase tracking-[0.28em] flex items-center justify-center gap-3" onClick={() => navigate('/tickets/new')}>
+            <AdminActionButton className="w-full gap-2 px-5 text-sm sm:w-auto" onClick={() => navigate('/tickets/new')}>
               <Plus className="w-5 h-5" /> {t('ticket.list.create')}
             </AdminActionButton>
           )}
@@ -97,6 +104,7 @@ const TicketList: React.FC = () => {
               id={String(ticket.id)}
               subject={ticket.title}
               status={ticket.status}
+              statusLabel={ticketStatusLabel[ticket.status] || ticket.status}
               updatedAt={formatDateTime(ticket.updated_at)}
               href={`/tickets/${ticket.id}`}
               getStatusIcon={getStatusIcon}

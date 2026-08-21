@@ -17,6 +17,7 @@ interface AuthState {
 }
 
 let hydratePromise: Promise<void> | null = null;
+const AUTH_HYDRATE_TIMEOUT_MS = 2_500;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -53,8 +54,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     hydratePromise = (async () => {
       try {
         const profile = isRustV2Enabled()
-          ? normalizeUser(await api.get<User | null>(rustV2Path('/auth/me'), undefined, rustV2RequestOptions))
-          : (await api.get<{ csrfToken: string }>('/csrf-token', undefined, { useAuth: false, skipCsrf: true }), normalizeUser(await api.get<User | null>('/session-profile')));
+          ? normalizeUser(await api.get<User | null>(rustV2Path('/auth/me'), undefined, {
+              ...rustV2RequestOptions,
+              timeout: AUTH_HYDRATE_TIMEOUT_MS,
+            }))
+          : (
+              await api.get<{ csrfToken: string }>('/csrf-token', undefined, {
+                useAuth: false,
+                skipCsrf: true,
+                timeout: AUTH_HYDRATE_TIMEOUT_MS,
+              }),
+              normalizeUser(await api.get<User | null>('/session-profile', undefined, {
+                timeout: AUTH_HYDRATE_TIMEOUT_MS,
+              }))
+            );
         set({ user: profile, isAuthenticated: !!profile, isLoading: false, backendReady: true });
       } catch (error) {
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {

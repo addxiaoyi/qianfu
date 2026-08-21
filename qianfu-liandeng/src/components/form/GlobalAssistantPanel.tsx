@@ -63,6 +63,10 @@ const GlobalAssistantPanel: React.FC<GlobalAssistantPanelProps> = React.memo(({ 
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
+  useEffect(() => {
+    if (isAuthPage) setOpen(false);
+  }, [isAuthPage]);
+
   useEffect(() => () => {
     abortRef.current?.abort();
     void readerRef.current?.cancel();
@@ -204,6 +208,8 @@ const GlobalAssistantPanel: React.FC<GlobalAssistantPanelProps> = React.memo(({ 
     event.preventDefault();
     void send();
   };
+
+  if (isAuthPage) return null;
 
   return (
     <div ref={rootRef}>
