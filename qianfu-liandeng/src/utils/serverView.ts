@@ -132,7 +132,17 @@ export const getServerVersionLabels = (server: any) => {
   const versions = parseListField(server?.supported_versions);
   if (versions.length > 0) return versions;
 
-  const fallback = String(server?.status?.versionNameRaw || server?.version || '').trim();
+  const fallback = String(
+    server?.version
+      || server?.version_name
+      || server?.versionName
+      || server?.probe_version
+      || server?.probe_version_name
+      || server?.status?.versionNameRaw
+      || server?.status?.version
+      || server?.probe_edition
+      || '',
+  ).trim();
   return fallback ? [fallback] : [];
 };
 

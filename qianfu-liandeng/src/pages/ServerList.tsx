@@ -86,7 +86,7 @@ const ServerList: React.FC = () => {
       if (q && !searchable.includes(q)) return false;
       if (filters.category && !searchable.includes(filters.category.toLowerCase())) return false;
       if (filters.platform && platform !== filters.platform) return false;
-      if (filters.version && !parseListField(server.supported_versions || server.probe_edition).some((value) => value.includes(filters.version))) return false;
+      if (filters.version && !getServerVersionLabels(server).some((value) => value.includes(filters.version))) return false;
       if (filters.online === 'true' && server.probe_reachable !== true && server.online !== true) return false;
       if (filters.online === 'false' && (server.probe_reachable === true || server.online === true)) return false;
       return true;
