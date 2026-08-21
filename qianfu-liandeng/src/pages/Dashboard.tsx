@@ -502,12 +502,7 @@ const Dashboard: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <motion.div 
-          key={location.pathname}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="ui-panel min-w-0 flex-grow p-4 sm:p-5 lg:p-6"
-        >
+        <div data-ui-reveal key={location.pathname} className="ui-panel min-w-0 flex-grow p-4 sm:p-5 lg:p-6">
           {isGuest ? (
             <div className="mb-6 flex flex-col gap-4 rounded-[1.5rem] border border-zinc-200 bg-zinc-50 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
@@ -631,7 +626,7 @@ const Dashboard: React.FC = () => {
                   {/* Quick Access Section */}
                   <div className="space-y-4 sm:space-y-5">
                      <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('dash.services_shortcuts')}</h2>
-                     <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+                     <div data-gsap-group className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
                         {[
                            { nameKey: 'dash.shortcuts.publish', sub: '发布服务器', variant: 'network' as const, link: '/editor' },
                            { nameKey: 'dash.shortcuts.ticket', sub: '提交工单', variant: 'activity' as const, link: '/dashboard/tickets/new' },
@@ -665,7 +660,7 @@ const Dashboard: React.FC = () => {
                    {/* Activity Feed Section */}
                    <div className="space-y-6">
                       <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{t('dash.activity.title')}</h2>
-                      <div className="space-y-3 sm:space-y-4">
+                      <div data-gsap-group className="space-y-3 sm:space-y-4">
                          {activityItems.length === 0 ? (
                             <div className="rounded-[1.5rem] border border-dashed border-zinc-200 bg-white p-8 text-center shadow-[0_8px_24px_rgba(0,0,0,0.03)]">
                                <div className="text-sm font-bold text-zinc-500">{isGuest ? '访客模式不展示账户活动' : '暂无真实活动记录'}</div>
@@ -696,7 +691,7 @@ const Dashboard: React.FC = () => {
             <Route path="profile" element={protectDashboardRoute(<Profile />)} />
             <Route path="billing/*" element={<CommercialFeatureDisabled />} />
           </Routes>
-        </motion.div>
+        </div>
       </div>
     </StatusWrapper>
   );

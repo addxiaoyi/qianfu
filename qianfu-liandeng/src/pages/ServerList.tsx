@@ -184,7 +184,7 @@ const ServerList: React.FC = () => {
           </div>
         </div>
 
-        <section aria-label="服务器发现入口" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section data-gsap-group aria-label="服务器发现入口" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {intentOptions.map((option) => {
             const active = filters.intent === option.id;
             return (
@@ -342,7 +342,7 @@ const ServerList: React.FC = () => {
           </div>
         )}
       >
-        <div aria-label="服务器列表" className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3 xl:gap-12">
+        <div data-gsap-group aria-label="服务器列表" className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-3 xl:gap-12">
           {displayedServers.map((server, idx) => (
             <ServerCard
               key={server.id}
