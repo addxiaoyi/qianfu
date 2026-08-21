@@ -112,6 +112,7 @@ export const GeometricLantern: React.FC<LanternProps> = ({
       data-lucide={name}
       aria-hidden={props['aria-label'] ? undefined : true}
       className={className}
+      style={{ width: '1em', height: '1em', flexShrink: 0, ...props.style }}
       {...props}
     />
   );
