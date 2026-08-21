@@ -132,22 +132,22 @@ const ServerList: React.FC = () => {
       : t('discovery.loaded_count').replace('{count}', String(displayedServers.length));
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-16 bg-white selection:bg-black selection:text-white">
+    <div className="ui-page max-w-[1400px] bg-white selection:bg-black selection:text-white">
       {/* Search & Meta Header */}
       <div className="space-y-8 mb-10">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
-                <div className="px-4 py-1.5 bg-black text-white text-[10px] font-semibold tracking-wide rounded-sm shadow-xl shadow-black/10">
+                <div className="rounded-md bg-black px-3 py-1.5 text-xs font-semibold text-white">
                    {statusChipLabel}
                 </div>
                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                  <span className="text-[10px] font-semibold text-zinc-300 tracking-wide">{protocolLabel}</span>
+                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="text-xs font-medium text-zinc-500">{protocolLabel}</span>
                </div>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-black leading-tight break-words">{t('discovery.title')}</h1>
-            <p className="text-zinc-400 text-base font-medium border-l-2 border-zinc-100 pl-6 max-w-xl">
+            <p className="max-w-xl border-l-2 border-zinc-200 pl-4 text-base leading-7 text-zinc-500">
                {summaryText}
             </p>
           </div>
@@ -164,17 +164,17 @@ const ServerList: React.FC = () => {
                 spellCheck={false}
                 value={searchDraft}
                 onChange={(event) => setSearchDraft(event.target.value)}
-                className="w-full py-5 pl-16 pr-24 bg-zinc-50/50 border border-transparent focus:bg-white focus:border-black focus-visible:ring-4 focus-visible:ring-black/10 rounded-[2rem] transition-[background-color,border-color,box-shadow] duration-300 outline-hidden text-base font-semibold tracking-tight shadow-xs group-hover:bg-zinc-50"
+                className="ui-input min-h-14 pl-12 pr-24 text-base shadow-none focus:bg-white focus:border-black focus-visible:ring-4 focus-visible:ring-black/10"
                 placeholder={t('discovery.search.placeholder')}
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl bg-black px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800">搜索</button>
+              <button type="submit" className="absolute right-1.5 top-1/2 min-h-10 -translate-y-1/2 rounded-md bg-black px-3 text-sm font-semibold text-white hover:bg-zinc-800">搜索</button>
               {searchDraft ? <button type="button" aria-label="清空搜索" onClick={() => { setSearchDraft(''); updateFilters({ search: '' }); }} className="absolute right-[5.5rem] top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-400 hover:bg-zinc-200 hover:text-black">清空</button> : null}
             </form>
             <button
               type="button"
               onClick={() => void refetch()}
               disabled={isFetching}
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[2rem] border border-zinc-200 px-5 text-sm font-semibold hover:bg-black hover:text-white transition-colors shadow-xs group disabled:cursor-wait disabled:opacity-50"
+              className="ui-button min-h-14 border-zinc-300 hover:bg-black hover:text-white group disabled:cursor-wait"
               aria-label={isFetching ? '正在刷新服务器列表' : '刷新服务器列表'}
               aria-busy={isFetching}
             >
@@ -193,7 +193,7 @@ const ServerList: React.FC = () => {
                 key={option.id}
                 onClick={() => updateFilters({ intent: option.id })}
                 aria-pressed={active}
-                className={`min-h-20 rounded-3xl border px-5 py-3.5 text-left transition-[background-color,border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 ${
+                className={`min-h-20 rounded-[10px] border px-5 py-3.5 text-left transition-[background-color,border-color,box-shadow] duration-200 ${
                   active
                     ? 'border-black bg-black text-white shadow-xl shadow-black/10'
                     : 'border-zinc-100 bg-white text-zinc-700 hover:border-zinc-300 hover:shadow-md'
@@ -207,7 +207,7 @@ const ServerList: React.FC = () => {
         </section>
 
         {/* Category Navigation */}
-        <div className="flex items-center gap-4 p-2 bg-zinc-50/50 border border-zinc-100 rounded-[3rem] overflow-hidden">
+        <div className="flex items-center gap-2 overflow-hidden rounded-[10px] border border-zinc-200 bg-zinc-50 p-1.5">
            <div className="px-6 py-4 flex items-center gap-3 border-r border-zinc-200 lg:block hidden">
               <GeometricLantern variant="spark" className="w-4 h-4 text-zinc-300" />
            </div>
@@ -219,7 +219,7 @@ const ServerList: React.FC = () => {
                     key={catKey}
                     onClick={() => updateFilters({ category: categoryValues[catKey] || '' })}
                     aria-pressed={activeCategory === catKey}
-                    className={`px-8 py-4 rounded-[2rem] text-xs font-semibold tracking-tight whitespace-nowrap transition-all duration-500 ${
+                    className={`rounded-md px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
                       activeCategory === catKey
                         ? 'bg-black text-white shadow-xl shadow-black/20'
                         : 'text-zinc-400 hover:bg-white hover:text-black hover:shadow-xs'
@@ -237,20 +237,20 @@ const ServerList: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <button type="button" onClick={() => setShowFilters((visible) => !visible)} aria-expanded={showFilters} className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:border-black">
-            {showFilters ? '收起高级筛选' : '高级筛选'}{hasActiveFilters ? ' · 已启用' : ''}
+          <button type="button" onClick={() => setShowFilters((visible) => !visible)} aria-expanded={showFilters} className="ui-button min-h-10 border-zinc-300 bg-white text-zinc-700 hover:border-black">
+            {showFilters ? '收起筛选' : '筛选'}{hasActiveFilters ? ` · ${[filters.search, filters.category, filters.platform, filters.version, filters.online].filter(Boolean).length + (filters.intent !== 'all' ? 1 : 0)} 项` : ''}
           </button>
-          {hasActiveFilters ? <button type="button" onClick={clearFilters} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-black">清除全部</button> : null}
+          {hasActiveFilters ? <button type="button" onClick={clearFilters} className="ui-button min-h-10 px-3 text-zinc-500 hover:bg-zinc-100 hover:text-black">清除全部</button> : null}
         </div>
 
-        {showFilters ? <section aria-label="服务器筛选" className="mt-4 grid grid-cols-1 gap-3 rounded-[2rem] border border-zinc-100 bg-white p-3 shadow-xs sm:grid-cols-2 lg:grid-cols-4">
+        {showFilters ? <section aria-label="服务器筛选" className="mt-4 grid grid-cols-1 gap-4 rounded-[14px] border border-zinc-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-2">
             <span className="px-1 text-xs font-medium text-zinc-500">服务器平台</span>
             <select
               aria-label="服务器平台"
               value={filters.platform}
               onChange={(event) => updateFilters({ platform: event.target.value as DiscoveryFilters['platform'] })}
-              className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-bold outline-none transition focus:border-black focus:bg-white"
+              className="ui-input bg-zinc-50 focus:border-black focus:bg-white"
             >
               <option value="">全部平台</option>
               <option value="java">Java版</option>
@@ -266,9 +266,9 @@ const ServerList: React.FC = () => {
               value={versionDraft}
               onChange={(event) => setVersionDraft(event.target.value)}
               placeholder="如 1.21.1"
-              className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-bold outline-none transition placeholder:text-zinc-300 focus:border-black focus:bg-white"
+              className="ui-input bg-zinc-50 focus:border-black focus:bg-white"
             />
-            <button type="submit" className="rounded-2xl border border-zinc-200 px-3 text-xs font-semibold hover:border-black">应用</button>
+            <button type="submit" className="ui-button min-h-11 border-zinc-300 px-3 text-xs hover:border-black">应用</button>
             </form>
           </label>
           <label className="space-y-2">
@@ -277,7 +277,7 @@ const ServerList: React.FC = () => {
               aria-label="在线状态"
               value={filters.online}
               onChange={(event) => updateFilters({ intent: 'all', online: event.target.value as DiscoveryFilters['online'] })}
-              className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-bold outline-none transition focus:border-black focus:bg-white"
+              className="ui-input bg-zinc-50 focus:border-black focus:bg-white"
             >
               <option value="">全部状态</option>
               <option value="true">在线</option>
@@ -290,7 +290,7 @@ const ServerList: React.FC = () => {
               aria-label="服务器排序"
               value={filters.sortBy}
               onChange={(event) => updateFilters({ intent: 'all', sortBy: event.target.value as DiscoveryFilters['sortBy'] })}
-              className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-bold outline-none transition focus:border-black focus:bg-white"
+              className="ui-input bg-zinc-50 focus:border-black focus:bg-white"
             >
               <option value="activity">最近活跃</option>
               <option value="players">在线人数</option>
@@ -304,7 +304,7 @@ const ServerList: React.FC = () => {
         {isFetching ? '正在更新服务器列表' : `当前显示 ${displayedServers.length} 个服务器`}
       </p>
 
-      <div className="mb-6 flex flex-col gap-3 rounded-3xl border border-zinc-100 bg-zinc-50/70 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 flex flex-col gap-3 rounded-[10px] border border-zinc-200 bg-zinc-50 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-zinc-700">服务器目录 · 当前筛选</p>
           <p className="mt-1 truncate text-sm font-medium text-zinc-400">

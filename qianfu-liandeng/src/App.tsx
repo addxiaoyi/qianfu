@@ -126,22 +126,17 @@ function App() {
   } = useBackendHealth();
 
   const LoadingState = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-md transition-all duration-500">
-      <div className="relative flex flex-col items-center gap-6 p-8 rounded-3xl bg-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white/60">
-        {/* Animated glowing rings */}
-        <div className="relative w-12 h-12">
-          <div className="absolute inset-0 border-2 border-zinc-200 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
-          <div className="absolute inset-0 border-2 border-transparent border-t-black border-r-black rounded-full animate-spin"></div>
-          <div className="absolute inset-2 bg-black rounded-full animate-pulse"></div>
+    <div className="mx-auto flex min-h-[55vh] w-full max-w-7xl items-center justify-center px-4 py-12" role="status" aria-live="polite">
+      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-[14px] border border-zinc-200 bg-white p-8 text-center shadow-sm">
+        <div className="relative h-8 w-8" aria-hidden="true">
+          <div className="absolute inset-0 rounded-full border-2 border-zinc-200" />
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-black" />
         </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] italic text-zinc-800 bg-clip-text">
-            INITIALIZING
-          </p>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-zinc-900">正在加载页面</p>
           {!backendReady && (
-            <p className="max-w-xs text-[11px] leading-5 text-zinc-500 text-center animate-pulse">
-              System is warming up or operating in degraded mode...
+            <p className="text-xs leading-5 text-zinc-500">
+              服务连接较慢，页面会在数据就绪后自动更新。
             </p>
           )}
         </div>

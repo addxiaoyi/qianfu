@@ -7,7 +7,7 @@ interface AdminTableShellProps {
 
 const AdminTableShell: React.FC<AdminTableShellProps> = ({ children, emptyState }) => {
   return (
-    <div className="border border-zinc-50 rounded-[5rem] overflow-hidden bg-white shadow-xs group/table hover:border-zinc-100 transition-all duration-1000">
+    <div className="overflow-hidden rounded-[14px] border border-zinc-200 bg-white shadow-sm">
       {children}
       {emptyState}
     </div>

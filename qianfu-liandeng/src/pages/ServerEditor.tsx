@@ -449,7 +449,7 @@ const ServerEditor: React.FC = () => {
         </button>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-12 sm:pt-20 pb-40 md:pb-16 selection:bg-accent selection:text-white">
+      <div className="mx-auto max-w-4xl px-4 pb-40 pt-8 selection:bg-accent selection:text-white sm:px-8 md:pb-16 sm:pt-12">
         <header className="mb-10">
           <div className="flex items-center gap-4 mb-8">
              <button 
@@ -460,20 +460,18 @@ const ServerEditor: React.FC = () => {
              >
                 <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
              </button>
-             <div className="matrix-badge">
-                Server Studio / Listing Editor
-             </div>
+             <div className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-600">服务器发布</div>
              <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest italic">
+                <span className="text-xs font-medium text-muted-foreground">
                   {serverId ? t('editor.step.edit').replace('{id}', serverId) : t('editor.step.init')}
                 </span>
              </div>
           </div>
-          <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter mb-6 uppercase italic leading-none break-words">
+          <h1 className="mb-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
              {serverId ? t('editor.title.edit') : t('editor.title.new')}
           </h1>
-           <p className="text-zinc-400 font-bold text-base sm:text-lg lg:text-xl italic leading-relaxed max-w-lg border-l-2 border-zinc-100 pl-8">
+           <p className="max-w-2xl text-base leading-7 text-zinc-500">
              {t('editor.subtitle')}
            </p>
 
@@ -524,7 +522,7 @@ const ServerEditor: React.FC = () => {
           )}
         </header>
 
-        <form onSubmit={handleSubmit(onSubmit, showValidationErrors)} className="space-y-20">
+        <form onSubmit={handleSubmit(onSubmit, showValidationErrors)} className="space-y-12">
           {/* Cover Upload */}
           <section id="cover" ref={sectionRefs.cover} className="scroll-mt-24">
             <Controller 
@@ -542,11 +540,11 @@ const ServerEditor: React.FC = () => {
           </section>
 
           {/* Basic Info Grid */}
-          <section id="basic" ref={sectionRefs.basic} className="space-y-12 scroll-mt-24">
-             <h2 className="text-xs font-black font-mono uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-4 italic">
+          <section id="basic" ref={sectionRefs.basic} className="space-y-6 scroll-mt-24">
+             <h2 className="flex items-center gap-3 text-base font-semibold text-zinc-900">
                 <GeometricLantern variant="activity" className="w-5 h-5 text-accent" /> 核心资料
              </h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-16">
+             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-10">
                 {/* Name */}
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">

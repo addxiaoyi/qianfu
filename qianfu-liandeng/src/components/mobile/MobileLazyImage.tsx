@@ -23,6 +23,7 @@ export const LazyImage = memo(function LazyImage({
   ...rest
 }: MobileLazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +36,7 @@ export const LazyImage = memo(function LazyImage({
       (entries) => {
         if (entries[0].isIntersecting) {
           observer.disconnect();
-          setIsLoaded(true);
+          setIsVisible(true);
         }
       },
       { rootMargin: '200px' }, // preload 200px before visible
@@ -45,7 +46,13 @@ export const LazyImage = memo(function LazyImage({
     return () => observer.disconnect();
   }, []);
 
-  const effectiveSrc = hasError && fallbackSrc ? fallbackSrc : src;
+  useEffect(() => {
+    setIsLoaded(false);
+    setHasError(false);
+  }, [src, fallbackSrc]);
+
+  const effectiveSrc = hasError ? fallbackSrc : src;
+  const showPlaceholder = !isVisible || !isLoaded || !effectiveSrc;
 
   const aspectStyle = aspectRatio
     ? { paddingTop: aspectRatio }
@@ -56,32 +63,34 @@ export const LazyImage = memo(function LazyImage({
       {aspectRatio && (
         <div
           style={aspectStyle}
-          className={cn('absolute inset-0', !isLoaded && 'bg-gray-200 animate-pulse')}
+          className={cn('absolute inset-0', showPlaceholder && 'bg-zinc-100')}
         />
       )}
 
-      {!isLoaded && !aspectRatio && (
-        <div className="w-full h-full bg-gray-200 animate-pulse" />
+      {showPlaceholder && (
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 text-zinc-400">
+          {placeholder}
+        </div>
       )}
 
-      {isLoaded && (
+      {isVisible && effectiveSrc && (
         <img
           src={effectiveSrc}
           alt={alt}
           className={cn(
             'w-full h-full object-cover transition-opacity duration-300',
-            isLoaded && 'opacity-100',
-            !isLoaded && 'opacity-0',
+            isLoaded ? 'opacity-100' : 'opacity-0',
             className,
           )}
           onLoad={() => setIsLoaded(true)}
-          onError={() => setHasError(true)}
+          onError={() => {
+            setIsLoaded(false);
+            setHasError(true);
+          }}
           {...rest}
         />
       )}
 
-      {/* Render placeholder when not loaded and no aspect ratio */}
-      {!isLoaded && !aspectRatio && placeholder}
     </div>
   );
 });

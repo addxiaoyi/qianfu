@@ -101,6 +101,7 @@ export const GeometricLantern: React.FC<LanternProps> = ({
   size = 24,
   variant = 'spark',
   className = '',
+  style,
   ...props
 }) => {
   const { Icon, name } = variantIcons[variant] ?? variantIcons.spark;
@@ -112,7 +113,7 @@ export const GeometricLantern: React.FC<LanternProps> = ({
       data-lucide={name}
       aria-hidden={props['aria-label'] ? undefined : true}
       className={className}
-      style={{ width: '1em', height: '1em', flexShrink: 0, ...props.style }}
+      style={{ flexShrink: 0, ...style }}
       {...props}
     />
   );

@@ -18,23 +18,23 @@ const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
   rightSlot,
 }) => {
   return (
-    <header className="flex flex-col justify-between gap-6 sm:gap-8 lg:gap-10 xl:flex-row xl:items-end">
+    <header className="flex flex-col justify-between gap-5 border-b border-zinc-200 pb-6 xl:flex-row xl:items-end">
       <div className="space-y-3 sm:space-y-4">
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-          <div className="px-4 py-1.5 bg-accent text-white text-[10px] font-black uppercase tracking-[0.4em] rounded-sm shadow-2xl shadow-accent/20 italic">
+          <div className="rounded-md bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-600">
             {badge}
           </div>
           {statusLabel && (
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)] ${statusTone === 'warning' ? 'bg-orange-500' : statusTone === 'danger' ? 'bg-red-500' : statusTone === 'success' ? 'bg-green-500' : 'bg-green-500'}`} />
-              <span className="text-[10px] font-black font-mono uppercase tracking-[0.3em] text-zinc-300 italic">{statusLabel}</span>
+              <div className={`h-2 w-2 rounded-full ${statusTone === 'warning' ? 'bg-orange-500' : statusTone === 'danger' ? 'bg-red-500' : statusTone === 'success' ? 'bg-green-500' : 'bg-zinc-500'}`} />
+              <span className="text-xs font-medium text-zinc-500">{statusLabel}</span>
             </div>
           )}
         </div>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-accent break-words">
           {title}
         </h1>
-        <p className="max-w-xl border-l-2 border-zinc-100 pl-4 text-sm font-bold italic text-zinc-400 sm:pl-6 sm:text-base">
+        <p className="max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">
           {description}
         </p>
       </div>

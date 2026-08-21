@@ -252,14 +252,14 @@ const Dashboard: React.FC = () => {
 
   return (
     <StatusWrapper isLocked={isLocked}>
-      <div className="mx-auto flex min-h-[calc(100vh-160px)] max-w-7xl flex-col gap-4 bg-white px-4 py-5 sm:px-6 sm:py-7 md:flex-row lg:gap-6">
+      <div className="mx-auto flex min-h-[calc(100vh-160px)] max-w-7xl flex-col gap-5 bg-zinc-50/40 px-4 py-6 sm:px-6 md:flex-row lg:gap-6 lg:py-8">
         {/* Sidebar */}
         <aside className="w-full shrink-0 self-start space-y-3 md:w-64 xl:w-72">
           {!isProfileRoute ? (
             <>
-              <div className="rounded-[1.75rem] border border-zinc-100 bg-white p-4 sm:p-5 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
+              <div className="ui-panel p-4 sm:p-5">
                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-black text-white rounded-2xl flex items-center justify-center font-mono text-xl font-black shadow-lg shrink-0">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] bg-black font-mono text-lg font-semibold text-white">
                        {user?.username?.[0] || '访'}
                     </div>
                     <div className="min-w-0 space-y-1">
@@ -294,7 +294,7 @@ const Dashboard: React.FC = () => {
             </>
           ) : null}
 
-          <div className="rounded-[1.75rem] border border-zinc-100 bg-white p-2 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
+          <div className="ui-panel p-2">
             <div className="flex flex-wrap gap-1.5 md:flex-col">
                {DASHBOARD_MENU.map((item) => {
                   const active = isPathActive(item.path);
@@ -328,7 +328,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-zinc-100 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
+          <div className="ui-panel p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">快捷概览</div>
               <div className="text-[9px] font-black uppercase tracking-[0.24em] text-zinc-300">实时</div>
@@ -357,7 +357,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-zinc-100 bg-white p-3 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
+          <div className="ui-panel p-3">
             <div className="px-1 pb-2">
               <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">快捷操作</div>
               <p className="mt-2 text-[11px] font-bold leading-5 text-zinc-500">把高频动作收在一起，减少来回跳转。</p>
@@ -414,7 +414,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {isSuperAdmin ? (
-            <div className="rounded-[1.75rem] border border-zinc-100 bg-white p-3 shadow-[0_12px_40px_rgba(0,0,0,0.04)]">
+            <div className="ui-panel p-3">
               <div className="px-2 pb-3 pt-1">
                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">超管配置入口</div>
                 <p className="mt-2 text-xs font-bold leading-5 text-zinc-500">
@@ -506,7 +506,7 @@ const Dashboard: React.FC = () => {
           key={location.pathname}
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="min-w-0 flex-grow rounded-[2rem] border border-zinc-100 bg-white p-4 shadow-[0_12px_40px_rgba(0,0,0,0.04)] sm:p-5 lg:p-6"
+          className="ui-panel min-w-0 flex-grow p-4 sm:p-5 lg:p-6"
         >
           {isGuest ? (
             <div className="mb-6 flex flex-col gap-4 rounded-[1.5rem] border border-zinc-200 bg-zinc-50 p-5 sm:flex-row sm:items-center sm:justify-between">

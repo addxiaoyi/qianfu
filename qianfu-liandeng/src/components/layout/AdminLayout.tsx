@@ -60,10 +60,10 @@ const adminNavGroups: AdminNavGroup[] = [
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
   <div className="min-h-[calc(100dvh-4rem)] bg-white text-zinc-950">
     <div className="mx-auto flex max-w-[1600px] flex-col lg:flex-row">
-      <aside className="border-b border-zinc-200 bg-zinc-50/70 lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+      <aside className="border-b border-zinc-200 bg-zinc-50 lg:sticky lg:top-16 lg:h-[calc(100dvh-4rem)] lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="border-b border-zinc-200 px-5 py-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">管理控制台</p>
-          <div className="mt-2 text-xl font-black tracking-tight">千服联灯后台</div>
+          <p className="text-xs font-medium text-zinc-500">管理控制台</p>
+          <div className="mt-1 text-lg font-semibold tracking-tight">千服联灯后台</div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <NavLink
               to="/dashboard"
@@ -85,7 +85,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
           {adminNavGroups.map((group) => (
             <section key={group.label} aria-labelledby={`admin-nav-${group.label}`}>
               <div className="px-2">
-                <h2 id={`admin-nav-${group.label}`} className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">{group.label}</h2>
+                <h2 id={`admin-nav-${group.label}`} className="text-xs font-semibold text-zinc-700">{group.label}</h2>
                 <p className="mt-1 text-[11px] leading-4 text-zinc-400">{group.hint}</p>
               </div>
               <div className="mt-2 space-y-1">
@@ -94,7 +94,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
                     key={item.path}
                     to={item.path}
                     end={item.path === '/admin'}
-                    className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold transition-colors ${isActive ? 'bg-black text-white' : 'text-zinc-600 hover:bg-white hover:text-zinc-950'}`}
+                    className={({ isActive }) => `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-white hover:text-zinc-950'}`}
                   >
                     <GeometricLantern variant={item.variant} className="h-4 w-4 shrink-0" />
                     <span className="truncate">{item.label}</span>

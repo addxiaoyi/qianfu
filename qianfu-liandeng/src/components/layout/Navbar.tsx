@@ -57,35 +57,32 @@ const Navbar: React.FC = React.memo(() => {
   const isAdmin = String(user?.role || '').toUpperCase() === 'ADMIN';
 
   return (
-    <nav className="sticky top-0 z-[100] w-full bg-white/80 backdrop-blur-md border-b border-zinc-100 h-16">
+    <nav className="sticky top-0 z-[100] h-16 w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-        <div className="flex items-center gap-10">
+        <div className="flex min-w-0 items-center gap-8">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <LanternLogo size={36} animate className="group-hover:scale-110 transition-transform duration-500 drop-shadow-sm" />
-              <div className="absolute inset-0 rounded-xl bg-accent opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-md" />
+              <LanternLogo size={32} className="transition-opacity group-hover:opacity-75" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-base font-black tracking-tighter italic text-black">{t('admin.title')}</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300">QianFu</span>
+              <span className="text-sm font-semibold tracking-tight text-black">{t('admin.title')}</span>
+              <span className="text-[10px] font-medium text-zinc-400">QianFu</span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden items-center gap-1 md:flex">
             {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   aria-current={isActive(link.path) ? 'page' : undefined}
-                  className={`relative rounded-lg px-2 py-1.5 text-sm font-bold transition-colors duration-200 group ${
+                  className={`relative rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     isActive(link.path) ? 'bg-zinc-100 text-black' : 'text-zinc-500 hover:bg-zinc-50 hover:text-black'
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                     {t(link.key)}
                   </span>
-                  {isActive(link.path) && <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-accent rounded-full" />}
                 </Link>
             ))}
           </div>
@@ -106,7 +103,7 @@ const Navbar: React.FC = React.memo(() => {
               )}
               <Link
                 to="/dashboard"
-                className="btn-accent flex items-center gap-2 px-5 py-2 text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg hover:shadow-xl italic transition-all duration-300"
+                className="btn-accent flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold"
               >
                 <GeometricLantern variant="network" className="w-3.5 h-3.5" />
                 {t('nav.dashboard')}
@@ -129,7 +126,7 @@ const Navbar: React.FC = React.memo(() => {
               </Link>
               <Link
                 to="/register"
-                className="px-5 py-2 btn-accent text-[11px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg italic transition-all duration-300"
+                className="btn-accent rounded-md px-4 py-2 text-sm font-semibold"
               >
                 {t('nav.register')}
               </Link>
