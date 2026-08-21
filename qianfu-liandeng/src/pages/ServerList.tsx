@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { request } from '@/api/request';
@@ -52,6 +52,8 @@ const ServerList: React.FC = () => {
     () => readDiscoveryFilters(searchParams),
     [searchParams],
   );
+  const [showFilters, setShowFilters] = useState(false);
+  const hasActiveFilters = Boolean(filters.search || filters.category || filters.platform || filters.version || filters.online || filters.intent !== 'all' || filters.sortBy !== 'activity');
   const { backendDegraded, isLoading: backendHealthLoading } = useBackendHealth();
 
   const updateFilters = (patch: Partial<DiscoveryFilters>) => {
@@ -146,7 +148,7 @@ const ServerList: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full xl:w-auto">
             <div className="relative group w-full sm:w-[440px]">
               <GeometricLantern variant="spark" className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-100 group-focus-within:text-black transition-all duration-500" />
               <input 
@@ -166,11 +168,12 @@ const ServerList: React.FC = () => {
               type="button"
               onClick={() => void refetch()}
               disabled={isFetching}
-              className="p-5 border border-zinc-100 rounded-[2rem] hover:bg-black hover:text-white transition-all duration-700 shadow-xs group disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-[2rem] border border-zinc-200 px-5 text-sm font-semibold hover:bg-black hover:text-white transition-colors shadow-xs group disabled:cursor-wait disabled:opacity-50"
               aria-label={isFetching ? '正在刷新服务器列表' : '刷新服务器列表'}
               aria-busy={isFetching}
             >
                <GeometricLantern variant="settings" className="w-6 h-6 group-hover:rotate-180 transition-transform duration-700" />
+               <span>刷新</span>
             </button>
           </div>
         </div>
@@ -226,7 +229,14 @@ const ServerList: React.FC = () => {
            </div>
         </div>
 
-        <section aria-label="服务器筛选" className="mt-4 grid grid-cols-1 gap-3 rounded-[2rem] border border-zinc-100 bg-white p-3 shadow-xs sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" onClick={() => setShowFilters((visible) => !visible)} aria-expanded={showFilters} className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 hover:border-black">
+            {showFilters ? '收起高级筛选' : '高级筛选'}{hasActiveFilters ? ' · 已启用' : ''}
+          </button>
+          {hasActiveFilters ? <button type="button" onClick={clearFilters} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-500 hover:bg-zinc-100 hover:text-black">清除全部</button> : null}
+        </div>
+
+        {showFilters ? <section aria-label="服务器筛选" className="mt-4 grid grid-cols-1 gap-3 rounded-[2rem] border border-zinc-100 bg-white p-3 shadow-xs sm:grid-cols-2 lg:grid-cols-4">
           <label className="space-y-2">
             <span className="px-1 text-xs font-medium text-zinc-500">服务器平台</span>
             <select
@@ -277,7 +287,7 @@ const ServerList: React.FC = () => {
               <option value="created">最近加入</option>
             </select>
           </label>
-        </section>
+        </section> : null}
       </div>
 
       <p id="server-search-status" role="status" aria-live="polite" className="sr-only">
@@ -291,9 +301,9 @@ const ServerList: React.FC = () => {
             {intentOptions.find((option) => option.id === filters.intent)?.label} · {displayedServers.length} 个公开服务器
           </p>
         </div>
-        <button type="button" onClick={clearFilters} className="shrink-0 self-start rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-600 transition hover:border-black hover:text-black sm:self-auto">
+        {hasActiveFilters ? <button type="button" onClick={clearFilters} className="shrink-0 self-start rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-600 transition hover:border-black hover:text-black sm:self-auto">
           清除筛选
-        </button>
+        </button> : null}
       </div>
 
       {/* Grid Content */}

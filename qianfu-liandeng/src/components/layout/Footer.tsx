@@ -96,7 +96,7 @@ const Footer: React.FC<FooterProps> = ({
         <div className="flex flex-col items-center justify-between gap-6 border-t border-border pt-12 md:flex-row">
           <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
             <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">© 2026 QIANFU LIANDENG. ALL RIGHTS RESERVED.</div>
-            <a href={ICP_LINK} target="_blank" rel="noopener noreferrer" className="bg-white text-[6px] font-normal leading-3 text-[#e9e7e7] underline decoration-[#e9e7e7] underline-offset-2 transition-colors hover:text-zinc-500 hover:decoration-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
+            <a href={ICP_LINK} target="_blank" rel="noopener noreferrer" className="text-xs font-medium leading-5 text-zinc-500 underline decoration-zinc-300 underline-offset-2 transition-colors hover:text-black hover:decoration-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
               {ICP_LABEL}
             </a>
           </div>

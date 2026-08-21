@@ -37,7 +37,8 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
   const description = getServerSummary(server);
   const versions = getServerVersionLabels(server);
   const availability = getServerAvailability(server);
-  const endpoint = String(server.ip || '').trim();
+  const host = String(server.host || server.ip || '').trim();
+  const endpoint = host && server.port && Number(server.port) !== 25565 ? `${host}:${server.port}` : host;
   const availabilityLabel = availability === 'online' ? '在线' : availability === 'offline' ? '离线' : '未知';
   const availabilityClass = availability === 'online'
     ? 'bg-emerald-50 text-emerald-700'
@@ -88,9 +89,9 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
               <span className="select-none text-6xl font-black tracking-[-0.08em] text-white/80 drop-shadow-sm">{initials}</span>
             </div> : null}
           <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-          <div className="absolute left-6 top-6 translate-y-4 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
              <div className="px-4 py-1.5 bg-white/95 backdrop-blur-xl text-black text-[9px] font-semibold tracking-wide rounded-sm shadow-2xl">
-                 {protocolLabel}{versions[0] || '版本未填'}
+                 {protocolLabel} {versions[0] || '版本未填'}
              </div>
           </div>
           <div className="absolute bottom-6 right-6">
@@ -116,7 +117,7 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
                <span className="mt-1 font-mono text-[8px] font-medium tracking-normal text-zinc-300 transition-colors group-hover:text-green-500">{nodesOnlineLabel}</span>
             </div>
           </div>
-          <h3 className="line-clamp-2 text-2xl font-bold leading-tight tracking-tight transition-transform duration-500 group-hover:translate-x-1 group-hover:text-black">
+          <h3 className="line-clamp-2 text-2xl font-bold leading-tight tracking-tight text-zinc-950 transition-colors group-hover:text-black">
              {name}
           </h3>
               <p className="line-clamp-2 text-sm font-medium leading-relaxed text-zinc-400 opacity-80 transition-opacity group-hover:opacity-100">
