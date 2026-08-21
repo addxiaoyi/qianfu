@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Copy, Search, X, SlidersHorizontal, TrendingUp, MapPin, LampDesk, Users, Clock, ChevronRight } from 'lucide-react';
@@ -60,10 +60,13 @@ const MobileSearch: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo<DiscoveryFilters>(() => readDiscoveryFilters(searchParams), [searchParams]);
   const [query, setQuery] = useState(filters.search);
+  const [versionDraft, setVersionDraft] = useState(filters.version);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeSheet, setActiveSheet] = useState<FilterSheet | null>(null);
   const [copiedServerId, setCopiedServerId] = useState<string | number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setVersionDraft(filters.version), [filters.version]);
 
   const updateFilters = (patch: Partial<DiscoveryFilters>) => {
     const next = mergeDiscoveryFilters(filters, patch);
@@ -316,10 +319,13 @@ const MobileSearch: React.FC = () => {
                   sortOptions.find((option) => option.value === filters.sortBy)?.label || '最近活跃',
                   openSortSheet,
                 )}
-                <label className="col-span-2 space-y-1">
+                <form className="col-span-2 space-y-1" onSubmit={(event) => { event.preventDefault(); updateFilters({ version: versionDraft.trim() }); }}>
                   <span className="px-1 text-[10px] font-bold text-muted-foreground">服务器版本</span>
-                  <input aria-label="服务器版本" value={filters.version} onChange={(event) => updateFilters({ version: event.target.value.trim() })} placeholder="如 1.21.1" className="min-h-11 w-full rounded-xl border-0 bg-white px-3 text-xs font-bold placeholder:text-zinc-300" />
-                </label>
+                  <div className="flex gap-2">
+                    <input aria-label="服务器版本" value={versionDraft} onChange={(event) => setVersionDraft(event.target.value)} placeholder="如 1.21.1" className="min-h-11 min-w-0 flex-1 rounded-xl border-0 bg-white px-3 text-xs font-bold placeholder:text-zinc-300" />
+                    <button type="submit" className="min-h-11 rounded-xl bg-black px-4 text-xs font-bold text-white">应用</button>
+                  </div>
+                </form>
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -376,7 +382,7 @@ const MobileSearch: React.FC = () => {
                       return (
                         <Link key={server.id} to={`/server/${server.id}`} className="shrink-0 w-64 bg-white rounded-2xl overflow-hidden shadow-sm">
                           <div className="w-full h-32 bg-zinc-100">
-                            {thumbnail ? <LazyImage src={thumbnail} alt={getServerName(server)} className="w-full h-full object-cover" /> : null}
+                            {thumbnail ? <LazyImage src={thumbnail} alt="" className="w-full h-full object-cover" placeholder={<div className="flex h-full items-center justify-center bg-zinc-900 text-xl font-black text-white">{getServerName(server).slice(0, 2)}</div>} /> : <div className="flex h-full items-center justify-center bg-zinc-900 text-xl font-black text-white">{getServerName(server).slice(0, 2)}</div>}
                           </div>
                           <div className="p-3 space-y-2">
                             <h4 className="text-sm font-black truncate">{getServerName(server)}</h4>
@@ -409,7 +415,7 @@ const MobileSearch: React.FC = () => {
             <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-xs text-muted-foreground">找到 {servers.length} 个结果</p>
-                <button type="button" onClick={() => setSearchParams(new URLSearchParams(), { replace: true })} className="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-muted-foreground">清除筛选</button>
+                <button type="button" onClick={() => { setSearchParams(new URLSearchParams(), { replace: true }); setQuery(''); setVersionDraft(''); }} className="min-h-10 rounded-xl border border-zinc-200 bg-white px-4 text-xs font-bold text-zinc-700">清除筛选</button>
               </div>
 
               {isLoading ? (
