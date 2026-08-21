@@ -1,0 +1,45 @@
+{{ define "feishu.default.text" }}
+{{ range .Alerts }}
+**【{{ .Labels.severity | upper }}】{{ .Labels.alertname }}**
+
+- 实例: `{{ .Labels.instance }}`
+- 严重程度: `{{ .Labels.severity }}`
+- 类别: `{{ .Labels.category }}`
+- 团队: `{{ .Labels.team }}`
+- 摘要: {{ .Annotations.summary }}
+- 描述: {{ .Annotations.description }}
+{{ if .Annotations.runbook_url }}
+- 处理手册: <URL>{{ .Annotations.runbook_url }}</URL>
+{{ end }}
+{{ if .Annotations.action }}
+- 建议操作: {{ .Annotations.action }}
+{{ end }}
+---
+状态: **{{ .Status | upper }}**
+{{ end }}
+{{ end }}
+
+{{ define "feishu.critical.text" }}
+🚨 **【严重告警】{{ .GroupLabels.alertname }}**
+
+{{ range .Alerts }}
+实例: `{{ .Labels.instance }}`
+{{ .Annotations.summary }}
+{{ .Annotations.description }}
+{{ if .Annotations.action }}
+⚠️ 建议操作: {{ .Annotations.action }}
+{{ end }}
+{{ end }}
+
+**请立即处理！**
+{{ end }}
+
+{{ define "feishu.resolved.text" }}
+✅ **【告警恢复】{{ .GroupLabels.alertname }}**
+
+- 实例: `{{ .CommonLabels.instance }}`
+- 持续时间: {{ .Alerts | len }} 个实例受影响
+- 当前状态: **RESOLVED**
+
+感谢处理！
+{{ end }}

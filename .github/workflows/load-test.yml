@@ -1,0 +1,139 @@
+name: Load Testing
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - light
+          - medium
+          - stress
+          - all
+
+env:
+  NODE_VERSION: '20'
+  TEST_BASE_URL: ${{ inputs.test_url || 'http://localhost:3000' }}
+
+jobs:
+  load-test:
+    name: Load Test - ${{ inputs.test_mode || 'smoke' }}
+    runs-on: ubuntu-latest
+
+    services:
+      app:
+        image: node:20-alpine
+        ports:
+          - 3000:3000
+        env:
+          NODE_ENV: production
+          PORT: 3000
+        options: >-
+          --health-cmd "curl -f http://localhost:3000/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build || echo "No build step"
+
+      - name: Start server (background)
+        run: npm start &
+        shell: bash
+
+      - name: Wait for server to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+          echo "Server failed to start"
+          exit 1
+
+      - name: Run Load Test
+        run: |
+          npm run load:ci -- ${{ inputs.test_mode || 'smoke' }}
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results-${{ inputs.test_mode || 'smoke' }}
+          path: |
+            reports/load-test/**/*.json
+            reports/load-test/**/*.html
+          retention-days: 30
+
+      - name: Generate Report
+        if: always()
+        run: npm run load:report
+
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-report-${{ inputs.test_mode || 'smoke' }}
+          path: reports/load-test/summary/**
+          retention-days: 90
+
+  # K6 负载测试 (如果 k6 可用)
+  k6-load-test:
+    name: K6 Load Test
+    runs-on: ubuntu-latest
+    container:
+      image: grafana/k6:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run K6 Test
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+          TEST_BASE_URL: ${{ inputs.test_url || 'http://localhost:3000' }}
+        run: |
+          # 如果有云 token 则上传到 k6 cloud
+          if [ -n "$K6_CLOUD_TOKEN" ]; then
+            k6 login cloud --token "$K6_CLOUD_TOKEN"
+            k6 run \
+              --out cloud \
+              --tag testid=${{ github.run_id }} \
+              scripts/load-test/k6-scenarios.js
+          else
+            k6 run scripts/load-test/k6-scenarios.js
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-test-results
+          path: |
+            summary.json
+          retention-days: 30

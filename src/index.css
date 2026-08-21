@@ -1,0 +1,529 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", "Consolas", "Roboto Mono", monospace;
+  --color-brand: #000000;
+  --color-brand-foreground: #ffffff;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --color-card: #ffffff;
+  --color-card-foreground: #000000;
+  --color-muted: #f6f7f9;
+  --color-muted-foreground: #71717a;
+  --color-border: #e4e4e7;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.875rem;
+  --radius-3xl: 0.875rem;
+  --radius-4xl: 0.875rem;
+  --radius-5xl: 0.875rem;
+  --color-accent: var(--ui-accent);
+  --color-accent-light: var(--ui-accent-light);
+  --color-accent-medium: var(--ui-accent-medium);
+  --color-accent-subtle: var(--ui-accent-subtle);
+  --color-accent-border: var(--ui-accent-border);
+  --color-accent-glow: var(--ui-accent-glow);
+  --color-accent-shadow: var(--ui-accent-shadow);
+}
+
+@layer base {
+  html {
+    font-size: 16px;
+    overscroll-behavior-y: none;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden overflow-y-auto;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    scrollbar-width: auto;
+  }
+  html { scrollbar-width: auto; }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar { width: 10px; height: 10px; }
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground break-words;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  p, li, span, a, button, label, input, textarea {
+    overflow-wrap: anywhere;
+  }
+  .mono { @apply font-mono; }
+  code  { @apply font-mono bg-zinc-50 px-1.5 py-0.5 rounded-sm text-sm border border-zinc-100 break-words; }
+  input, textarea, select { @apply outline-hidden max-w-full; }
+
+  #root {
+    min-height: 100vh;
+    overscroll-behavior-y: none;
+  }
+}
+
+@layer components {
+  .ui-page {
+    @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+  }
+  .ui-panel {
+    @apply rounded-[14px] border border-zinc-200 bg-white shadow-sm;
+  }
+  .ui-label {
+    @apply text-xs font-semibold text-zinc-600;
+  }
+  .ui-input {
+    @apply min-h-11 w-full rounded-[10px] border border-zinc-300 bg-white px-3 text-sm text-zinc-950 placeholder:text-zinc-400;
+  }
+  .ui-button {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[10px] px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}
+
+/* Editorial UI compatibility layer for legacy surfaces. */
+:where(main, .admin-density) [class*="rounded-[5rem]"],
+:where(main, .admin-density) [class*="rounded-[4rem]"],
+:where(main, .admin-density) [class*="rounded-[3.5rem]"],
+:where(main, .admin-density) [class*="rounded-[3rem]"],
+:where(main, .admin-density) [class*="rounded-[2.5rem]"],
+:where(main, .admin-density) [class*="rounded-[2rem]"],
+:where(main, .admin-density) [class*="rounded-[1.75rem]"] {
+  border-radius: 14px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 后台信息页使用更高密度的工作台尺度，避免展示型页面规则撑开操作流。 */
+.admin-density {
+  --admin-density-radius: 1.5rem;
+}
+
+.admin-density .space-y-16 > :not(:first-child),
+.admin-density [class*="space-y-16"] > :not(:first-child) {
+  margin-top: 2rem !important;
+}
+
+.admin-density .space-y-12 > :not(:first-child),
+.admin-density [class*="space-y-12"] > :not(:first-child) {
+  margin-top: 1.5rem !important;
+}
+
+.admin-density .gap-16,
+.admin-density [class*="gap-16"] {
+  gap: 2rem !important;
+}
+
+.admin-density .gap-12,
+.admin-density [class*="gap-12"] {
+  gap: 1.5rem !important;
+}
+
+.admin-density .gap-10,
+.admin-density [class*="gap-10"] { gap: 1.25rem !important; }
+
+.admin-density .p-16,
+.admin-density [class*="p-16"] {
+  padding: 2rem !important;
+}
+
+.admin-density .p-12,
+.admin-density [class*="p-12"] {
+  padding: 1.5rem !important;
+}
+
+.admin-density .p-20,
+.admin-density [class*="p-20"] { padding: 2rem !important; }
+
+.admin-density .p-10,
+.admin-density [class*="p-10"] { padding: 2rem !important; }
+
+.admin-density .px-16,
+.admin-density [class*="px-16"] {
+  padding-inline: 2rem !important;
+}
+
+.admin-density .py-16,
+.admin-density [class*="py-16"] {
+  padding-block: 2rem !important;
+}
+
+.admin-density .py-12,
+.admin-density [class*="py-12"] { padding-block: 1.5rem !important; }
+
+.admin-density .space-y-20 > :not(:first-child),
+.admin-density [class*="space-y-20"] > :not(:first-child) { margin-top: 2.5rem !important; }
+
+.admin-density .space-y-10 > :not(:first-child),
+.admin-density [class*="space-y-10"] > :not(:first-child) { margin-top: 1.5rem !important; }
+
+.admin-density [class*="rounded-[5rem]"] { border-radius: 2rem !important; }
+.admin-density [class*="rounded-[4rem]"] { border-radius: 1.75rem !important; }
+.admin-density [class*="rounded-[3rem]"] { border-radius: var(--admin-density-radius) !important; }
+.admin-density [class*="rounded-[2.5rem]"] { border-radius: 1.25rem !important; }
+
+.admin-density .text-8xl,
+.admin-density [class*="text-8xl"] {
+  font-size: clamp(2.25rem, 5vw, 4rem) !important;
+}
+
+.admin-density .text-6xl,
+.admin-density [class*="text-6xl"] { font-size: 3rem !important; }
+.admin-density .text-5xl,
+.admin-density [class*="text-5xl"] { font-size: 2.25rem !important; }
+.admin-density .text-4xl,
+.admin-density [class*="text-4xl"] { font-size: 1.75rem !important; }
+.admin-density .text-3xl,
+.admin-density [class*="text-3xl"] { font-size: 1.5rem !important; }
+
+.admin-density [class*="py-8"] { min-height: 2.75rem; padding-block: 0.875rem !important; }
+.admin-density [class*="py-6"] { padding-block: 0.75rem !important; }
+.admin-density [class*="px-12"] { padding-inline: 1.5rem !important; }
+.admin-density [class*="px-10"] { padding-inline: 1.25rem !important; }
+.admin-density [class*="px-8"] { padding-inline: 1rem !important; }
+.admin-density [class*="h-16"],
+.admin-density [class*="w-16"] {
+  height: 2.75rem !important;
+  min-height: 2.75rem;
+  width: 2.75rem !important;
+  min-width: 2.75rem;
+}
+
+.admin-density [class*="h-20"],
+.admin-density [class*="w-20"] {
+  height: 4rem !important;
+  width: 4rem !important;
+}
+
+.admin-density [class*="h-24"],
+.admin-density [class*="w-24"] {
+  height: 4.5rem !important;
+  width: 4.5rem !important;
+}
+
+.admin-density [class*="h-48"],
+.admin-density [class*="w-48"] {
+  height: 8rem !important;
+  width: 8rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCENT COLOR SYSTEM
+   Applied via data-accent="<name>" on <html>.
+   All --ui-accent-* properties cascade to every consumer below.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-accent="zinc"] {
+  --ui-accent:          #18181b;
+  --ui-accent-light:    #f4f4f5;
+  --ui-accent-medium:   #52525b;
+  --ui-accent-subtle:   rgba(24, 24, 27, 0.06);
+  --ui-accent-ring:     rgba(24, 24, 27, 0.25);
+  --ui-accent-shadow:   rgba(24, 24, 27, 0.18);
+  --ui-accent-border:   #d4d4d8;
+  --ui-accent-glow:     rgba(24, 24, 27, 0.12);
+}
+
+[data-accent="amber"] {
+  --ui-accent:          #d97706;
+  --ui-accent-light:    #fffbeb;
+  --ui-accent-medium:   #f59e0b;
+  --ui-accent-subtle:   rgba(217, 119, 6, 0.07);
+  --ui-accent-ring:     rgba(217, 119, 6, 0.30);
+  --ui-accent-shadow:   rgba(217, 119, 6, 0.25);
+  --ui-accent-border:   #fde68a;
+  --ui-accent-glow:     rgba(251, 191, 36, 0.25);
+}
+
+[data-accent="emerald"] {
+  --ui-accent:          #059669;
+  --ui-accent-light:    #ecfdf5;
+  --ui-accent-medium:   #10b981;
+  --ui-accent-subtle:   rgba(5, 150, 105, 0.07);
+  --ui-accent-ring:     rgba(5, 150, 105, 0.30);
+  --ui-accent-shadow:   rgba(5, 150, 105, 0.20);
+  --ui-accent-border:   #a7f3d0;
+  --ui-accent-glow:     rgba(16, 185, 129, 0.20);
+}
+
+[data-accent="sky"] {
+  --ui-accent:          #0284c7;
+  --ui-accent-light:    #f0f9ff;
+  --ui-accent-medium:   #38bdf8;
+  --ui-accent-subtle:   rgba(2, 132, 199, 0.07);
+  --ui-accent-ring:     rgba(2, 132, 199, 0.30);
+  --ui-accent-shadow:   rgba(2, 132, 199, 0.20);
+  --ui-accent-border:   #bae6fd;
+  --ui-accent-glow:     rgba(56, 189, 248, 0.22);
+}
+
+[data-accent="violet"] {
+  --ui-accent:          #7c3aed;
+  --ui-accent-light:    #f5f3ff;
+  --ui-accent-medium:   #a78bfa;
+  --ui-accent-subtle:   rgba(124, 58, 237, 0.07);
+  --ui-accent-ring:     rgba(124, 58, 237, 0.30);
+  --ui-accent-shadow:   rgba(124, 58, 237, 0.20);
+  --ui-accent-border:   #ddd6fe;
+  --ui-accent-glow:     rgba(167, 139, 250, 0.25);
+}
+
+[data-accent="rose"] {
+  --ui-accent:          #e11d48;
+  --ui-accent-light:    #fff1f2;
+  --ui-accent-medium:   #fb7185;
+  --ui-accent-subtle:   rgba(225, 29, 72, 0.07);
+  --ui-accent-ring:     rgba(225, 29, 72, 0.30);
+  --ui-accent-shadow:   rgba(225, 29, 72, 0.20);
+  --ui-accent-border:   #fecdd3;
+  --ui-accent-glow:     rgba(251, 113, 133, 0.22);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   GLOBAL ACCENT EFFECTS — touch every major interactive pattern
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* 1. Input / textarea / select focus ring */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--ui-accent) !important;
+  box-shadow: 0 0 0 3px var(--ui-accent-ring), 0 1px 3px rgba(0,0,0,0.06) !important;
+  outline: none !important;
+}
+
+/* 2. Scrollbar uses accent */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--ui-accent-border);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-accent-medium);
+  background-clip: content-box;
+}
+
+/* Custom Scrollbar for Textareas */
+.matrix-textarea::-webkit-scrollbar { width: 4px; }
+.matrix-textarea::-webkit-scrollbar-thumb { background: var(--ui-accent-medium); opacity: 0.3; }
+
+/* 3. Text selection */
+[data-accent="zinc"]    ::selection { background: #18181b; color: #fff; }
+[data-accent="amber"]   ::selection { background: #fde68a; color: #78350f; }
+[data-accent="emerald"] ::selection { background: #a7f3d0; color: #064e3b; }
+[data-accent="sky"]     ::selection { background: #bae6fd; color: #0c4a6e; }
+[data-accent="violet"]  ::selection { background: #ddd6fe; color: #4c1d95; }
+[data-accent="rose"]    ::selection { background: #fecdd3; color: #881337; }
+
+/* 4. Animate-pulse glows: online dots etc. get accent-tinted glow */
+[data-accent="amber"]   .animate-pulse  { --tw-shadow-color: var(--ui-accent-glow); }
+[data-accent="emerald"] .animate-pulse  { --tw-shadow-color: var(--ui-accent-glow); }
+
+/* 5. Navbar bottom border gets subtle accent tint */
+[data-accent="amber"]   nav   { border-bottom-color: #fde68a80 !important; }
+[data-accent="emerald"] nav   { border-bottom-color: #a7f3d080 !important; }
+[data-accent="sky"]     nav   { border-bottom-color: #bae6fd80 !important; }
+[data-accent="violet"]  nav   { border-bottom-color: #ddd6fe80 !important; }
+[data-accent="rose"]    nav   { border-bottom-color: #fecdd380 !important; }
+
+/* 6. Sidebar border gets accent tint */
+[data-accent="amber"]   aside { border-right-color: #fde68a60 !important; }
+[data-accent="emerald"] aside { border-right-color: #a7f3d060 !important; }
+[data-accent="sky"]     aside { border-right-color: #bae6fd60 !important; }
+[data-accent="violet"]  aside { border-right-color: #ddd6fe60 !important; }
+[data-accent="rose"]    aside { border-right-color: #fecdd360 !important; }
+
+/* 7. Page background: very subtle global accent wash (non-zinc only) */
+[data-accent="amber"]   body { background-color: #fffdf7; }
+[data-accent="emerald"] body { background-color: #f7fdfb; }
+[data-accent="sky"]     body { background-color: #f7fbff; }
+[data-accent="violet"]  body { background-color: #faf8ff; }
+[data-accent="rose"]    body { background-color: #fff7f8; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   UTILITY CLASSES — use these in components
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Background */
+.bg-accent        { background-color: var(--ui-accent)        !important; }
+.bg-accent-light  { background-color: var(--ui-accent-light)  !important; }
+.bg-accent-subtle { background-color: var(--ui-accent-subtle) !important; }
+
+/* Text */
+.text-accent      { color: var(--ui-accent)        !important; }
+.text-accent-med  { color: var(--ui-accent-medium) !important; }
+
+/* Border */
+.border-accent    { border-color: var(--ui-accent-border) !important; }
+
+/* Shadow */
+.shadow-accent    { box-shadow: 0 16px 40px var(--ui-accent-shadow) !important; }
+.glow-accent      { box-shadow: 0 0 24px var(--ui-accent-glow), 0 8px 32px var(--ui-accent-shadow) !important; }
+
+/* ── Active sidebar nav item ── */
+.nav-active {
+  background-color: var(--ui-accent) !important;
+  color: white !important;
+  box-shadow: 0 6px 20px var(--ui-accent-shadow);
+}
+.nav-active svg { color: white !important; }
+.nav-active span { color: white !important; }
+
+/* ── Primary CTA button ── */
+.btn-accent {
+  background-color: var(--ui-accent) !important;
+  color: white !important;
+  box-shadow: 0 8px 24px var(--ui-accent-shadow);
+  transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-accent:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 14px 36px var(--ui-accent-shadow);
+}
+.btn-accent:active { transform: scale(0.98); }
+
+/* ── Tab / section active underline (motion.div layoutId bars) ── */
+.tab-active-line {
+  background-color: var(--ui-accent) !important;
+}
+
+/* ── Stat / metric number highlight ── */
+.stat-accent {
+  color: var(--ui-accent) !important;
+}
+
+/* ── Card hover border ── */
+.card-hover-accent:hover {
+  border-color: var(--ui-accent-border) !important;
+  box-shadow: 0 8px 32px var(--ui-accent-subtle) !important;
+}
+
+/* ── Accent progress bar fill ── */
+.progress-accent {
+  background-color: var(--ui-accent) !important;
+}
+
+/* ─── Industrial Utilities ─────────────────────────────────────────────────── */
+.glass {
+  @apply bg-white/80 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.04)];
+}
+.card-shadow {
+  @apply shadow-[0_2px_4px_rgba(0,0,0,0.02),0_12px_24px_rgba(0,0,0,0.04)];
+}
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-linear-to-br from-black to-zinc-500;
+}
+.text-gradient-accent {
+  background: linear-gradient(135deg, var(--ui-accent), var(--ui-accent-medium));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Float animation */
+@keyframes float {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* Accent pulse animation for live indicators */
+@keyframes accent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--ui-accent-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+.pulse-accent { animation: accent-pulse 2s ease-in-out infinite; }
+
+/* ─── Command Matrix Utility Overrides ────────────────────────────────────── */
+.matrix-input {
+  @apply w-full max-w-full px-0 py-4 bg-transparent border-b border-zinc-100 transition-all outline-hidden text-xl sm:text-2xl md:text-[clamp(1rem,2vw,1.5rem)] font-black italic tracking-tight placeholder:text-zinc-100;
+}
+.matrix-input:focus {
+  border-color: var(--ui-accent-border) !important;
+}
+
+.matrix-textarea {
+  @apply w-full max-w-full px-6 sm:px-10 py-8 sm:py-10 bg-zinc-50 border border-transparent focus:bg-white focus:border-accent transition-all outline-hidden rounded-[2rem] sm:rounded-[2.5rem] min-h-[220px] sm:min-h-[350px] text-base sm:text-lg font-bold italic leading-relaxed shadow-xs;
+}
+
+.matrix-card {
+  @apply p-6 sm:p-10 bg-white border border-zinc-100 rounded-[2rem] sm:rounded-[3.5rem] transition-all duration-700 hover:shadow-2xl hover:shadow-accent/5;
+}
+
+.matrix-badge {
+  @apply px-3 sm:px-4 py-1.5 bg-black text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] rounded-sm italic max-w-full;
+}
+
+/* ─── Rich Text Editor Content Styles ─────────────────────────────────────── */
+.prose {
+  @apply text-zinc-600;
+}
+.prose strong {
+  @apply text-black font-black italic;
+}
+.prose h1 {
+  @apply text-2xl sm:text-3xl font-semibold tracking-tight mb-6 mt-10 break-words;
+}
+.prose h2 {
+  @apply text-xl sm:text-2xl font-semibold tracking-tight mb-4 mt-8 break-words;
+}
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+.prose ul {
+  @apply list-disc pl-6 mb-4 space-y-2;
+}
+.prose ol {
+  @apply list-decimal pl-6 mb-4 space-y-2;
+}
+.prose a {
+  @apply text-accent font-black underline decoration-2 underline-offset-4 hover:text-black transition-colors;
+}
+.prose img {
+  @apply rounded-[2rem] border border-zinc-100 shadow-xl my-8;
+}
+
+/* Table Styles */
+.prose table {
+  @apply w-full border-collapse rounded-2xl overflow-hidden border border-zinc-100 my-8 italic shadow-xs;
+}
+.prose th {
+  @apply bg-zinc-50/80 backdrop-blur-sm border border-zinc-100 p-4 text-left text-xs font-black uppercase tracking-[0.2em] text-zinc-400;
+}
+.prose td {
+  @apply border border-zinc-50 p-4 text-sm font-bold text-zinc-600;
+}
+.prose tr:nth-child(even) {
+  @apply bg-zinc-50/30;
+}
+
+/* Code Block Styles */
+.prose pre {
+  @apply bg-black text-white p-8 rounded-[2rem] my-8 overflow-x-auto shadow-2xl relative border border-white/5;
+}
+.prose pre::before {
+  content: "TERMINAL_FEED";
+  @apply absolute top-4 right-8 text-[8px] font-black uppercase tracking-[0.4em] opacity-20 italic;
+}
+.prose code {
+  @apply font-mono text-sm leading-relaxed;
+}
+
+/* Syntax Highlighting (Basic) */
+.hljs-comment, .hljs-quote { @apply text-zinc-600 italic; }
+.hljs-keyword, .hljs-selector-tag { @apply text-accent font-black; }
+.hljs-string, .hljs-doctag { @apply text-green-400; }
+.hljs-title, .hljs-section { @apply text-blue-400 font-black; }
+.hljs-variable, .hljs-template-variable { @apply text-orange-400; }
+.hljs-bullet, .hljs-number { @apply text-red-400; }

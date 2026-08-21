@@ -1,0 +1,113 @@
+/**
+ * Stryker Mutator 配置
+ * Mutation Coverage 优化配置
+ * @type {import('@stryker-mutator/api').StrykerOptions}
+ */
+module.exports = {
+  $schema: './node_modules/@stryker-mutator/api/schema/stryker.schema.json',
+
+  // 核心突变测试配置
+  testRunner: 'vitest',
+
+  // Vitest 配置
+  vitest: {
+    configFile: 'vitest.config.ts',
+    // 使用 all 来分析所有测试的覆盖范围
+    coverageAnalysis: 'all',
+  },
+
+  // 突变运算符 - 使用增强的 JavaScript 突变运算符
+  mutator: {
+    name: 'typescript',
+    excludedMutations: [
+      // 排除不相关的突变类型
+      'BooleanLiteral',
+      'ArrowFunction',
+    ],
+  },
+
+  // 忽略的文件和目录
+  ignorePatterns: [
+    'node_modules/**',
+    'dist/**',
+    'dist-server/**',
+    'coverage/**',
+    'tests/**',
+    '**/*.d.ts',
+    '**/*.test.ts',
+    '**/*.spec.ts',
+    '**/index.ts',
+    'server/routes/**',
+    'server/bootstrap/**',
+  ],
+
+  // 包含测试的文件 - 核心业务逻辑
+  mutate: [
+    'server/lib/**/*.ts',
+    'server/services/**/*.ts',
+    'server/middleware/**/*.ts',
+    'server/config/**/*.ts',
+  ],
+
+  // 报告器
+  reporters: [
+    'progress',
+    'clear-text',
+    'html',
+    'dashboard',
+    'json',
+  ],
+
+  // HTML 报告配置
+  htmlReporter: {
+    fileName: 'coverage/mutation/mutation-report.html',
+  },
+
+  // JSON 报告配置
+  jsonReporter: {
+    fileName: 'coverage/mutation/mutation-report.json',
+  },
+
+  // 仪表盘集成（可选）
+  dashboard: {
+    // 取消注释并配置以启用仪表盘
+    // baseUrl: 'https://dashboard.stryker-mutator.io',
+    // reportType: 'full',
+    // project: 'your-org/your-repo',
+  },
+
+  // 并发配置 - 根据机器性能调整
+  concurrency: 2,
+  parallelism: 2,
+
+  // 超时配置
+  timeoutMS: 10000,
+
+  // 临时文件清理
+  cleanTempDir: true,
+  tempDirName: '.stryker-tmp',
+
+  // 日志级别
+  logLevel: 'info',
+
+  // 允许的警告
+  allowWarnings: true,
+
+  // 插件
+  plugins: [
+    '@stryker-mutator/vitest-runner',
+  ],
+
+  // 阈值配置
+  thresholds: {
+    // 突变覆盖率阈值
+    mutationScore: {
+      // 低于 80% 失败
+      break: 60,
+      // 低于 85% 警告
+      low: 70,
+      // 目标 90%+
+      high: 80,
+    },
+  },
+};

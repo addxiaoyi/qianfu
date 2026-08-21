@@ -1,0 +1,81 @@
+# ============================================
+# Grafana Dashboard 自动化配置
+# ==========================================
+
+apiVersion: 1
+
+providers:
+  # ==========================================
+  # Prometheus 仪表盘
+  # ==========================================
+  - name: 'Prometheus Dashboards'
+    orgId: 1
+    folder: 'Prometheus'
+    folderUid: 'prometheus'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/prometheus
+      foldersFromFilesStructure: true
+
+  # ==========================================
+  # 系统概览
+  # ==========================================
+  - name: 'System Dashboards'
+    orgId: 1
+    folder: 'System'
+    folderUid: 'system'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/system
+      foldersFromFilesStructure: true
+
+  # ==========================================
+  # 数据库仪表盘
+  # ==========================================
+  - name: 'Database Dashboards'
+    orgId: 1
+    folder: 'Database'
+    folderUid: 'database'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/database
+      foldersFromFilesStructure: true
+
+  # ==========================================
+  # 业务仪表盘
+  # ==========================================
+  - name: 'Business Dashboards'
+    orgId: 1
+    folder: 'Business'
+    folderUid: 'business'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/business
+      foldersFromFilesStructure: true
+
+  # ==========================================
+  # Alertmanager 仪表盘
+  # ==========================================
+  - name: 'Alertmanager Dashboards'
+    orgId: 1
+    folder: 'Alertmanager'
+    folderUid: 'alertmanager'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/alertmanager
+      foldersFromFilesStructure: true

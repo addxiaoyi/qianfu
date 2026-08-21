@@ -1,0 +1,270 @@
+# ============================================
+# Prometheus 主配置文件 - 增强版
+# ============================================
+global:
+  # 全局采集间隔 (默认 15s)
+  scrape_interval: 15s
+  # 告警评估间隔
+  evaluation_interval: 15s
+  # 外部标签 - 添加到所有时间序列
+  external_labels:
+    cluster: 'qianfu-prod'
+    environment: 'production'
+    project: 'qianfu-liändeng'
+    managed_by: 'prometheus'
+
+# ============================================
+# Alertmanager 配置
+# ============================================
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+      # 添加告警超时配置
+      timeout: 15s
+
+# ============================================
+# 告警规则文件
+# ============================================
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# ============================================
+# 数据抓取配置
+# ============================================
+scrape_configs:
+  # ==========================================
+  # Prometheus 自身监控
+  # ==========================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+    scheme: http
+    # 添加标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):\\d+'
+        replacement: '${1}'
+
+  # ==========================================
+  # Alertmanager 自身监控
+  # ==========================================
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    metrics_path: /metrics
+    scheme: http
+
+  # ==========================================
+  # Node Exporter - 主机监控
+  # ==========================================
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    metrics_path: /metrics
+    scrape_interval: 30s
+    # 添加额外的标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'node-exporter'
+
+  # ==========================================
+  # Nginx Exporter - Web 服务器监控
+  # ==========================================
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    metrics_path: /metrics
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'nginx'
+
+  # ==========================================
+  # Backend API 服务监控
+  # ==========================================
+  - job_name: 'backend'
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['backend:4000']
+        labels:
+          service: 'api'
+          component: 'backend'
+    # 健康检查
+    health_check_targets:
+      - target: 'backend:4000'
+        interval: 30s
+        path: /health
+
+  # ==========================================
+  # PostgreSQL 监控
+  # ==========================================
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'postgres'
+
+  # ==========================================
+  # Redis 监控
+  # ==========================================
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'redis'
+
+  # ==========================================
+  # Blackbox Exporter - 外部服务监控
+  # ==========================================
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      # 监控外部 API 服务
+      - targets:
+          - 'http://backend:4000/health'
+          - 'http://nginx:80/health'
+        labels:
+          service: 'health-check'
+    relabel_configs:
+      # 提取实际目标地址
+      - source_labels: [__address__]
+        target_label: __param_target
+      # 设置 Blackbox Exporter 地址
+      - source_labels: [__param_target]
+        target_label: instance
+      # 过滤成功的探测
+      - source_labels: [__meta_success]
+        action: keep
+        regex: 1
+
+  - job_name: 'blackbox-tcp'
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+          - 'backend:4000'
+          - 'postgres:5432'
+          - 'redis:6379'
+          - 'nginx:80'
+        labels:
+          service: 'tcp-check'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_success]
+        action: keep
+        regex: 1
+
+  - job_name: 'blackbox-https'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          # 添加需要监控的外部 HTTPS 服务
+          - 'https://api.example.com/health'
+        labels:
+          service: 'external-api'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_success]
+        action: keep
+        regex: 1
+
+  - job_name: 'blackbox-ssl'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          # SSL 证书监控
+          - 'https://api.example.com'
+        labels:
+          service: 'ssl-check'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+
+  # ==========================================
+  # Grafana 监控
+  # ==========================================
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    metrics_path: /metrics
+    scrape_interval: 60s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'grafana'
+
+  # ==========================================
+  # CADDIE 监控 (如果使用)
+  # ==========================================
+  # - job_name: 'caddy'
+  #   static_configs:
+  #     - targets: ['caddy:9180']
+  #   metrics_path: /metrics
+  #   scrape_interval: 30s
+
+# ============================================
+# 远程写入配置 (可选 - 用于长期存储)
+# ============================================
+# remote_write:
+#   - url: http://remote-storage:9201/write
+#     queue_config:
+#       capacity: 10000
+#       max_shards: 5
+#       min_shards: 1
+#       max_samples_per_send: 2000
+#       batch_send_deadline: 30s
+#       # 告警相关配置
+#       metadata_config:
+#         send: true
+#         labels:
+#           - cluster
+#           - environment
+
+# ============================================
+# 存储配置
+# ============================================
+storage:
+  tsdb:
+    # 数据保留时间
+    retention.time: ${PROMETHEUS_RETENTION_TIME:-15d}
+    # 数据存储路径
+    path: ${PROMETHEUS_STORAGE_TSDB_PATH:-/prometheus}
+    # 压缩块
+    wal-compression: true
+
+# ============================================
+# 查询配置
+# ============================================
+query:
+  # 最大并发查询数
+  max_concurrency: 10
+  # 查询超时
+  timeout: 2m

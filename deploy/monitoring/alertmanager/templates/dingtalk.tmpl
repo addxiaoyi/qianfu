@@ -1,0 +1,31 @@
+{{ define "dingtalk.default.message" }}
+{
+  "msgtype": "markdown",
+  "markdown": {
+    "title": "{{ if eq .Status "firing" }}🔥 告警{{ else }}✅ 告警恢复{{ end }}",
+    "text": "
+## {{ .GroupLabels.alertname }}
+
+**状态**: {{ .Status | toUpper }}
+
+{{ range .Alerts }}
+### 告警详情
+
+- **严重程度**: {{ .Labels.severity }}
+- **类别**: {{ .Labels.category }}
+- **实例**: {{ .Labels.instance }}
+- **摘要**: {{ .Annotations.summary }}
+
+**描述**: {{ .Annotations.description }}
+
+{{ if .Annotations.runbook_url }}
+**处理手册**: [点击查看]({{ .Annotations.runbook_url }})
+{{ end }}
+
+---
+{{ end }}
+
+> 发送时间: {{ .CommonLabels.firing_time }}
+"
+  }
+}

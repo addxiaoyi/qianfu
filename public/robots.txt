@@ -1,0 +1,32 @@
+User-agent: *
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /me
+Disallow: /messages
+Disallow: /tickets
+Disallow: /editor
+Disallow: /payment
+Disallow: /seller
+Disallow: /marketplace/manage
+Disallow: /marketplace/new
+Disallow: /marketplace/edit/
+Disallow: /marketplace/orders/
+Disallow: /marketplace/favorites
+Disallow: /promotion
+Disallow: /oauth/
+Disallow: /private/
+Disallow: /tmp/
+Disallow: /uploads/private/
+
+Allow: /
+Allow: /logo.png
+Allow: /favicon.svg
+Allow: /manifest.json
+Allow: /llms.txt
+Allow: /sitemap.xml
+Allow: /.well-known/security.txt
+
+Crawl-delay: 10
+Sitemap: https://mc-u.top/sitemap.xml

@@ -1,0 +1,279 @@
+{{ define "email.subject" }}
+{{ if eq .Status "firing" }}🚨{{ else }}✅{{ end }} 【{{ .Labels.severity | upper }}】{{ .Labels.alertname }} - {{ .Labels.instance }}
+{{ end }}
+
+{{ define "email.html" }}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>告警通知</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .alert-header {
+      padding: 20px;
+      border-radius: 8px 8px 0 0;
+      color: white;
+    }
+    .alert-header.critical {
+      background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    }
+    .alert-header.warning {
+      background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+    }
+    .alert-header.info {
+      background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    }
+    .alert-header.resolved {
+      background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+    }
+    .alert-header h1 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+    }
+    .alert-header .status {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .alert-body {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 0 0 8px 8px;
+    }
+    .metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .metric-card h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 16px;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+    .metric-label {
+      color: #666;
+      font-weight: 500;
+    }
+    .metric-value {
+      color: #333;
+      font-weight: 600;
+    }
+    .severity-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .severity-badge.critical { background-color: #d32f2f; }
+    .severity-badge.warning { background-color: #f57c00; }
+    .severity-badge.info { background-color: #1976d2; }
+    .action-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #1976d2;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    .action-btn:hover {
+      background-color: #1565c0;
+    }
+    .action-btn.danger {
+      background-color: #d32f2f;
+    }
+    .action-btn.danger:hover {
+      background-color: #b71c1c;
+    }
+    .action-btn.success {
+      background-color: #388e3c;
+    }
+    .action-btn.success:hover {
+      background-color: #2e7d32;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      color: #999;
+      font-size: 12px;
+    }
+    .timeline {
+      margin-top: 20px;
+      padding-left: 20px;
+      border-left: 3px solid #1976d2;
+    }
+    .timeline-item {
+      position: relative;
+      padding: 10px 0 10px 20px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 15px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #1976d2;
+    }
+    .metric-value.highlight {
+      color: #d32f2f;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  {{ range .Alerts }}
+  <div class="alert-header {{ if eq .Status "resolved" }}resolved{{ else }}{{ .Labels.severity }}{{ end }}">
+    <h1>📢 {{ .Annotations.summary }}</h1>
+    <div class="status">
+      {{ if eq .Status "firing" }}
+      🔥 告警触发中 | {{ .Labels.severity | upper }}
+      {{ else }}
+      ✅ 已恢复 | {{ .Labels.severity | upper }}
+      {{ end }}
+    </div>
+  </div>
+
+  <div class="alert-body">
+    <div class="metric-card">
+      <h3>告警详情</h3>
+      <div class="metric-row">
+        <span class="metric-label">告警名称</span>
+        <span class="metric-value">{{ .Labels.alertname }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">实例</span>
+        <span class="metric-value">{{ .Labels.instance }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">服务</span>
+        <span class="metric-value">{{ .Labels.job }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">严重程度</span>
+        <span class="metric-value">
+          <span class="severity-badge {{ .Labels.severity }}">{{ .Labels.severity }}</span>
+        </span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">类别</span>
+        <span class="metric-value">{{ .Labels.category }}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">团队</span>
+        <span class="metric-value">{{ .Labels.team }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <h3>告警描述</h3>
+      <p>{{ .Annotations.description }}</p>
+      {{ if .Annotations.current_value }}
+      <div class="metric-row">
+        <span class="metric-label">当前值</span>
+        <span class="metric-value highlight">{{ .Annotations.current_value }}</span>
+      </div>
+      {{ end }}
+      {{ if .Annotations.threshold }}
+      <div class="metric-row">
+        <span class="metric-label">阈值</span>
+        <span class="metric-value">{{ .Annotations.threshold }}</span>
+      </div>
+      {{ end }}
+    </div>
+
+    {{ if or .Annotations.runbook_url .Annotations.action }}
+    <div class="metric-card">
+      <h3>处理建议</h3>
+      {{ if .Annotations.runbook_url }}
+      <p>
+        <a href="{{ .Annotations.runbook_url }}" class="action-btn">📖 查看处理手册</a>
+      </p>
+      {{ end }}
+      {{ if .Annotations.action }}
+      <p><strong>建议操作:</strong> {{ .Annotations.action }}</p>
+      {{ end }}
+      {{ if .Annotations.dashboard_url }}
+      <p>
+        <a href="{{ .Annotations.dashboard_url }}" class="action-btn success">📊 查看仪表盘</a>
+      </p>
+      {{ end }}
+    </div>
+    {{ end }}
+
+    <div class="metric-card">
+      <h3>告警时间线</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <strong>{{ if eq .Status "firing" }}告警触发{{ else }}告警恢复{{ end }}</strong><br>
+          {{ .StartsAt }}
+        </div>
+        {{ if .EndsAt.Valid }}
+        <div class="timeline-item">
+          <strong>预计结束</strong><br>
+          {{ .EndsAt.Time }}
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>此邮件由千服项目监控系统自动发送</p>
+    <p>Alertmanager | Prometheus</p>
+  </div>
+  {{ end }}
+</body>
+</html>
+{{ end }}
+
+{{ define "email.text" }}
+{{ range .Alerts }}
+================================
+【{{ .Status | upper }}】{{ .Labels.alertname }}
+================================
+实例: {{ .Labels.instance }}
+服务: {{ .Labels.job }}
+严重程度: {{ .Labels.severity }}
+类别: {{ .Labels.category }}
+团队: {{ .Labels.team }}
+
+摘要: {{ .Annotations.summary }}
+描述: {{ .Annotations.description }}
+
+{{ if .Annotations.runbook_url }}
+处理手册: {{ .Annotations.runbook_url }}
+{{ end }}
+{{ if .Annotations.action }}
+建议操作: {{ .Annotations.action }}
+{{ end }}
+---
+{{ end }}
+{{ end }}

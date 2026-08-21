@@ -1,0 +1,474 @@
+# ============================================
+# Alertmanager 配置 - 增强版（支持告警升级）
+# ============================================
+
+global:
+  # SMTP 配置
+  smtp_smarthost: ${SMTP_HOST:-smtp.gmail.com:587}
+  smtp_from: ${SMTP_FROM:-alertmanager@example.com}
+  smtp_auth_username: ${SMTP_USER:-""}
+  smtp_auth_password: ${SMTP_PASSWORD:-""}
+  smtp_require_tls: true
+  # 告警解析超时
+  resolve_timeout: 5m
+
+# ============================================
+# 路由配置 - 告警升级核心
+# ============================================
+route:
+  # 接收者组之间的等待时间（初始聚合）
+  group_wait: ${ALERT_GROUP_WAIT:-30s}
+  # 发送重复告警的间隔
+  group_interval: ${ALERT_REPEAT_INTERVAL:-4h}
+  # 默认接收者
+  receiver: 'default-receiver'
+  # 告警去重分组
+  group_by: ['alertname', 'cluster', 'service', 'severity', 'team', 'instance']
+  # 不继续匹配后续规则
+  continue: false
+
+  # ==========================================
+  # 告警升级路由（按时间梯度）
+  # ==========================================
+
+  # ---- Critical 级别 ----
+  # L1: 初始通知（0分钟）
+  - match:
+      severity: critical
+      escalation_level: '1'
+    receiver: 'critical-l1-oncall'
+    group_wait: 0s
+    group_interval: 15m
+    repeat_interval: 1h
+
+  # L2: 升级到技术组长（5分钟）
+  - match:
+      severity: critical
+      escalation_level: '2'
+    receiver: 'critical-l2-lead'
+    group_wait: 0s
+    group_interval: 30m
+    repeat_interval: 2h
+
+  # L3: 升级到部门经理（15分钟）
+  - match:
+      severity: critical
+      escalation_level: '3'
+    receiver: 'critical-l3-manager'
+    group_wait: 0s
+    group_interval: 1h
+    repeat_interval: 4h
+
+  # L4: 升级到值班主管（30分钟）
+  - match:
+      severity: critical
+      escalation_level: '4'
+    receiver: 'critical-l4-duty-head'
+    group_wait: 0s
+    repeat_interval: 8h
+
+  # L5: 紧急响应（60分钟）- 电话+短信+邮件
+  - match:
+      severity: critical
+      escalation_level: '5'
+    receiver: 'critical-l5-emergency'
+    group_wait: 0s
+    repeat_interval: 12h
+
+  # ---- Warning 级别 ----
+  # L2: 初始通知（0分钟）
+  - match:
+      severity: warning
+      escalation_level: '2'
+    receiver: 'warning-l2-oncall'
+    group_wait: 1m
+    group_interval: 1h
+    repeat_interval: 4h
+
+  # L3: 升级到技术组长（15分钟）
+  - match:
+      severity: warning
+      escalation_level: '3'
+    receiver: 'warning-l3-lead'
+    group_wait: 0s
+    repeat_interval: 8h
+
+  # ---- Info 级别 ----
+  # 静默到工作时间
+  - match:
+      severity: info
+    receiver: 'info-receiver'
+    group_wait: 5m
+    repeat_interval: 24h
+
+  # ==========================================
+  # 按团队路由（不影响升级链）
+  # ==========================================
+  - match:
+      team: backend
+    receiver: 'backend-team-receiver'
+    continue: true
+
+  - match:
+      team: dba
+    receiver: 'database-team-receiver'
+    continue: true
+
+  - match:
+      team: ops
+    receiver: 'ops-team-receiver'
+    continue: true
+
+  - match:
+      team: security
+    receiver: 'security-team-receiver'
+    continue: true
+
+  # ==========================================
+  # 按类别路由
+  # ==========================================
+  - match:
+      category: availability
+    receiver: 'availability-receiver'
+    group_wait: 10s
+    continue: true
+
+  - match:
+      category: database
+    receiver: 'database-receiver'
+    continue: true
+
+  - match:
+      category: security
+    receiver: 'security-receiver'
+    group_wait: 10s
+    continue: true
+
+# ============================================
+# 静默窗口配置
+# ============================================
+# 通过 Alertmanager API 管理静默规则
+# 格式: amtool silence add alertname=xxx since='YYYY-MM-DD HH:MM' duration=2h
+
+# ============================================
+# 接收者配置
+# ============================================
+receivers:
+  # ==========================================
+  # 通用接收者
+  # ==========================================
+  - name: 'default-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${ALERT_EMAIL_TO:-alerts@example.com}'
+        headers:
+          subject: '【{{ .Status | toUpper }}】{{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: {{ if eq .Status "firing" }}#d32f2f{{ else }}#388e3c{{ end }};">
+              {{ .Status | toUpper }}: {{ .Labels.alertname }}
+            </h2>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>实例</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ .Labels.instance }}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>严重程度</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ .Labels.severity | upper }}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>升级级别</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">L{{ .Labels.escalation_level }}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>描述</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ .Annotations.description }}</td>
+              </tr>
+            </table>
+          </div>
+          {{ end }}
+
+  # ==========================================
+  # Critical 升级链
+  # ==========================================
+
+  # L1: 值班工程师
+  - name: 'critical-l1-oncall'
+    email_configs:
+      - send_resolved: true
+        to: '${ONCALL_EMAIL:-oncall@example.com}'
+        headers:
+          subject: '【紧急】{{ .GroupLabels.alertname }} - 需要立即处理'
+        html: |
+          <h1 style="color: red;">{{ .Status | toUpper }}: {{ .GroupLabels.alertname }}</h1>
+          <h3>告警详情</h3>
+          <ul>
+          {{ range .Alerts }}
+            <li>{{ .Labels.instance }}: {{ .Annotations.summary }}</li>
+          {{ end }}
+          </ul>
+          <p><strong>请在 5 分钟内响应，否则将自动升级。</strong></p>
+    webhook_configs:
+      - send_resolved: true
+        url: '${ONCALL_WEBHOOK:-}'
+        max_alerts: 10
+        headers:
+          Content-Type: application/json
+
+  # L2: 技术组长
+  - name: 'critical-l2-lead'
+    email_configs:
+      - send_resolved: true
+        to: '${LEAD_EMAIL:-lead@example.com}'
+        headers:
+          subject: '【升级-L2】{{ .GroupLabels.alertname }} - 值班未响应'
+        html: |
+          <h1 style="color: red;">⚠️ 告警升级 - L2 技术组长</h1>
+          <p>告警已持续 5 分钟，值班工程师未响应，现升级至技术组长。</p>
+          <h3>告警详情</h3>
+          <ul>
+          {{ range .Alerts }}
+            <li>{{ .Labels.instance }}: {{ .Annotations.summary }}</li>
+          {{ end }}
+          </ul>
+    webhook_configs:
+      - send_resolved: true
+        url: '${LEAD_WEBHOOK:-}'
+        max_alerts: 10
+
+  # L3: 部门经理
+  - name: 'critical-l3-manager'
+    email_configs:
+      - send_resolved: true
+        to: '${MANAGER_EMAIL:-manager@example.com}'
+        headers:
+          subject: '【升级-L3】{{ .GroupLabels.alertname }} - 紧急升级'
+        html: |
+          <h1 style="color: red;">🚨 告警升级 - L3 部门经理</h1>
+          <p>告警已持续 15 分钟，技术组长未响应，现升级至部门经理。</p>
+          <h3>告警详情</h3>
+          {{ range .Alerts }}
+          <div style="border: 2px solid red; padding: 15px; margin: 10px 0;">
+            <p><strong>{{ .Labels.instance }}</strong></p>
+            <p>{{ .Annotations.description }}</p>
+            {{ if .Annotations.action }}
+            <p><strong>建议操作:</strong> {{ .Annotations.action }}</p>
+            {{ end }}
+          </div>
+          {{ end }}
+    webhook_configs:
+      - send_resolved: true
+        url: '${MANAGER_WEBHOOK:-}'
+        max_alerts: 10
+
+  # L4: 值班主管
+  - name: 'critical-l4-duty-head'
+    email_configs:
+      - send_resolved: true
+        to: '${DUTY_HEAD_EMAIL:-dutyhead@example.com}'
+        headers:
+          subject: '【升级-L4】{{ .GroupLabels.alertname }} - 需立即处理'
+    webhook_configs:
+      - send_resolved: true
+        url: '${DUTY_HEAD_WEBHOOK:-}'
+        max_alerts: 10
+    # 发送短信通知
+    victorops_configs:
+      - send_resolved: true
+        routing_key: '${VICTOROPS_ROUTING_KEY:-}'
+        message_type: 'CRITICAL'
+
+  # L5: 紧急响应（电话+短信）
+  - name: 'critical-l5-emergency'
+    email_configs:
+      - send_resolved: true
+        to: '${EMERGENCY_EMAIL:-emergency@example.com}'
+        headers:
+          subject: '【紧急-L5】{{ .GroupLabels.alertname }}'
+    # 企业微信
+    wechat_configs:
+      - send_resolved: true
+        api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+        corp_id: '${WECHAT_CORP_ID:-}'
+        agent_id: '${WECHAT_AGENT_ID:-}'
+        api_secret: '${WECHAT_API_SECRET:-}'
+        to_user: '@all'
+        message: |
+          {{ range .Alerts }}
+          【紧急-L5】{{ .Labels.alertname }}
+          实例: {{ .Labels.instance }}
+          {{ .Annotations.description }}
+          {{ end }}
+    # PagerDuty（电话通知）
+    pagerduty_configs:
+      - send_resolved: true
+        service_key: '${PAGERDUTY_SERVICE_KEY:-}'
+        routing_key: '${PAGERDUTY_ROUTING_KEY:-}'
+        severity: critical
+
+  # ==========================================
+  # Warning 升级链
+  # ==========================================
+
+  - name: 'warning-l2-oncall'
+    email_configs:
+      - send_resolved: true
+        to: '${ONCALL_EMAIL:-oncall@example.com}'
+        headers:
+          subject: '【警告】{{ .GroupLabels.alertname }}'
+        html: |
+          <h2 style="color: #f57c00;">{{ .Status | toUpper }}: {{ .GroupLabels.alertname }}</h2>
+          {{ range .Alerts }}
+          <p><strong>{{ .Labels.instance }}</strong>: {{ .Annotations.summary }}</p>
+          {{ end }}
+    webhook_configs:
+      - send_resolved: false
+        url: '${ONCALL_WEBHOOK:-}'
+
+  - name: 'warning-l3-lead'
+    email_configs:
+      - send_resolved: true
+        to: '${LEAD_EMAIL:-lead@example.com}'
+        headers:
+          subject: '【升级-L3】{{ .GroupLabels.alertname }} - 长时间未处理'
+
+  # ==========================================
+  # Info 级别
+  # ==========================================
+
+  - name: 'info-receiver'
+    email_configs:
+      - send_resolved: false
+        to: '${ALERT_EMAIL_TO:-alerts@example.com}'
+        headers:
+          subject: '【信息】{{ .GroupLabels.alertname }}'
+
+  # ==========================================
+  # 团队接收者
+  # ==========================================
+
+  - name: 'backend-team-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${BACKEND_EMAIL:-backend@example.com}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#backend-alerts'
+
+  - name: 'database-team-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${DB_EMAIL:-dba@example.com}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#database-alerts'
+
+  - name: 'ops-team-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${OPS_EMAIL:-ops@example.com}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#ops-alerts'
+
+  - name: 'security-team-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${SECURITY_EMAIL:-security@example.com}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#security-alerts'
+        color: '#FF0000'
+
+  # ==========================================
+  # 类别接收者
+  # ==========================================
+
+  - name: 'availability-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${ALERT_EMAIL_TO:-alerts@example.com}'
+        headers:
+          subject: '【服务可用性】{{ .GroupLabels.alertname }}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#availability-alerts'
+        color: '#FF0000'
+
+  - name: 'database-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${DB_EMAIL:-dba@example.com}'
+        headers:
+          subject: '【数据库】{{ .GroupLabels.alertname }}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#database-alerts'
+
+  - name: 'security-receiver'
+    email_configs:
+      - send_resolved: true
+        to: '${SECURITY_EMAIL:-security@example.com}'
+        headers:
+          subject: '【安全告警】{{ .GroupLabels.alertname }}'
+    slack_configs:
+      - send_resolved: true
+        api_url: '${SLACK_WEBHOOK_URL:-}'
+        channel: '#security-alerts'
+        color: '#FF0000'
+
+# ============================================
+# 告警抑制规则
+# ============================================
+inhibit_rules:
+  # Critical 抑制 Warning（同实例）
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance', 'service']
+
+  # 服务离线时抑制其他告警
+  - source_match:
+      alertname: 'ServiceDown'
+      severity: 'critical'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+  # 主机离线时抑制服务告警
+  - source_match:
+      alertname: 'HostDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+  # 数据库连接耗尽时抑制数据库警告
+  - source_match:
+      severity: 'critical'
+      category: 'database'
+    target_match:
+      severity: 'warning'
+      category: 'database'
+    equal: ['instance']
+
+  # 高优先级升级告警抑制低级别
+  - source_match:
+      escalation_level: '3'
+    target_match:
+      escalation_level: '1'
+    equal: ['alertname', 'instance']
+
+  - source_match:
+      escalation_level: '5'
+    target_match:
+      escalation_level: '1'
+    equal: ['alertname', 'instance']
