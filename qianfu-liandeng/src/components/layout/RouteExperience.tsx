@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
+import { gsap } from 'gsap'
 
 const ROUTE_SETTLE_DELAY_MS = 50
 
@@ -30,6 +31,35 @@ export default function RouteExperience() {
   const navigationType = useNavigationType()
   const timeoutRef = useRef<number | null>(null)
   const [announcement, setAnnouncement] = useState('')
+
+  useLayoutEffect(() => {
+    const media = gsap.matchMedia()
+
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      const main = document.getElementById('main-content')
+      if (!main) return
+
+      const explicitTargets = main.querySelectorAll<HTMLElement>('[data-ui-reveal]')
+      const targets = explicitTargets.length > 0
+        ? Array.from(explicitTargets).slice(0, 16)
+        : Array.from(main.children).slice(0, 1)
+
+      gsap.fromTo(
+        targets,
+        { autoAlpha: 0, y: 14 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.48,
+          stagger: 0.045,
+          ease: 'power3.out',
+          clearProps: 'opacity,visibility,transform',
+        },
+      )
+    })
+
+    return () => media.revert()
+  }, [location.key])
 
   useEffect(() => {
     if (timeoutRef.current !== null) {
