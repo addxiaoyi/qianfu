@@ -67,7 +67,7 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
     <motion.article
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.05, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: Math.min(index, 5) * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="group flex h-full flex-col"
     >
       <div className="relative flex h-full flex-col">

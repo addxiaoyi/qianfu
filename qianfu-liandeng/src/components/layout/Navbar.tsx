@@ -76,15 +76,16 @@ const Navbar: React.FC = React.memo(() => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-sm font-bold transition-all duration-300 relative group ${
-                    isActive(link.path) ? 'text-accent' : 'text-zinc-400 hover:text-black'
+                  aria-current={isActive(link.path) ? 'page' : undefined}
+                  className={`relative rounded-lg px-2 py-1.5 text-sm font-bold transition-colors duration-200 group ${
+                    isActive(link.path) ? 'bg-zinc-100 text-black' : 'text-zinc-500 hover:bg-zinc-50 hover:text-black'
                   }`}
                 >
                   <span className="inline-flex items-center gap-2">
                     <GeometricLantern variant={link.iconVariant} className="w-4 h-4" />
                     {t(link.key)}
                   </span>
-                  {isActive(link.path) && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-accent rounded-full" />}
+                  {isActive(link.path) && <div className="absolute -bottom-1 left-2 right-2 h-0.5 bg-accent rounded-full" />}
                 </Link>
             ))}
           </div>

@@ -54,8 +54,10 @@ const ServerList: React.FC = () => {
   );
   const [showFilters, setShowFilters] = useState(false);
   const [searchDraft, setSearchDraft] = useState(filters.search);
+  const [versionDraft, setVersionDraft] = useState(filters.version);
   const hasActiveFilters = Boolean(filters.search || filters.category || filters.platform || filters.version || filters.online || filters.intent !== 'all' || filters.sortBy !== 'activity');
   useEffect(() => setSearchDraft(filters.search), [filters.search]);
+  useEffect(() => setVersionDraft(filters.version), [filters.version]);
   const { backendDegraded, isLoading: backendHealthLoading } = useBackendHealth();
 
   const updateFilters = (patch: Partial<DiscoveryFilters>) => {
@@ -166,6 +168,7 @@ const ServerList: React.FC = () => {
                 placeholder={t('discovery.search.placeholder')}
               />
               <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl bg-black px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800">搜索</button>
+              {searchDraft ? <button type="button" aria-label="清空搜索" onClick={() => { setSearchDraft(''); updateFilters({ search: '' }); }} className="absolute right-[5.5rem] top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold text-zinc-400 hover:bg-zinc-200 hover:text-black">清空</button> : null}
             </form>
             <button
               type="button"
@@ -208,7 +211,7 @@ const ServerList: React.FC = () => {
            <div className="px-6 py-4 flex items-center gap-3 border-r border-zinc-200 lg:block hidden">
               <GeometricLantern variant="spark" className="w-4 h-4 text-zinc-300" />
            </div>
-           <div className="flex overflow-x-auto gap-2 no-scrollbar px-4 py-2 flex-grow">
+           <div className="flex overflow-x-auto gap-2 px-4 py-2 flex-grow" aria-label="服务器分类，可左右滚动">
               {categories.map((catKey) => {
                 const label = t(catKey);
                 return (
@@ -227,6 +230,7 @@ const ServerList: React.FC = () => {
                 );
               })}
            </div>
+           <span className="hidden shrink-0 pr-3 text-[10px] font-medium text-zinc-400 sm:inline lg:hidden">左右滑动</span>
            <div className="px-6 py-4 border-l border-zinc-200 lg:block hidden">
               <GeometricLantern variant="activity" className="w-4 h-4 text-zinc-300" />
            </div>
@@ -255,14 +259,17 @@ const ServerList: React.FC = () => {
           </label>
           <label className="space-y-2">
             <span className="px-1 text-xs font-medium text-zinc-500">服务器版本</span>
+            <form onSubmit={(event) => { event.preventDefault(); updateFilters({ version: versionDraft.trim() }); }} className="flex gap-2">
             <input
-              type="text"
+              type="search"
               aria-label="服务器版本"
-              value={filters.version}
-              onChange={(event) => updateFilters({ version: event.target.value.trim() })}
+              value={versionDraft}
+              onChange={(event) => setVersionDraft(event.target.value)}
               placeholder="如 1.21.1"
               className="w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-bold outline-none transition placeholder:text-zinc-300 focus:border-black focus:bg-white"
             />
+            <button type="submit" className="rounded-2xl border border-zinc-200 px-3 text-xs font-semibold hover:border-black">应用</button>
+            </form>
           </label>
           <label className="space-y-2">
             <span className="px-1 text-xs font-medium text-zinc-500">在线状态</span>
