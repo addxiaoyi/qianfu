@@ -84,6 +84,7 @@ const EntryAnimationGate: React.FC<EntryAnimationGateProps> = ({ children, playe
         fps={props.fps}
         autoPlay={props.autoPlay}
         initiallyMuted={props.initiallyMuted}
+        acknowledgeRemotionLicense
         controls={props.controls}
         style={props.style}
       />

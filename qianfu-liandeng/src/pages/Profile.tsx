@@ -11,6 +11,7 @@ import { escapeHtml } from '@/utils/htmlSanitizer';
 import { formatUserId, normalizeUser } from '@/utils/user';
 import type { CheckinResult, CheckinStatus } from '@/types/api';
 import { isRustV2Enabled, rustV2Path, rustV2RequestOptions } from '@/api/rustV2';
+import { useAuthStore } from '@/store/authStore';
 
 const quickLinks: { to: string; title: string; desc: string; variant: 'network' | 'data' }[] = [
   { to: '/dashboard/servers', title: '我的服务器', desc: '查看已提交的服务器和审核状态。', variant: 'network' },
@@ -20,9 +21,11 @@ const quickLinks: { to: string; title: string; desc: string; variant: 'network' 
 const Profile: React.FC = () => {
   const t = useT();
   const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: profile, isLoading, isError, refetch } = useQuery({
     queryKey: ['profile'],
       queryFn: async () => normalizeUser(await request<any>(isRustV2Enabled() ? rustV2Path('/profile') : '/profile', isRustV2Enabled() ? rustV2RequestOptions : undefined)),
+    enabled: isAuthenticated,
   });
   const { data: checkinStatus, isFetching: checkinStatusLoading, isError: checkinStatusError, refetch: refetchCheckinStatus } = useQuery({
     queryKey: ['checkin-status', profile?.id],
