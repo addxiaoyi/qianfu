@@ -156,8 +156,13 @@ const MobileSearch: React.FC = () => {
           <Link to={`/server/${server.id}`} className="flex min-w-0 flex-1 gap-3">
           <div className="w-20 h-20 rounded-xl bg-zinc-100 overflow-hidden shrink-0">
             {thumbnail ? (
-              <LazyImage src={thumbnail} alt={getServerName(server)} className="w-full h-full object-cover" />
-            ) : null}
+              <LazyImage
+                src={thumbnail}
+                alt=""
+                className="w-full h-full object-cover"
+                placeholder={<div className="flex h-full w-full items-center justify-center bg-zinc-900 text-lg font-black text-white">{getServerName(server).slice(0, 2)}</div>}
+              />
+            ) : <div className="flex h-full w-full items-center justify-center bg-zinc-900 text-lg font-black text-white">{getServerName(server).slice(0, 2)}</div>}
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             <h4 className="text-sm font-black truncate">{getServerName(server)}</h4>

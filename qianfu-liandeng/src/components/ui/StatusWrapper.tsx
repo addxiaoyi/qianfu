@@ -27,7 +27,7 @@ const StatusShell = ({ title, subtitle, children }: { title: string; subtitle: s
     </div>
     <div className="max-w-md space-y-3 sm:space-y-4">
       <h3 className="text-3xl sm:text-4xl font-black tracking-tighter uppercase italic leading-none text-zinc-900">{title}</h3>
-      <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.28em] italic leading-none">{subtitle}</p>
+      <p className="text-sm font-medium leading-6 text-zinc-500">{subtitle}</p>
     </div>
   </div>
 );
