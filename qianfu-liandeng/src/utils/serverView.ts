@@ -91,7 +91,14 @@ export const getServerDescription = (server: any) =>
 
 export const getServerThumbnail = (server: any) => {
   const candidate = server?.thumbnail || server?.image || server?.coverUrl || server?.cover_url || '';
-  return typeof candidate === 'string' && isImageUrlSafe(candidate) ? candidate : '';
+  if (typeof candidate === 'string' && isImageUrlSafe(candidate)) return candidate;
+
+  const host = String(server?.host || server?.ip || '').trim();
+  if (!host) return '';
+  const port = Number(server?.port);
+  const endpoint = Number.isInteger(port) && port > 0 ? `${host}:${port}` : host;
+  const favicon = `https://api.mcsrvstat.us/icon/${encodeURIComponent(endpoint)}`;
+  return isImageUrlSafe(favicon) ? favicon : '';
 };
 
 export const getServerPlayersOnline = (server: any) => {

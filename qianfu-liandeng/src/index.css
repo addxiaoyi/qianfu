@@ -32,16 +32,18 @@
     overscroll-behavior-y: none;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
+    @apply bg-background text-foreground font-sans antialiased overflow-x-hidden overflow-y-auto;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
     overscroll-behavior-y: none;
     overscroll-behavior-x: none;
-    scrollbar-width: none;
+    scrollbar-width: auto;
   }
-  html { scrollbar-width: none; }
+  html { scrollbar-width: auto; }
   html::-webkit-scrollbar,
-  body::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  body::-webkit-scrollbar { width: 10px; height: 10px; }
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; }
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground break-words;
     text-wrap: balance;

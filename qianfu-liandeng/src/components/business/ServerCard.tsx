@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, Copy } from 'lucide-react';
-import GeometricLantern from '@/components/ui/GeometricLantern';
 import { copyText } from '@/utils/clipboard';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -95,8 +94,8 @@ const ServerCard: React.FC<ServerCardProps> = ({ server, index, protocolLabel, n
              </div>
           </div>
           <div className="absolute bottom-6 right-6">
-             <div className="flex h-12 w-12 translate-y-8 items-center justify-center rounded-2xl bg-white opacity-0 shadow-2xl transition-all delay-100 duration-700 group-hover:translate-y-0 group-hover:opacity-100">
-                <GeometricLantern variant="network" className="h-6 w-6 text-black transition-transform group-hover:translate-x-1" />
+             <div className="flex h-12 w-12 translate-y-8 items-center justify-center rounded-2xl bg-white text-sm font-black text-black opacity-0 shadow-2xl transition-all delay-100 duration-700 group-hover:translate-y-0 group-hover:opacity-100">
+                {initials}
              </div>
           </div>
         </div>
